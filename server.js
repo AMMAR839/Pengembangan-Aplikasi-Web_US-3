@@ -1,16 +1,16 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
+const connectDB = require('./config/db');
 
 const app = express();
+connectDB();
+
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(()=>console.log('MongoDB Connected'))
-  .catch(err=>console.error(err));
-
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/student', require('./routes/student'));
+app.use('/api/payment', require('./routes/payment'));
 
-app.listen(process.env.PORT, ()=>console.log('Server running'));
+app.listen(process.env.PORT, () => console.log('Server running on port ' + process.env.PORT));
