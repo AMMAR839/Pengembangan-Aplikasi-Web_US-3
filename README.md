@@ -25,7 +25,7 @@ Aplikasi web untuk **pendaftaran anak PAUD secara online**.
 4. **Konfigurasi Environment**
     - Buat file `.env` di root project dengan isi:
       ```
-      MONGO_URI=MONGO_URI=mongodb+srv://ammaryasir839_db_user:<enter123>@paw-us3.8mnhnlt.mongodb.net/?retryWrites=true&w=majority&appName=PAW-US3
+      MONGO_URI=MONGO_URI=mongodb+srv://ammaryasir839_db_user:enter123@paw-us3.8mnhnlt.mongodb.net/?retryWrites=true&w=majority&appName=PAW-US3
       JWT_SECRET=rahasia_super_aman
       PORT=5000
       ```
