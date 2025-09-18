@@ -1,3 +1,22 @@
+# 🧩 Express.js + MongoDB Auth Boilerplate
+
+Template backend sederhana menggunakan **Express.js** dan **MongoDB** untuk membuat sistem login dan register (user & admin).
+
+---
+
+## ⚙️ Fitur
+
+- Login untuk **admin & user**
+- Struktur folder terpisah: models, routes, controllers, middleware
+- JWT Authentication
+- Enkripsi password pakai bcrypt
+- Siap dikembangkan untuk register berbayar via QRIS
+
+---
+
+## 📂 Struktur Folder
+
+=======
 # 📚 PAUD Registration App - Cara Pakai
 Aplikasi web untuk **pendaftaran anak PAUD secara online**.
 
@@ -71,3 +90,4 @@ Aplikasi web untuk **pendaftaran anak PAUD secara online**.
 - Simpan file `.env` di `.gitignore` agar tidak bocor ke GitHub.
 - Gunakan browser atau tool API (seperti Postman / Thunder Client) untuk testing API.
 - JWT token dikirim di header `Authorization: Bearer <token>` untuk route yang memerlukan login.
+
