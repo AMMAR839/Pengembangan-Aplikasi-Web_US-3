@@ -71,11 +71,51 @@ Aplikasi web untuk **pendaftaran anak PAUD secara online**.
 
 ## 📋 Cara Menggunakan Aplikasi
 
-### a. User
-- **Register akun** (role otomatis: user)
-- **Login** (mendapatkan token JWT)
-- **Tambah data anak** (isi nama, TTL, dll.)
-- **Bayar pendaftaran** via QRIS (setiap anak punya pembayaran sendiri)
+### 👨‍👩‍👧‍👦 Untuk Orang Tua
+1. **Register akun** (role otomatis: user)
+2. **Login** dan dapatkan token JWT
+3. **Daftarkan anak** dengan data lengkap (nama, TTL, alamat, kontak darurat)
+4. **Bayar pendaftaran** via QRIS Midtrans (Rp. 25.000 per anak)
+5. **Monitor kegiatan harian** anak melalui notifikasi
+6. **Terima peringatan cuaca** dan notifikasi acara TK
+
+### 👩‍🏫 Untuk Guru
+1. **Login** dengan akun guru (role: teacher)
+2. **Kelola kelas** dan siswa yang diajar
+3. **Catat absensi harian** (check-in/check-out)
+4. **Dokumentasi kegiatan** dengan foto dan catatan
+5. **Kirim notifikasi** ke orang tua tentang aktivitas anak
+6. **Buat peringatan cuaca** saat kondisi tidak mendukung
+
+### 👑 Untuk Admin TK
+1. **Login** dengan akun admin (role: admin)
+2. **Kelola seluruh data** siswa dan status pembayaran
+3. **Buat jadwal kegiatan** dan acara TK
+4. **Monitor sistem** dan laporan komprehensif
+5. **Atur pertemuan orang tua** triwulanan dan acara tahunan
+
+---
+
+---
+
+## 📊 Database Schema (ERD)
+
+![Entity Relationship Diagram](./img/entity.svg)
+
+*Diagram ERD menunjukkan struktur database dan relasi antar tabel dalam sistem TK*
+
+### Entitas Utama:
+- **User**: Data pengguna (orang tua, guru, admin)
+- **Student**: Data anak TK yang terdaftar
+- **Class**: Kelas berdasarkan kelompok usia
+- **Teacher**: Data guru dan staff TK
+- **DailyActivity**: Kegiatan harian (senam pagi, bermain, bercerita, makan siang, pulang)
+- **Attendance**: Absensi harian siswa
+- **Payment**: Pembayaran pendaftaran
+- **Event**: Acara TK (pertemuan orang tua, acara tahunan)
+- **ParentNotification**: Sistem notifikasi untuk orang tua
+- **WeatherAlert**: Peringatan cuaca
+- **Schedule**: Jadwal kegiatan (Senin-Rabu)
 
 ### b. Admin
 - **Buat akun admin** secara manual di database MongoDB (role: admin)
