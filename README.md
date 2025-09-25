@@ -1,6 +1,5 @@
 # 🧩 Express.js + MongoDB Auth Boilerplate
 
-Template backend sederhana menggunakan **Express.js** dan **MongoDB** untuk membuat sistem login dan register (user & admin).
 
 ---
 
