@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const { sendMessage, getMessages, markAsRead } = require('../controllers/messageController');
 const { auth } = require('../middleware/auth');
+const { sendMessage, getMessagesForParent } = require('../controllers/messageController');
+const router = express.Router();
 
 router.post('/send', auth, sendMessage);
-router.get('/', auth, getMessages);
-router.put('/:messageId/read', auth, markAsRead);
+
+router.get('/inbox', auth, getMessagesForParent);
 
 module.exports = router;
