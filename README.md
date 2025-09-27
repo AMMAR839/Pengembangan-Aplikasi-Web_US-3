@@ -1,3 +1,25 @@
+<<<<<<< HEAD
+=======
+# 🧩 Express.js + MongoDB Auth Boilerplate
+
+Template backend sederhana menggunakan **Express.js** dan **MongoDB** untuk membuat sistem login dan register (user & admin).
+
+---
+
+## ⚙️ Fitur
+
+- Login untuk **admin & user**
+- Struktur folder terpisah: models, routes, controllers, middleware
+- JWT Authentication
+- Enkripsi password pakai bcrypt
+- Siap dikembangkan untuk register berbayar via QRIS
+
+---
+
+## 📂 Struktur Folder
+
+=======
+>>>>>>> 1b2b9066fd3232e335335b81080f301d4dab2dce
 # 📚 PAUD Registration App - Cara Pakai
 Aplikasi web untuk **pendaftaran anak PAUD secara online**.
 
@@ -24,12 +46,24 @@ Aplikasi web untuk **pendaftaran anak PAUD secara online**.
 
 4. **Konfigurasi Environment**
     - Buat file `.env` di root project dengan isi:
+<<<<<<< HEAD
       PORT=5000
 MONGO_URI=mongodb+srv://ammaryasir839_db_user:enter123@paw-us3.8mnhnlt.mongodb.net/?retryWrites=true&w=majority&appName=PAW-US3
 JWT_SECRET=secret123
 
 MIDTRANS_SERVER_KEY=Mid-server-hDeH3WAp0vflUjMBWKoEUs6O
 MIDTRANS_CLIENT_KEY=Mid-client-w_X9A1ro95HvkBki
+=======
+      ```
+      
+      PORT=5000
+      MONGO_URI=mongodb+srv://ammaryasir839_db_user:enter123@paw-us3.8mnhnlt.mongodb.net/?retryWrites=true&w=majority&appName=PAW-US3
+      JWT_SECRET=secret123
+      MIDTRANS_SERVER_KEY=Mid-server-hDeH3WAp0vflUjMBWKoEUs6O
+      MIDTRANS_CLIENT_KEY=Mid-client-w_X9A1ro95HvkBki
+
+      ```
+>>>>>>> 1b2b9066fd3232e335335b81080f301d4dab2dce
 
 ---
 
@@ -67,4 +101,9 @@ MIDTRANS_CLIENT_KEY=Mid-client-w_X9A1ro95HvkBki
 
 - Simpan file `.env` di `.gitignore` agar tidak bocor ke GitHub.
 - Gunakan browser atau tool API (seperti Postman / Thunder Client) untuk testing API.
+<<<<<<< HEAD
 - JWT token dikirim di header `Authorization: Bearer <token>` untuk route yang memerlukan login.
+=======
+- JWT token dikirim di header `Authorization: Bearer <token>` untuk route yang memerlukan login.
+
+>>>>>>> 1b2b9066fd3232e335335b81080f301d4dab2dce
