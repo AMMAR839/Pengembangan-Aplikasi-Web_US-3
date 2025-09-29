@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
 const ActivitySchema = new mongoose.Schema({
-  day: { type: String, required: true },
+  title: { type: String, required: true },
+  date: { type: Date, required: true },
   activity: { type: String, required: true },
 });
 
