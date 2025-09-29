@@ -1,5 +1,6 @@
 const Payment = require('../models/Payment');
 const Student = require('../models/Student');
+const User = require('../models/User');
 
 exports.callback = async (req,res)=>{
   try {
@@ -14,6 +15,12 @@ exports.callback = async (req,res)=>{
 
       await Student.findByIdAndUpdate(payment.studentId, { status: 'active' });
     }
+
+     await User.updateOne(
+      { _id: payment.userId, role: 'user' },
+      { $set: { role: 'parent' } }
+      );
+
 
     res.status(200).send('OK');
   } catch (err) {

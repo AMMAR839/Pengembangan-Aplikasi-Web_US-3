@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+  studentNIK: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
   orderId: String,
   amount: Number,
   status: { type: String, enum: ['pending','settlement','failed'], default: 'pending' }

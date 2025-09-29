@@ -4,14 +4,27 @@ const midtransClient = require('midtrans-client');
 
 exports.registerStudent = async (req,res)=>{
   try {
-    const { nama, tanggalLahir, alamat } = req.body;
+    const {nik, nama, tanggalLahir, alamat,
+  golonganDarah, jenisKelamin, agama,
+  NamaOrangtua, NoHPOrangtua } = req.body;
 
     const student = await Student.create({
+      nik,
       nama,
       tanggalLahir,
       alamat,
+      golonganDarah,
+      jenisKelamin,
+      agama,
+      NamaOrangtua,
+      NoHPOrangtua,
       parentUserId: req.user._id
     });
+
+    const existingStudent = await Student.exists({ nik });
+    if (existingStudent) {
+      return res.status(400).json({ message: 'NIK sudah terdaftar' });
+    }
 
     const snap = new midtransClient.Snap({
       isProduction: false,
@@ -29,14 +42,13 @@ exports.registerStudent = async (req,res)=>{
 
     await Payment.create({
       userId: req.user._id,
-      studentId: student._id,
+      studentNIK: student.nik,
       orderId,
       amount: 25000,
       status: 'pending'
     });
 
     const transaction = await snap.createTransaction(parameter);
-
     res.json({
       message: 'Pendaftaran anak berhasil, lanjutkan pembayaran',
       student,
