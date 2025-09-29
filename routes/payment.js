@@ -7,9 +7,6 @@ const { checkoutByNik, checkoutByNiks, callback } = require('../controllers/paym
 // Ortu/Admin: bayar untuk 1 anak pakai NIK
 router.post('/checkout-by-nik', auth, checkoutByNik);
 
-// Ortu/Admin: bayar untuk banyak anak (array NIK)
-router.post('/checkout-by-niks', auth, checkoutByNiks);
-
 // Midtrans callback (server-to-server)
 router.post('/callback', callback);
 

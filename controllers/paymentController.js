@@ -77,40 +77,6 @@ exports.checkoutByNik = async (req, res) => {
   }
 };
 
-// === BATCH: input banyak NIK → hasil per NIK
-exports.checkoutByNiks = async (req, res) => {
-  try {
-    let { niks } = req.body;
-    if (!Array.isArray(niks) || niks.length === 0) {
-      return res.status(400).json({ message: 'Field "niks" wajib berupa array NIK' });
-    }
-    niks = [...new Set(niks.map(n => String(n).trim()))];
-
-    const isAdmin = req.user.role === 'admin';
-    const students = await Student.find(
-      isAdmin ? { nik: { $in: niks } } : { nik: { $in: niks }, parentUserId: req.user._id }
-    ).lean();
-
-    const map = new Map(students.map(s => [s.nik, s]));
-    const results = [];
-
-    for (const nik of niks) {
-      const s = map.get(nik);
-      if (!s) { results.push({ nik, ok:false, error:'Siswa tidak ditemukan / bukan milik Anda' }); continue; }
-      if (s.status === 'active') { results.push({ nik, ok:true, message:'Siswa sudah aktif. Tidak perlu membayar.' }); continue; }
-      try {
-        const r = await createOrReusePayment({ student: s, user: req.user });
-        results.push({ nik, ok:true, ...r });
-      } catch (e) {
-        results.push({ nik, ok:false, error: e.message || 'Gagal membuat transaksi' });
-      }
-    }
-
-    res.json({ results });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 // (opsional) verifikasi signature Midtrans
 function verifyMidtransSignature(body) {
