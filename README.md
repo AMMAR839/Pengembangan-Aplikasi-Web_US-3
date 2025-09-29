@@ -70,7 +70,7 @@
 - **ParentNotification**: Sistem notifikasi untuk orang tua
 - **WeatherAlert**: Peringatan cuaca
 - **Schedule**: Jadwal kegiatan (Senin-Rabu)
->>>>>>> 7a85f1b0d9eb230bff3c1fe7945e0da7b51712ea
+
 
 ### b. Admin
 - **Buat akun admin** secara manual di database MongoDB (role: admin)
