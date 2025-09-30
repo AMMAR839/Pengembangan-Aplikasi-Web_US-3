@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
-const feedbackSchema = new mongoose.Schema({
-    caption: { type: String, required: true, ref},
+const GallerySchema = new mongoose.Schema({
+    caption: { type: String, required: true},
     imageUrl: { type: String, required: true },
-    postedAt: { type: Date, default: Date.now }
+    postedAt: { type: Date, default: Date.now },
+    isVisible: { type: Boolean, default: false }
 
 });
 
-module.exports = mongoose.model('Gallery', gallerySchema);
-
+module.exports = mongoose.model('Gallery', GallerySchema);

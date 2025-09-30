@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Activity = require("../models/Activity");
 
+const { auth } = require("../middleware/auth");
+const { requireRole } = require("../middleware/roles");
+
 // GET semua kegiatan
 router.get("/", async (req, res) => {
   const activities = await Activity.find();
@@ -9,7 +12,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST tambah kegiatan
-router.post("/", async (req, res) => {
+router.post("/", auth, requireRole("admin", "teacher"), async (req, res) => {
   try {
     const newActivity = new Activity(req.body);
     await newActivity.save();
