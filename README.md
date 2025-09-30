@@ -1,11 +1,11 @@
 # Aplikasi Monitoring Kegiatan TK
 
 **Disusun Oleh:**
-Ammar Ali Yasir (23/520644/TK/57406)
-Davana Nico Fadla (23/522338/TK/57649)
-Grace Anre Marcheline (23/522372/TK/57654)
-Mirsad Alganawi Azma (23/522716/TK/57737)
-Muhammad Muqtada Alhaddad (22/500341/TK/54841)
+- Ammar Ali Yasir (23/520644/TK/57406)
+- Davana Nico Fadla (23/522338/TK/57649)
+- Grace Anre Marcheline (23/522372/TK/57654)
+- Mirsad Alganawi Azma (23/522716/TK/57737)
+- Muhammad Muqtada Alhaddad (22/500341/TK/54841)
 
 
 ## Daftar Isi
