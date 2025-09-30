@@ -29,11 +29,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth',         require('./routes/auth'));
 app.use('/api/student',      require('./routes/student'));
 app.use('/api/payment',      require('./routes/payment'));
-app.use('/api/activities',   require('./routes/activities'));   // <-- jadwal + foto harian
+app.use('/api/activities',   require('./routes/activities'));   
 app.use('/api/attendance',   require('./routes/attendance'));
 app.use('/api/message',      require('./routes/messages'));
 app.use('/api/notification', require('./routes/notification'));
 app.use('/api/weather',      require('./routes/weather'));
+app.use('/api/feedback', require('./routes/feedback'));
 
 // Healthcheck sederhana
 app.get('/healthz', (req, res) => res.send('OK'));
