@@ -29,6 +29,9 @@ app.use('/api/activities', require('./routes/activities'));
 app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/notification', require('./routes/notification'));
 app.use('/api/weather', require('./routes/weather'));
+app.use('/api/feedback', require('./routes/feedback'));
+app.use('/api/gallery', require('./routes/gallery'));
+app.use('/api/messages', require('./routes/messages'));
 
 
 // Start server (paling akhir)
