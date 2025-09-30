@@ -17,7 +17,8 @@ const studentSchema = new mongoose.Schema({
   NamaOrangtua: { type: String, trim: true },
   NoHPOrangtua: { type: String, trim: true },
   parentUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  status: { type: String, enum: ['pending','active'], default: 'pending' }
+  status: { type: String, enum: ['pending','active'], default: 'pending' },
+  kelas: { type: String, enum: ['A','B'], default: 'null', index: true }, 
 });
 
 module.exports = mongoose.model('Student', studentSchema);

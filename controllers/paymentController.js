@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const midtransClient = require('midtrans-client');
+const PENDING_TTL_MS = Number(process.env.PAYMENT_PENDING_TTL_MS || 24*60*60*1000); // default 24 jam
+
 
 const Payment = require('../models/Payment');
 const Student = require('../models/Student');
@@ -16,42 +18,58 @@ function createSnap() {
 }
 
 // Buat/ulang payment pending utk 1 siswa (doc Student)
-async function createOrReusePayment({ student, user }) {
+async function createOrReusePayment({ student, user, forceNew = false }) {
   let payment = await Payment.findOne({ studentNik: student.nik, status: 'pending' });
-  if (payment?.redirectUrl) {
-    return { order_id: payment.orderId, payment_url: payment.redirectUrl, reused: true };
+
+  // Jika ada pending & diminta paksa baru -> expire dulu yang lama
+  if (payment && forceNew) {
+    payment.status = 'expire';
+    await payment.save();
+    payment = null;
   }
 
+  // Jika masih ada pending
+  if (payment) {
+    const ageMs = Date.now() - new Date(payment.createdAt).getTime();
+    const notExpired = ageMs < PENDING_TTL_MS;
+
+    // Reuse jika masih valid dan punya redirectUrl
+    if (payment.redirectUrl && notExpired) {
+      return { order_id: payment.orderId, payment_url: payment.redirectUrl, reused: true };
+    }
+
+    // Kalau sudah melewati TTL / tidak ada redirectUrl, expire dulu
+    payment.status = 'expire';
+    await payment.save();
+    payment = null;
+  }
+
+  // Buat transaksi baru
   const snap = createSnap();
   const orderId = `PAUD-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
   const parameter = {
-    transaction_details: { order_id: orderId, gross_amount: AMOUNT }, 
-    // enabled_payments: ['qris'],
-    // enabled_payments: ['qris','gopay','shopeepay','bank_transfer','bca_va','bni_va','bri_va','echannel','permata_va','other_va','credit_card'],
+    transaction_details: { order_id: orderId, gross_amount: AMOUNT },
+    // bebas: boleh biarkan semua channel aktif atau batasi:
+    enabled_payments: ['qris','gopay','shopeepay','bank_transfer','bca_va','bni_va','bri_va','echannel','permata_va','other_va','credit_card'],
     item_details: [{ id: 'pendaftaran', price: AMOUNT, quantity: 1, name: `Pendaftaran ${student.nama}` }],
     customer_details: { first_name: user.username }
   };
 
   const tx = await snap.createTransaction(parameter);
 
-  if (!payment) {
-    await Payment.create({
-      userId: user._id,
-      studentNik: student.nik,
-      orderId,
-      amount: AMOUNT,
-      status: 'pending',
-      redirectUrl: tx.redirect_url
-    });
-  } else {
-    payment.orderId = orderId;
-    payment.redirectUrl = tx.redirect_url;
-    await payment.save();
-  }
+  await Payment.create({
+    userId: user._id,
+    studentNik: student.nik,
+    orderId,
+    amount: AMOUNT,
+    status: 'pending',
+    redirectUrl: tx.redirect_url
+  });
 
   return { order_id: orderId, payment_url: tx.redirect_url, reused: false };
 }
 
+// === SINGLE: input 1 NIK → dapat link bayar
 // === SINGLE: input 1 NIK → dapat link bayar
 exports.checkoutByNik = async (req, res) => {
   try {
@@ -68,7 +86,9 @@ exports.checkoutByNik = async (req, res) => {
       return res.json({ message: 'Siswa sudah aktif. Tidak perlu membayar.' });
     }
 
-    const result = await createOrReusePayment({ student, user: req.user });
+    const forceNew = req.query.forceNew === '1' || req.query.forceNew === 'true';
+
+    const result = await createOrReusePayment({ student, user: req.user, forceNew });
     res.json({
       message: result.reused ? 'Lanjutkan pembayaran yang tertunda' : 'Silakan lanjutkan pembayaran',
       ...result
@@ -77,6 +97,7 @@ exports.checkoutByNik = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 // (opsional) verifikasi signature Midtrans

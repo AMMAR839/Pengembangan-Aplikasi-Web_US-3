@@ -1,41 +1,41 @@
-exports.getAllPhotos = async (req, res) => {
-  try {
-    const photos = await Gallery.find({ isVisible: true });
-    res.json(photos);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.searchPhotosByCaption = async (req, res) => {
-  try {
-    const { caption } = req.query;
-    if (!caption) {
-      return res.status(400).json({ message: "Caption harus diisi" });
+  exports.getAllPhotos = async (req, res) => {
+    try {
+      const photos = await Gallery.find({ isVisible: true });
+      res.json(photos);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
+  };
 
-    const photos = await Gallery.find({
-      caption: { $regex: caption, $options: "i" } // i = case insensitive
-    });
+  exports.searchPhotosByCaption = async (req, res) => {
+    try {
+      const { caption } = req.query;
+      if (!caption) {
+        return res.status(400).json({ message: "Caption harus diisi" });
+      }
 
-    res.json(photos);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+      const photos = await Gallery.find({
+        caption: { $regex: caption, $options: "i" } // i = case insensitive
+      });
 
-exports.toggleVisibility = async (req, res) => {
-  try {
-    const photo = await Gallery.findById(req.params.id);
-    if (!photo) return res.status(404).json({ message: "Foto tidak ditemukan" });
+      res.json(photos);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
 
-    photo.isVisible = !photo.isVisible;
-    await photo.save();
+  exports.toggleVisibility = async (req, res) => {
+    try {
+      const photo = await Gallery.findById(req.params.id);
+      if (!photo) return res.status(404).json({ message: "Foto tidak ditemukan" });
 
-    res.json({ message: "Status berhasil diubah", photo });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+      photo.isVisible = !photo.isVisible;
+      await photo.save();
+
+      res.json({ message: "Status berhasil diubah", photo });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
 
 

@@ -7,6 +7,6 @@ const paymentSchema = new mongoose.Schema({
   amount:    { type: Number, required: true },
   status:    { type: String, enum:['pending','settlement','failed','expire','cancel','deny'], default: 'pending' },
   redirectUrl: String
-});
+}, { timestamps: true }); 
 
 module.exports = mongoose.model('Payment', paymentSchema);
