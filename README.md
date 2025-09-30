@@ -118,7 +118,7 @@ Struktur mengikuti repo yang diberikan:
 ---
 
 ## 5 URL GDrive Laporan
-**GDrive Laporan**: https://drive.google.com/________________________________
+**GDrive Laporan**: https://drive.google.com/file/d/1so8W-tAYMyQ3M6xvv2JJ5TknM4WJ4Lrj/view?usp=sharing
 
 ---
 

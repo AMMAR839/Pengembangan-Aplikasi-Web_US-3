@@ -12,7 +12,7 @@ const {
 // Parent: submit feedback
 router.post('/', auth, requireRole("parent"), submitFeedback);
 
-// Admin/Teacher: lihat semua feedback (support ?from=&to=&parentId=)
+// Admin/Teacher: lihat semua feedback 
 router.get('/', auth, requireRole("admin", "teacher"), listFeedback);
 
 // Parent: lihat feedback miliknya sendiri
