@@ -4,7 +4,7 @@ exports.sendMessage = async (req, res) => {
   try {
     const { parentId, studentId, content } = req.body;
 
-    if (req.user.role !== 'admin') {
+    if (req.user.role !== ('admin','teacher')) {
       return res.status(403).json({ message: 'Hanya guru/admin yang bisa mengirim pesan' });
     }
 

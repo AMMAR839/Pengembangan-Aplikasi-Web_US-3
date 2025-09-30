@@ -17,18 +17,21 @@ const connectDB = require('./config/db');
 const app = express();
 connectDB();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/student', require('./routes/student'));
 app.use('/api/payment', require('./routes/payment'));
-
-app.listen(process.env.PORT, ()=>console.log('Server running'));
-
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/notification', require('./routes/notification'));
+app.use('/api/weather', require('./routes/weather'));
 
-app.listen(process.env.PORT, () => console.log('Server running on port ' + process.env.PORT));
+
+// Start server (paling akhir)
+app.listen(PORT, () => console.log('Server running on port ' + PORT));
+
 
