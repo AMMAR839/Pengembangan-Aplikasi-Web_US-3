@@ -22,7 +22,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Serve file statis untuk foto kegiatan
-// -> URL publik: http(s)://<host>/uploads/activities/<filename>
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes

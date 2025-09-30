@@ -60,7 +60,7 @@ exports.listMyStudents = async (req, res) => {
   try {
     const showNik = req.query.showNik === '1';
     const items = await Student.find({ parentUserId: req.user._id })
-      .select('nik nama status tanggalLahir alamat')
+      .select('nik nama status tanggalLahir alamat kelas golonganDarah jenisKelamin ')
       .sort({ createdAt: -1 })
       .lean();
 
