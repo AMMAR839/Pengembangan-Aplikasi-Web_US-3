@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const feedback = require('.../models/Feedback') 
+const Feedback = require('.../models/Feedback') 
 const feedbackController = require('../controllers/feedbackController');
 
-router.post('/', feedbackController.submitFeedback);
-router.get('/', feedbackController.getFeedbackByDate);
+const { auth } = require("../middleware/auth");
+const { requireRole } = require("../middleware/roles");
+
+router.post('/',auth, requireRole("parent"), feedbackController.submitFeedback);
+router.get('/',auth, requireRole("admin", "teacher"), feedbackController.getFeedbackByDate);
 
 module.exports = router;
