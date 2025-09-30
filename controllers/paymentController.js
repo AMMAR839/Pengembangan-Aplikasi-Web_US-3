@@ -25,8 +25,9 @@ async function createOrReusePayment({ student, user }) {
   const snap = createSnap();
   const orderId = `PAUD-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
   const parameter = {
-    transaction_details: { order_id: orderId, gross_amount: AMOUNT },
-    enabled_payments: ['qris'],
+    transaction_details: { order_id: orderId, gross_amount: AMOUNT }, 
+    // enabled_payments: ['qris'],
+    // enabled_payments: ['qris','gopay','shopeepay','bank_transfer','bca_va','bni_va','bri_va','echannel','permata_va','other_va','credit_card'],
     item_details: [{ id: 'pendaftaran', price: AMOUNT, quantity: 1, name: `Pendaftaran ${student.nama}` }],
     customer_details: { first_name: user.username }
   };

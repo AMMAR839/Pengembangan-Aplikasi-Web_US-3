@@ -1,10 +1,20 @@
+// controllers/notificationController.js
 const Notification = require('../models/Notification');
-const emitter = require('../events/notifications');
+const emitter = require('../events/notifications'); // <-- jika folder kamu 'event', ubah path ini
+const User = require('../models/User');
+const Student = require('../models/Student');
 
-// Admin/guru membuat notifikasi
+
 exports.createNotification = async (req, res) => {
   try {
-    const { title, body, audience = 'all', recipients = [] } = req.body;
+    let {
+      title,
+      body,
+      audience = 'all',
+      recipients = [],
+      recipientUsernames = [],
+      studentId
+    } = req.body;
 
     if (!title || !body) {
       return res.status(400).json({ message: 'title dan body wajib diisi' });
@@ -12,15 +22,56 @@ exports.createNotification = async (req, res) => {
     if (!['all','parents','byUser'].includes(audience)) {
       return res.status(400).json({ message: 'audience tidak valid' });
     }
-    if (audience === 'byUser' && (!Array.isArray(recipients) || recipients.length === 0)) {
-      return res.status(400).json({ message: 'recipients wajib diisi jika audience=byUser' });
+
+    // Kumpulkan semua target userId di sini
+    let resolvedIds = [];
+
+    // 1) Jika ada username, resolve ke _id
+    if (Array.isArray(recipientUsernames) && recipientUsernames.length) {
+      const users = await User.find({ username: { $in: recipientUsernames } })
+        .select('_id username')
+        .lean();
+
+      const foundUsernames = new Set(users.map(u => u.username));
+      const notFound = recipientUsernames.filter(u => !foundUsernames.has(u));
+      if (notFound.length) {
+        return res.status(404).json({ message: 'Sebagian username tidak ditemukan', notFound });
+      }
+
+      resolvedIds.push(...users.map(u => u._id));
+      // Kalau kirim username, audience otomatis byUser
+      audience = 'byUser';
+    }
+
+    // 2) Jika ada studentId, kirim ke parentUserId siswa tsb
+    if (studentId) {
+      const stu = await Student.findById(studentId).select('parentUserId').lean();
+      if (!stu || !stu.parentUserId) {
+        return res.status(404).json({ message: 'Parent user tidak ditemukan untuk studentId tersebut' });
+      }
+      resolvedIds.push(stu.parentUserId);
+      audience = 'byUser';
+    }
+
+    // 3) Tambahkan recipients dari body (userId langsung)
+    if (Array.isArray(recipients) && recipients.length) {
+      resolvedIds.push(...recipients);
+      audience = 'byUser';
+    }
+
+    // Deduplicate
+    resolvedIds = [...new Set(resolvedIds.map(String))];
+
+    // Validasi kalau audience byUser tapi daftar kosong
+    if (audience === 'byUser' && resolvedIds.length === 0) {
+      return res.status(400).json({ message: 'recipients wajib diisi jika audience=byUser (atau pakai recipientUsernames / studentId)' });
     }
 
     const notif = await Notification.create({
       title,
       body,
       audience,
-      recipients: audience === 'byUser' ? recipients : [],
+      recipients: audience === 'byUser' ? resolvedIds : [],
       createdBy: req.user._id
     });
 
@@ -100,7 +151,7 @@ exports.listAllNotifications = async (req, res) => {
   }
 };
 
-// Stream realtime (SSE) - opsional
+// Stream realtime (SSE) 
 exports.stream = (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
