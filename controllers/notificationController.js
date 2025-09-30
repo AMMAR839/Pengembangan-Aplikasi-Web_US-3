@@ -1,6 +1,6 @@
 // controllers/notificationController.js
 const Notification = require('../models/Notification');
-const emitter = require('../events/notifications'); // <-- jika folder kamu 'event', ubah path ini
+const emitter = require('../events/notifications'); 
 const User = require('../models/User');
 const Student = require('../models/Student');
 
