@@ -29,13 +29,10 @@ Aplikasi ini merupakan **backend REST API** untuk mendukung operasional harian P
   Admin dapat membuat **notifikasi** untuk semua pengguna, hanya orang tua, atau pengguna tertentu (by user). Client dapat **subscribe** ke endpoint **SSE** untuk menerima notifikasi baru secara langsung.
 
 - **Pembayaran Pendaftaran (Midtrans Snap)**  
-  Orang tua/Admin memulai checkout berdasarkan **NIK**. Jika ada transaksi **pending** yang masih valid, sistem **reuse** agar tidak ganda. Setelah Midtrans mengirim **callback** dengan status `settlement`, sistem otomatis mengubah **status siswa menjadi active** dan —bila perlu— mengubah **role** user menjadi `parent`.
+  Orang tua/Admin memulai checkout berdasarkan **NIK**. Jika ada transaksi **pending** yang masih valid, sistem **reuse** agar tidak ganda. Setelah Midtrans mengirim **callback** dengan status `settlement`, sistem otomatis mengubah **status siswa menjadi active** dan mengubah **role** user menjadi `parent`.
 
 - **Absensi & Cuaca (Contoh Integrasi)**  
-  Tersedia endpoint **absensi** sederhana. Fitur **cuaca** (OpenWeatherMap) menunjukkan contoh integrasi API pihak ketiga yang dapat dikembangkan lebih lanjut (mis. untuk perencanaan kegiatan luar ruang).
-
-- **Keandalan & Validasi**  
-  Validasi jam `HH:MM`, hari `1..5`, kelas `A/B`, deteksi **bentrok slot**, masking NIK pada daftar siswa, serta indeks unik pada koleksi penting (mis. NIK, orderId) untuk menjaga konsistensi data.
+  Tersedia endpoint **absensi** sederhana. Fitur **cuaca** (OpenWeatherMap) menunjukkan contoh integrasi API pihak ketiga.
 
 - **Keamanan (Garis Besar)**  
   Kata sandi di-hash dengan **bcrypt**; rahasia seperti `JWT_SECRET` dan `MIDTRANS_SERVER_KEY` disimpan di `.env`. Akses file upload dibatasi mime & ukuran; file statis dilayani dari path khusus (`/uploads`).
@@ -108,13 +105,14 @@ Struktur mengikuti repo yang diberikan:
 ---
 
 ## 4 Teknologi yang Digunakan
-- **Runtime & Web**: Node.js (LTS), Express
-- **Database**: MongoDB, Mongoose
-- **Auth**: JSON Web Token (`jsonwebtoken`), `bcrypt`
-- **Upload**: `multer` (foto aktivitas), static files di `/uploads`
-- **Pembayaran**: `midtrans-client` (Snap)
-- **Cuaca** : 
-- **Lainnya**: `axios`, `cors`, `dotenv`
+- **Runtime & Web** : Node.js (LTS), Express
+- **Database**      : MongoDB, Mongoose
+- **Auth**          : JSON Web Token (`jsonwebtoken`), `bcrypt`
+- **Upload**        : `multer` (foto aktivitas), static files di `/uploads`
+- **Pembayaran**    : `midtrans-client` (Snap)
+- **Cuaca**         : WeatherAPI.com (Current Weather API) via `axios`
+- **Realtime**      : EventEmitter + Server-Sent Events (SSE)
+- **Lainnya**       : `cors` & `dotenv`
 
 
 ---
