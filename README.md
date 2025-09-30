@@ -1,30 +1,56 @@
+# Aplikasi Monitoring Kegiatan TK
+
+**Disusun Oleh:**
+Ammar Ali Yasir (23/520644/TK/57406)
+Davana Nico Fadla (23/522338/TK/57649)
+Grace Anre Marcheline (23/522372/TK/57654)
+Mirsad Alganawi Azma (23/522716/TK/57737)
+Muhammad Muqtada Alhaddad (22/500341/TK/54841)
+
 
 ## Daftar Isi
 
-* [Fitur](#fitur)
-* [Arsitektur & Alur](#arsitektur--alur)
-* [Database Schema (ERD)](#database-schema-erd)
-* [Persyaratan](#persyaratan)
-* [Instalasi & Menjalankan](#instalasi--menjalankan)
-* [Konfigurasi Lingkungan (.env)](#konfigurasi-lingkungan-env)
-* [Struktur Direktori](#struktur-direktori)
-* [Model Data](#model-data)
-* [Autentikasi](#autentikasi)
-* [Endpoint API](#endpoint-api)
-  * [Auth](#auth)
-  * [Students (pendaftaran siswa)](#students-pendaftaran-siswa)
-  * [Payments (Midtrans)](#payments-midtrans)
-  * [Notifications](#notifications)
-  * [Messages](#messages)
-  * [Weather](#weather)
-  * [Activities](#activities)
-  * [Attendance](#attendance)
-* [Notifikasi Realtime (SSE)](#notifikasi-realtime-sse)
-* [Menyiapkan Admin](#menyiapkan-admin)
-* [Tips Keamanan & Produksi](#tips-keamanan--produksi)
-* [Troubleshooting](#troubleshooting)
-* [Lisensi](#lisensi)
-* [Catatan](#catatan)
+- [Aplikasi Monitoring Kegiatan TK](#aplikasi-monitoring-kegiatan-tk)
+  - [Daftar Isi](#daftar-isi)
+  - [Deskripsi](#deskripsi)
+  - [Fitur](#fitur)
+  - [Arsitektur \& Alur](#arsitektur--alur)
+  - [Database Schema (ERD)](#database-schema-erd)
+    - [Entitas Utama:](#entitas-utama)
+    - [b. Admin](#b-admin)
+  - [Persyaratan](#persyaratan)
+  - [Instalasi \& Menjalankan](#instalasi--menjalankan)
+  - [Konfigurasi Lingkungan (.env)](#konfigurasi-lingkungan-env)
+  - [Struktur Direktori](#struktur-direktori)
+  - [Model Data](#model-data)
+  - [Autentikasi](#autentikasi)
+  - [Endpoint API](#endpoint-api)
+    - [Auth](#auth)
+    - [Students (pendaftaran siswa)](#students-pendaftaran-siswa)
+    - [Payments (Midtrans)](#payments-midtrans)
+    - [Notifications](#notifications)
+    - [Messages](#messages)
+    - [Weather](#weather)
+    - [Activities](#activities)
+    - [Attendance](#attendance)
+  - [Notifikasi Realtime (SSE)](#notifikasi-realtime-sse)
+  - [Menyiapkan Admin](#menyiapkan-admin)
+  - [Tips Keamanan \& Produksi](#tips-keamanan--produksi)
+  - [Troubleshooting](#troubleshooting)
+  - [Lisensi](#lisensi)
+  - [Catatan](#catatan)
+
+---
+
+## Deskripsi
+
+Aplikasi ini merupakan sebuah platform komunikasi dan monitoring antara pihak TK (guru) dengan orang tua murid. Tujuan utama aplikasi adalah memberikan informasi yang jelas, cepat, dan real-time mengenai kegiatan harian anak di sekolah. Dengan adanya aplikasi ini, orang tua tidak perlu lagi mengandalkan catatan manual atau pengumuman kertas, karena semua informasi dapat diakses melalui sistem digital.
+
+Melalui aplikasi ini, guru dapat mencatat dan membagikan aktivitas harian anak, jadwal kegiatan, kehadiran (presensi), serta catatan khusus terkait perkembangan maupun kesehatan anak. Orang tua juga dapat memantau kondisi anaknya secara langsung, mulai dari apakah anak hadir atau izin, apa saja kegiatan yang dilakukan, hingga notifikasi penting seperti jam pulang atau kondisi cuaca hujan.
+
+Selain itu, aplikasi ini menyediakan fitur tambahan berupa galeri foto kegiatan anak, form saran dari orang tua, serta sistem login dengan autentikasi berbasis role (guru dan orang tua) untuk menjamin keamanan data.
+
+Dengan sistem ini, diharapkan komunikasi antara guru dan orang tua menjadi lebih efektif, transparan, dan mendukung perkembangan anak di TK.
 
 ---
 
