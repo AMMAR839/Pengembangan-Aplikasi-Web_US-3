@@ -1,4 +1,3 @@
-// models/Feedback.js
 const mongoose = require('mongoose');
 
 //Submit Feedback oleh Parent

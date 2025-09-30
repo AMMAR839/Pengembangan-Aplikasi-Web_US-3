@@ -1,6 +1,6 @@
 const Student = require('../models/Student');
 
-// Hanya field ini yang boleh diubah (tanpa NIK, status, parentUserId)
+// Hanya field yang boleh diupdate oleh ortu / admin
 const ALLOWED = new Set([
   'nama','tanggalLahir','alamat',
   'golonganDarah','jenisKelamin','agama',
@@ -55,7 +55,7 @@ exports.registerStudent = async (req, res) => {
   }
 };
 
-// ===== List anak milik user (default NIK masked; ?showNik=1 untuk full) =====
+// anka ortu melihat daftar siswa miliknya
 exports.listMyStudents = async (req, res) => {
   try {
     const showNik = req.query.showNik === '1';
@@ -73,7 +73,7 @@ exports.listMyStudents = async (req, res) => {
   }
 };
 
-// ===== Update by _id (ortu pemilik / admin) =====
+// ortu mengupdate data ank miliknya
 exports.updateStudentById = async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 
 const path = require('path');
@@ -8,7 +7,7 @@ const connectDB = require('./config/db');
 
 const PORT = process.env.PORT || 5000;
 
-// Koneksi DB
+// Connect Database
 connectDB();
 
 const app = express();
@@ -20,8 +19,9 @@ app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
+require('dotenv').config();
 
-// Serve file statis untuk foto kegiatan
+// Serve dile statis untuk foto kegiatan
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -47,5 +47,5 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
 });
 
-// HANYA sekali listen (hapus listen ganda di file lamamu)
+// Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

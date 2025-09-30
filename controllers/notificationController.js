@@ -1,4 +1,3 @@
-// controllers/notificationController.js
 const Notification = require('../models/Notification');
 const emitter = require('../events/notifications'); 
 const User = require('../models/User');
@@ -26,7 +25,7 @@ exports.createNotification = async (req, res) => {
     // Kumpulkan semua target userId di sini
     let resolvedIds = [];
 
-    // 1) Jika ada username, resolve ke _id
+    // Jika ada username, resolve ke _id
     if (Array.isArray(recipientUsernames) && recipientUsernames.length) {
       const users = await User.find({ username: { $in: recipientUsernames } })
         .select('_id username')
@@ -43,7 +42,7 @@ exports.createNotification = async (req, res) => {
       audience = 'byUser';
     }
 
-    // 2) Jika ada studentId, kirim ke parentUserId siswa tsb
+    // Jika ada studentId, kirim ke parentUserId siswa tsb
     if (studentId) {
       const stu = await Student.findById(studentId).select('parentUserId').lean();
       if (!stu || !stu.parentUserId) {
@@ -53,7 +52,7 @@ exports.createNotification = async (req, res) => {
       audience = 'byUser';
     }
 
-    // 3) Tambahkan recipients dari body (userId langsung)
+    // Tambahkan recipients dari body (userId langsung)
     if (Array.isArray(recipients) && recipients.length) {
       resolvedIds.push(...recipients);
       audience = 'byUser';

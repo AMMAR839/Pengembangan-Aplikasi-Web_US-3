@@ -69,8 +69,7 @@ async function createOrReusePayment({ student, user, forceNew = false }) {
   return { order_id: orderId, payment_url: tx.redirect_url, reused: false };
 }
 
-// === SINGLE: input 1 NIK → dapat link bayar
-// === SINGLE: input 1 NIK → dapat link bayar
+// ====== CHECKOUT by NIK (daftar siswa) ======
 exports.checkoutByNik = async (req, res) => {
   try {
     const { nik } = req.body;

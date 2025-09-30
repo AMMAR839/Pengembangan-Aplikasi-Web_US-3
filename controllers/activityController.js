@@ -12,7 +12,7 @@ function normalizeDateOnly(d) {
   return dt;
 }
 
-// ========= TEMPLATE: set/get (sama seperti solusi sebelumnya) =========
+// Buat/ubah template jadwal per hari (admin/teacher)
 exports.setDaySchedule = async (req, res) => {
   try {
     const { className, dayOfWeek, slots = [] } = req.body;
@@ -38,6 +38,7 @@ exports.setDaySchedule = async (req, res) => {
   }
 };
 
+// Ambil template jadwal per hari (siapa saja)
 exports.getScheduleTemplate = async (req, res) => {
   try {
     let { class: cls, day } = req.query;
@@ -104,7 +105,7 @@ exports.getDailySchedule = async (req, res) => {
   }
 };
 
-// PARENT: anak lagi ngapain SEKARANG (baca log harian)
+// PARENT: anak lagi ngapain sekarang?
 exports.whatIsMyKidDoingNow = async (req, res) => {
   try {
     const { studentId } = req.query;
@@ -141,7 +142,7 @@ exports.whatIsMyKidDoingNow = async (req, res) => {
   }
 };
 
-// ====== FOTO ke LOG HARIAN ======
+// Upload foto ke slot di log harian
 exports.addDailySlotPhotos = async (req, res) => {
   try {
     const { logId, slotId } = req.params;
@@ -172,6 +173,7 @@ exports.addDailySlotPhotos = async (req, res) => {
   }
 };
 
+// Hapus foto dari slot di log harian
 exports.deleteDailySlotPhoto = async (req, res) => {
   try {
     const { logId, slotId, photoId } = req.params;
@@ -192,6 +194,7 @@ exports.deleteDailySlotPhoto = async (req, res) => {
   }
 };
 
+// Update caption foto di slot log harian
 exports.updateDailyPhotoCaption = async (req, res) => {
   try {
     const { logId, slotId, photoId } = req.params;
