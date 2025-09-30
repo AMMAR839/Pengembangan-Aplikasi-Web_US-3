@@ -35,6 +35,7 @@
     - [Attendance](#attendance)
   - [Notifikasi Realtime (SSE)](#notifikasi-realtime-sse)
   - [Menyiapkan Admin](#menyiapkan-admin)
+  - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
   - [Tips Keamanan \& Produksi](#tips-keamanan--produksi)
   - [Troubleshooting](#troubleshooting)
   - [Lisensi](#lisensi)
@@ -488,6 +489,36 @@ node -r dotenv/config scripts/createAdmin.js
 
 ---
 
+## Teknologi yang Digunakan
+
+### Backend & Framework
+- **Express (express)** → framework Node.js untuk bikin REST API (routing, middleware, dsb).
+- **Mongoose (mongoose)** → ODM (Object Data Modeling) untuk MongoDB, dipakai buat bikin schema (User, Student, Activity, dsb) dan query database.
+- **dotenv (dotenv)** → untuk menyimpan konfigurasi sensitif di environment variable (contoh: MongoDB URI, JWT secret, Midtrans key, Weather API key).
+
+### Autentikasi & Keamanan
+- **jsonwebtoken (jsonwebtoken)** → bikin, verifikasi, dan decode JWT token untuk autentikasi.
+- **bcryptjs (bcryptjs)** → hashing dan verifikasi password.
+- **cookie-parser (cookie-parser)** → parsing cookie dari request (misalnya untuk access/refresh token).
+- **cors (cors)** → mengatur izin Cross-Origin supaya frontend bisa akses backend dengan aman.
+
+### Pembayaran
+- **Midtrans (snap.js API)** → integrasi pembayaran online (QRIS, kartu, transfer). Digunakan untuk pendaftaran siswa.
+
+### API Eksternal
+- **OpenWeatherMap API** → mengambil data cuaca real-time berdasarkan kota.
+- **Google Maps API** → integrasi tambahan untuk lokasi/cuaca dan visualisasi data berbasis lokasi.
+
+### File Handling & Integrasi
+- **multer (multer)** → menangani upload file (contoh: upload foto profil siswa).
+- **googleapis (googleapis)** → client API Google, bisa dipakai untuk upload dan hapus file ke Google Drive.
+
+### Tools Development
+- **nodemon (nodemon)** → auto-restart server setiap ada perubahan kode saat development.
+
+
+
+
 ## Tips Keamanan & Produksi
 
 * Simpan **JWT_SECRET** dan **MIDTRANS_SERVER_KEY** di secret manager (bukan git).
@@ -513,8 +544,6 @@ node -r dotenv/config scripts/createAdmin.js
 Bebas digunakan untuk pembelajaran/internal. Tambahkan lisensi sesuai kebutuhan proyek Anda.
 
 ---
-
-Selamat mencoba! Kalau mau, aku bisa buatkan **koleksi Postman** dan **env template** siap pakai agar QA lebih cepat.
 
 
 ## Catatan
