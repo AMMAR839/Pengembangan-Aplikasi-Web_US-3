@@ -47,7 +47,7 @@ Dengan cakupan tersebut, backend ini berperan sebagai **pondasi** yang mudah dii
 
 
 ## 2 Nama Kelompok & Anggota
-- **Nama Kelompok**: _Kelompok ___________________
+- **Kelompok 9** 
 - **Anggota**:
   1. Ammar Ali Yasir (23/520644/TK/57406)
   2. Davana Nico Fadla (23/522338/TK/57649)
