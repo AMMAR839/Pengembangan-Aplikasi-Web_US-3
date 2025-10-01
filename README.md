@@ -1,4 +1,4 @@
-# Sistem Informasi PAUD — Backend API (README Ringkas)
+# Sistem Informasi PAUD — Backend API 
 
 ## 1 Deskripsi Aplikasi
 Aplikasi ini merupakan **backend REST API** untuk mendukung operasional harian PAUD. Fokusnya adalah menghubungkan **admin/guru** dan **orang tua** melalui alur data yang rapi: pendaftaran siswa, penjadwalan kegiatan, dokumentasi aktivitas harian (beserta foto), komunikasi dua arah, notifikasi realtime, serta pembayaran biaya pendaftaran yang aman. Seluruh akses dikendalikan oleh **role-based access control** sehingga setiap pengguna hanya bisa melakukan aksi sesuai perannya.
