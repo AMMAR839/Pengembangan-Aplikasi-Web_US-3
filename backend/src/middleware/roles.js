@@ -5,4 +5,3 @@ exports.requireRole = (...allowed) => (req, res, next) => {
   }
   next();
 };
-

@@ -19,11 +19,9 @@ app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
-require('dotenv').config();
 
-// Serve dile statis untuk foto kegiatan
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve file statis untuk foto kegiatan
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/auth',         require('./routes/auth'));
@@ -34,7 +32,7 @@ app.use('/api/attendance',   require('./routes/attendance'));
 app.use('/api/message',      require('./routes/messages'));
 app.use('/api/notification', require('./routes/notification'));
 app.use('/api/weather',      require('./routes/weather'));
-app.use('/api/feedback', require('./routes/feedback'));
+app.use('/api/feedback',     require('./routes/feedback'));
 
 // Healthcheck sederhana
 app.get('/healthz', (req, res) => res.send('OK'));
