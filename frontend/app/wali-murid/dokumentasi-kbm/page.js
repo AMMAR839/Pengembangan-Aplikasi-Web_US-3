@@ -61,7 +61,7 @@ export default function DokumentasiKBMPage() {
               className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
               onClick={() => setActiveNav('jadwal')}
             >
-              Jadwal Harian
+              Jadwal
             </a>
 
             <a

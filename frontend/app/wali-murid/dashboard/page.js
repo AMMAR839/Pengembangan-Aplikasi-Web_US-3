@@ -68,7 +68,7 @@ export default function WaliMuridDashboard() {
               className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
               onClick={() => setActiveNav('dokumentasi')}
             >
-              Kegiatan
+              Dokumentasi KBM
             </a>
 
             <a

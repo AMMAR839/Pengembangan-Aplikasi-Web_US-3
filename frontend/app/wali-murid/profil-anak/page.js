@@ -63,7 +63,7 @@ export default function ProfilAnakPage() {
               className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
               onClick={() => setActiveNav('jadwal')}
             >
-              Jadwal Harian
+              Jadwal
             </a>
 
             <a
