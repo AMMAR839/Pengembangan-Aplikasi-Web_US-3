@@ -1,26 +1,512 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===== GLOBAL BACKGROUND UNTUK HALAMAN AUTH ===== */
+.auth-bg {
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, #9fb4c9, #4f626f);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ===== CARD UTAMA (LOGIN & REGISTER) ===== */
+.auth-card {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  background: #02251b;
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Kalau mau beda tampilan register vs login nanti bisa override pakai
+   .register-card atau .login-card */
+.login-card {
+  /* untuk sekarang sama saja dengan auth-card */
+}
+
+.register-card {
+  /* kalau mau putih di kanan dsb bisa diatur di sini */
+}
+
+/* ===== KIRI: GAMBAR ===== */
+.auth-left {
+  flex: 1;
+  min-height: 420px;
+}
+
+.auth-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ===== KANAN: FORM ===== */
+.auth-right {
+  flex: 1;
+  padding: 40px 48px;
+  color: #f7f7f7;
+  position: relative;
+}
+
+/* Logo Little Garden di login */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.auth-flower {
+  font-size: 26px;
+}
+
+.auth-logo-text {
+  font-family: "Georgia", serif;
+  font-size: 20px;
+}
+
+/* Judul besar (Selamat Datang / Create An Account) */
+.auth-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+/* ===== FORM ===== */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: capitalize;
+  color: #cdd7d3;
+}
+
+.auth-input {
+  margin-top: 4px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: #e6e6e6;
+  color: #111;
+  outline: none;
+  font-size: 14px;
+}
+
+.auth-input::placeholder {
+  color: #888;
+}
+
+/* Lupa password / link kecil */
+.auth-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+/* Link kecil biru (lupa password, pindah ke register / login) */
+.auth-link {
+  border: none;
+  background: none;
+  color: #4da2ff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Error message */
+.auth-error {
+  font-size: 13px;
+  color: #ff6b6b;
+}
+
+/* ===== BUTTONS ===== */
+.auth-button {
+  margin-top: 4px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Button utama (Login / Create Account) */
+.auth-button.primary {
+  background: #e6e6e6;
+  color: #111;
+}
+
+/* Versi gelap untuk register (Create Account) */
+.auth-button.primary.dark {
+  background: #000;
+  color: #f7f7f7;
+}
+
+/* Button sekunder (Login/Register with Google) */
+.auth-button.secondary {
+  background: #f4f4f4;
+  color: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-google-icon {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Text "or" di tengah */
+.auth-or {
+  text-align: center;
+  font-size: 13px;
+  color: #cdd7d3;
+}
+
+/* Teks di bawah form (Belum punya akun? / Already have an account?) */
+.auth-bottom-text {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #cdd7d3;
+  text-align: center;
+}
+
+/* Responsive agak kecil */
+@media (max-width: 900px) {
+  .auth-card {
+    flex-direction: column;
+    max-width: 520px;
+  }
+
+  .auth-left {
+    min-height: 260px;
+  }
+
+  .auth-right {
+    padding: 24px 24px 32px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ========= DASHBOARD UMUM ========= */
+
+.umum-page {
+  min-height: 100vh;
+  background: #e5f0f5;
+  color: #123047;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* NAVBAR */
+
+.umum-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 72px;
+  background: #04291e;
+  color: #f7f7f7;
+}
+
+.umum-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.umum-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.umum-logo-flower {
+  font-size: 24px;
+}
+
+.umum-logo-text {
+  font-family: "Georgia", serif;
+  font-size: 20px;
+}
+
+.umum-nav-links {
+  display: flex;
+  gap: 24px;
+  font-size: 15px;
+}
+
+.umum-nav-links a {
+  text-decoration: none;
+  color: #f7f7f7;
+}
+
+.umum-nav-links a:hover {
+  text-decoration: underline;
+}
+
+.umum-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.umum-icon-btn {
+  border: none;
+  background: transparent;
+  color: #f7f7f7;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* HERO */
+
+.umum-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 56px 72px 72px;
+  gap: 40px;
+}
+
+.umum-hero-left {
+  flex: 1.2;
+}
+
+.umum-eyebrow {
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f3722c;
+  margin-bottom: 12px;
+}
+
+.umum-hero-title {
+  font-size: 40px;
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.umum-hero-subtitle {
+  font-size: 15px;
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 28px;
+}
+
+.umum-cta-btn {
+  padding: 12px 28px;
+  border-radius: 999px;
+  border: 1.5px solid #123047;
+  background: #ffffff;
+  color: #123047;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.umum-cta-btn:hover {
+  background: #123047;
+  color: #ffffff;
+}
+
+/* HERO RIGHT */
+
+.umum-hero-right {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 320px;
+}
+
+.umum-hero-bg-shape {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #f8b27a66 0%, #f8b27a11 70%, transparent);
+  filter: blur(4px);
+}
+
+.umum-hero-image {
+  position: relative;
+  width: 260px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .umum-nav {
+    padding: 12px 20px;
+  }
+
+  .umum-nav-left {
+    gap: 16px;
+  }
+
+  .umum-nav-links {
+    display: none; /* bisa nanti diganti hamburger menu kalau mau */
+  }
+
+  .umum-hero {
+    flex-direction: column-reverse;
+    padding: 32px 20px 40px;
+    text-align: left;
+  }
+
+  .umum-hero-title {
+    font-size: 30px;
+  }
+
+  .umum-hero-subtitle {
+    max-width: none;
+  }
+}
+
+/* TAB AKTIF DI NAVBAR UMUM */
+.umum-nav-active {
+  padding-bottom: 4px;
+  border-bottom: 3px solid #ffffff;
+  font-weight: 600;
+}
+
+/* ===== HALAMAN PENDAFTARAN ANAK ===== */
+.daftar-page {
+  padding: 40px 72px 72px;
+}
+
+.daftar-card {
+  display: flex;
+  background: radial-gradient(circle at top left, #f28d4e33, #0b3a28 30%, #0b3a28 100%);
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: 420px;
+}
+
+/* KIRI: FORM */
+.daftar-left {
+  flex: 1.4;
+  padding: 40px 48px;
+  color: #f7f7f7;
+}
+
+.daftar-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.daftar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.daftar-row {
+  display: flex;
+  gap: 16px;
+}
+
+.daftar-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.daftar-field label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.daftar-field input,
+.daftar-field select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #f7f7f7;
+  color: #111;
+  font-size: 14px;
+  outline: none;
+}
+
+.daftar-submit-btn {
+  margin-top: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  background: #000;
+  color: #f7f7f7;
+  cursor: pointer;
+}
+
+.daftar-success {
+  font-size: 13px;
+  color: #b6ffb5;
+}
+
+/* KANAN: GAMBAR ANAK */
+.daftar-right {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.daftar-bg-shape {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #f8b27a66 0%, #f8b27a22 50%, transparent);
+  filter: blur(2px);
+}
+
+.daftar-image {
+  position: relative;
+  width: 260px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .daftar-page {
+    padding: 24px 20px 40px;
+  }
+
+  .daftar-card {
+    flex-direction: column-reverse;
+  }
+
+  .daftar-left {
+    padding: 24px 20px 32px;
+  }
+
+  .daftar-row {
+    flex-direction: column;
+  }
 }
