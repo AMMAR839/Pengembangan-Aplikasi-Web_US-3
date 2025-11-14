@@ -1,3 +1,82 @@
+# NITIP
+
+Siap, kita singkat banget ya — cuma yang *wajib* biar project-mu jalan ✅
+
+
+## 1. BACKEND – yang penting
+
+### 1.1. Install & jalanin
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### 1.2. File `.env` (di folder `backend`)
+
+Buat file **`backend/.env`** isi minimal:
+
+```env
+PORT=5000
+
+MONGO_URI=YOUR_MONGO_ATLAS_URI
+
+MIDTRANS_SERVER_KEY=YOUR_MIDTRANS_SERVER_KEY
+MIDTRANS_CLIENT_KEY=YOUR_MIDTRANS_CLIENT_KEY
+MIDTRANS_IS_PROD=false
+MIDTRANS_VERIFY_SIG=true
+REGISTRATION_FEE=25000
+
+JWT_SECRET=YOUR_JWT_SECRET_KEY
+
+WEATHER_API_KEY=YOUR_WEATHER_API_KEY
+
+NEXT_PUBLIC_API_URL=http://localhost:5000
+
+GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+FRONTEND_URL=http://localhost:3000
+
+```
+
+
+## 2. FRONTEND 
+
+### 2.1. Install & jalanin
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 2.2. File `.env` (di folder `frontend`)
+
+Buat file **`frontend/.env`**:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+---
+
+
+## 3. Urutan jalanin
+
+1. Terminal 1:
+
+   ```bash
+   cd backend
+   npm run dev
+   ```
+2. Terminal 2:
+
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
 # Sistem Informasi PAUD 
 Backend API 
 
