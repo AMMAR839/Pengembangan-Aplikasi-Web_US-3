@@ -665,3 +665,497 @@ html {
     border-radius: 24px;
   }
 }
+
+/* ========== WALI-MURID DASHBOARD (JADWAL HARIAN) ========= */
+.wali-page {
+  padding: 32px 72px 72px;
+  background: #e6f0f0;
+  min-height: 100vh;
+  color: #123047;
+}
+
+.jadwal-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.jadwal-title {
+  background: #7a9696;
+  padding: 12px 36px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #123047;
+  box-shadow: inset 0 -6px 0 rgba(0,0,0,0.04);
+}
+
+.schedule-container {
+  max-width: 1100px;
+  margin: 0 auto 28px;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.schedule-day {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.day-header {
+  background: #cfd9d9;
+  padding: 14px 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 700;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06);
+}
+
+.time-cell {
+  background: #ffffff;
+  padding: 14px 12px;
+  border-radius: 8px;
+  border: 1px solid #d7e0e0;
+  text-align: left;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-cell {
+  background: #eef6f6;
+  padding: 14px 12px;
+  border-radius: 8px;
+  border: 1px solid #d2e6e6;
+  text-align: center;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.activity-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.activity-sub {
+  font-size: 13px;
+  color: #274b4b;
+}
+
+.feedback-bar {
+  max-width: 1100px;
+  margin: 36px auto 0;
+  background: #9fbdb9;
+  color: #052826;
+  padding: 14px 18px;
+  border-radius: 999px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .wali-page { padding: 20px; }
+  .schedule-grid { grid-template-columns: 1fr; }
+}
+
+/* ========== FEEDBACK MODAL ========= */
+.feedback-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.feedback-modal {
+  position: relative;
+  background: #e6f0f0;
+  border-radius: 20px;
+  padding: 40px 48px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.feedback-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  color: #123047;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feedback-modal-close:hover {
+  opacity: 0.7;
+}
+
+.feedback-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #123047;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.feedback-textarea {
+  width: 100%;
+  height: 280px;
+  padding: 16px 20px;
+  border: 2px solid #9fbdb9;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #123047;
+  resize: none;
+  outline: none;
+  margin-bottom: 24px;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.feedback-textarea::placeholder {
+  color: #999;
+}
+
+.feedback-textarea:focus {
+  border-color: #04291e;
+  box-shadow: 0 0 0 3px rgba(4, 41, 30, 0.1);
+}
+
+.feedback-textarea:disabled {
+  background: #f0f5f5;
+  cursor: not-allowed;
+}
+
+.feedback-submit-btn {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: 2px solid #04291e;
+  background: #ffffff;
+  color: #04291e;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feedback-submit-btn:hover:not(:disabled) {
+  background: #04291e;
+  color: #ffffff;
+}
+
+.feedback-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feedback-submit-btn.success {
+  background: #04291e;
+  color: #ffffff;
+  border-color: #04291e;
+}
+
+/* ========== DOKUMENTASI KBM PAGE ========= */
+.dokumentasi-page {
+  padding: 32px 72px 72px;
+  background: #e6f0f0;
+  min-height: 100vh;
+  color: #123047;
+}
+
+.dokumentasi-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.dokumentasi-title {
+  background: #8fa9a9;
+  padding: 12px 40px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #123047;
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.04);
+}
+
+.dokumentasi-container {
+  max-width: 1200px;
+  margin: 0 auto 28px;
+}
+
+.dokumentasi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.dokumentasi-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dokumentasi-column-header {
+  background: #c9d9d9;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: #123047;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.dokumentasi-column-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dokumentasi-date-card {
+  background: #e8f0f0;
+  padding: 20px 16px;
+  border-radius: 12px;
+  border: 1px solid #d7e0e0;
+  text-align: center;
+  font-weight: 500;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #123047;
+}
+
+.dokumentasi-photo-card {
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 12px;
+  border: 2px solid #d2e6e6;
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.dokumentasi-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.dokumentasi-notes-card {
+  background: #e8f0f0;
+  padding: 20px 16px;
+  border-radius: 12px;
+  border: 1px solid #d7e0e0;
+  text-align: center;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #556b6b;
+  word-wrap: break-word;
+}
+
+.dokumentasi-pagination {
+  text-align: center;
+  padding: 12px;
+  color: #8fa9a9;
+  font-size: 18px;
+  letter-spacing: 4px;
+}
+
+@media (max-width: 1000px) {
+  .dokumentasi-page {
+    padding: 24px 32px 40px;
+  }
+
+  .dokumentasi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dokumentasi-page {
+    padding: 20px;
+  }
+
+  .dokumentasi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dokumentasi-title {
+    font-size: 20px;
+    padding: 10px 24px;
+  }
+}
+
+/* ========== PROFIL ANAK PAGE ========= */
+.profil-page {
+  padding: 32px 72px 72px;
+  background: #e6f0f0;
+  min-height: 100vh;
+  color: #123047;
+}
+
+.profil-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.profil-title {
+  background: #8fa9a9;
+  padding: 12px 40px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #123047;
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.04);
+}
+
+.profil-container {
+  max-width: 1000px;
+  margin: 0 auto 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.profil-card {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: start;
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.profil-photo-section {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.profil-photo {
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 4px solid #d2e6e6;
+}
+
+.profil-data-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.profil-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profil-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #556b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #f0f7f7;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.profil-value {
+  font-size: 14px;
+  color: #123047;
+  padding: 10px 12px;
+  background: #f8fafa;
+  border-radius: 6px;
+  border-left: 3px solid #8fa9a9;
+}
+
+.profil-change-note {
+  max-width: 1000px;
+  margin: 0 auto 20px;
+  background: #f0f5f5;
+  color: #123047;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .profil-page {
+    padding: 24px 32px 40px;
+  }
+
+  .profil-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .profil-photo {
+    width: 140px;
+    height: 140px;
+  }
+
+  .profil-data-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .profil-page {
+    padding: 20px;
+  }
+
+  .profil-title {
+    font-size: 20px;
+    padding: 10px 24px;
+  }
+
+  .profil-card {
+    padding: 16px;
+  }
+
+  .profil-photo {
+    width: 120px;
+    height: 120px;
+  }
+}
