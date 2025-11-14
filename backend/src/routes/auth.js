@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const { register, login } = require('../controllers/authController');
 
-
+// Register & login biasa
 router.post('/register', register);
 router.post('/login', login);
 

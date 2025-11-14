@@ -4,42 +4,42 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL 
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // kirim data ke backend -> /api/auth/register
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-
-    if (password !== confirm) {
-      setError("Password dan konfirmasi tidak sama");
-      return;
-    }
-
+    setSuccess("");
     setLoading(true);
+
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // backend sekarang pakai username + password.
         body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
+
       if (!res.ok) {
         setError(data.message || "Register gagal");
         return;
       }
 
-      router.push("/");
+      // kalau sukses, kasih pesan lalu arahkan ke login
+      setSuccess("Akun berhasil dibuat, silakan login");
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     } catch (err) {
       console.error(err);
       setError("Terjadi kesalahan server");
@@ -49,6 +49,7 @@ export default function RegisterPage() {
   }
 
   function handleGoogleRegister() {
+    // bedakan dari login → pakai /google/register
     window.location.href = `${API_URL}/api/auth/google/register`;
   }
 
@@ -64,22 +65,16 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-right">
-          <h1 className="auth-title">Create An Account</h1>
+          <div className="auth-logo">
+            <span className="auth-flower">🌼</span>
+            <span className="auth-logo-text">Little Garden</span>
+          </div>
+
+          <h1 className="auth-title">Buat Akun Baru</h1>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="auth-label">
-              Email
-              <input
-                className="auth-input"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </label>
-
-            <label className="auth-label">
-              Username
+              username
               <input
                 className="auth-input"
                 value={username}
@@ -89,7 +84,7 @@ export default function RegisterPage() {
             </label>
 
             <label className="auth-label">
-              Password
+              password
               <input
                 className="auth-input"
                 type="password"
@@ -99,32 +94,20 @@ export default function RegisterPage() {
               />
             </label>
 
-            <label className="auth-label">
-              Confirm Password
-              <input
-                className="auth-input"
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-              />
-            </label>
-
             {error && <p className="auth-error">{error}</p>}
+            {success && <p className="daftar-success">{success}</p>}
 
             <button
               className="auth-button primary dark"
               type="submit"
               disabled={loading}
             >
-              {loading ? "Memproses..." : "Create Account"}
+              {loading ? "Memproses..." : "Buat Akun"}
             </button>
 
-            <div className="auth-or">or</div>
-
             <button
-              type="button"
               className="auth-button secondary"
+              type="button"
               onClick={handleGoogleRegister}
             >
               <span className="auth-google-icon">G</span>
@@ -132,13 +115,13 @@ export default function RegisterPage() {
             </button>
 
             <p className="auth-bottom-text">
-              Already have an account?{" "}
+              Sudah punya akun?{" "}
               <button
                 type="button"
                 className="auth-link"
                 onClick={() => router.push("/")}
               >
-                sign in here
+                Login di sini
               </button>
             </p>
           </form>
