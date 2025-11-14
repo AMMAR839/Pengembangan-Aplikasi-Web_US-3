@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 /* ===== GLOBAL BACKGROUND UNTUK HALAMAN AUTH ===== */
 .auth-bg {
   min-height: 100vh;
@@ -21,14 +25,12 @@
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
 }
 
-/* Kalau mau beda tampilan register vs login nanti bisa override pakai
-   .register-card atau .login-card */
 .login-card {
-  /* untuk sekarang sama saja dengan auth-card */
+  /* kalau mau beda style login, override di sini */
 }
 
 .register-card {
-  /* kalau mau putih di kanan dsb bisa diatur di sini */
+  /* kalau mau beda style register, override di sini */
 }
 
 /* ===== KIRI: GAMBAR ===== */
@@ -76,7 +78,7 @@
   margin-bottom: 24px;
 }
 
-/* ===== FORM ===== */
+/* ===== FORM AUTH ===== */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -130,7 +132,7 @@
   color: #ff6b6b;
 }
 
-/* ===== BUTTONS ===== */
+/* ===== BUTTON AUTH ===== */
 .auth-button {
   margin-top: 4px;
   width: 100%;
@@ -142,19 +144,16 @@
   cursor: pointer;
 }
 
-/* Button utama (Login / Create Account) */
 .auth-button.primary {
   background: #e6e6e6;
   color: #111;
 }
 
-/* Versi gelap untuk register (Create Account) */
 .auth-button.primary.dark {
   background: #000;
   color: #f7f7f7;
 }
 
-/* Button sekunder (Login/Register with Google) */
 .auth-button.secondary {
   background: #f4f4f4;
   color: #222;
@@ -184,7 +183,7 @@
   text-align: center;
 }
 
-/* Responsive agak kecil */
+/* Responsive auth */
 @media (max-width: 900px) {
   .auth-card {
     flex-direction: column;
@@ -200,7 +199,7 @@
   }
 }
 
-/* ========= DASHBOARD UMUM ========= */
+/* ========= DASHBOARD UMUM & NAVBAR ========= */
 
 .umum-page {
   min-height: 100vh;
@@ -210,8 +209,7 @@
     sans-serif;
 }
 
-/* NAVBAR */
-
+/* NAVBAR DASAR */
 .umum-nav {
   position: sticky;
   top: 0;
@@ -247,19 +245,48 @@
 
 .umum-nav-links {
   display: flex;
+  align-items: center;
   gap: 24px;
-  font-size: 15px;
 }
 
-.umum-nav-links a {
-  text-decoration: none;
+/* 🔥 ANIMASI NAVBAR UNTUK SEMUA HALAMAN YANG PAKAI .nav-item */
+.umum-nav-links .nav-item {
+  position: relative;
+  padding-bottom: 4px;
+  border: none;
+  background: none;
   color: #f7f7f7;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
 }
 
-.umum-nav-links a:hover {
-  text-decoration: underline;
+.umum-nav-links .nav-item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 3px;
+  width: 0;
+  background: #ffffff;
+  border-radius: 999px;
+  transition: width 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
 }
 
+/* efek hover */
+.umum-nav-links .nav-item:hover::after {
+  width: 100%;
+  opacity: 0.5;
+}
+
+/* item aktif */
+.umum-nav-links .nav-item.active::after {
+  width: 100%;
+  opacity: 1;
+}
+
+/* tombol ikon kanan */
 .umum-nav-right {
   display: flex;
   align-items: center;
@@ -274,7 +301,7 @@
   cursor: pointer;
 }
 
-/* HERO */
+/* ========= HERO BERANDA ========= */
 
 .umum-hero {
   display: flex;
@@ -353,44 +380,8 @@
   object-fit: contain;
 }
 
-/* RESPONSIVE */
+/* ========= HALAMAN PENDAFTARAN ANAK ========= */
 
-@media (max-width: 900px) {
-  .umum-nav {
-    padding: 12px 20px;
-  }
-
-  .umum-nav-left {
-    gap: 16px;
-  }
-
-  .umum-nav-links {
-    display: none; /* bisa nanti diganti hamburger menu kalau mau */
-  }
-
-  .umum-hero {
-    flex-direction: column-reverse;
-    padding: 32px 20px 40px;
-    text-align: left;
-  }
-
-  .umum-hero-title {
-    font-size: 30px;
-  }
-
-  .umum-hero-subtitle {
-    max-width: none;
-  }
-}
-
-/* TAB AKTIF DI NAVBAR UMUM */
-.umum-nav-active {
-  padding-bottom: 4px;
-  border-bottom: 3px solid #ffffff;
-  font-weight: 600;
-}
-
-/* ===== HALAMAN PENDAFTARAN ANAK ===== */
 .daftar-page {
   padding: 40px 72px 72px;
 }
@@ -492,8 +483,151 @@
   object-fit: contain;
 }
 
-/* responsive */
+/* ========= SECTION KURIKULUM KAMI ========= */
+
+.kurikulum-section {
+  padding: 56px 72px 72px;
+  background: #e5f0f5;
+}
+
+.kurikulum-inner {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.kurikulum-image-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.kurikulum-bg-shape {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #f8b27a66 0%, #f8b27a11 60%, transparent);
+  filter: blur(2px);
+}
+
+.kurikulum-image {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.kurikulum-text {
+  flex: 1.2;
+}
+
+.kurikulum-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #123047;
+}
+
+.kurikulum-paragraph {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #334a62;
+  margin-bottom: 12px;
+}
+
+.kurikulum-cta {
+  margin-top: 20px;
+}
+
+/* ========= SECTION TENTANG KAMI (VISI MISI) ========= */
+
+.about-section {
+  background: #04291e;
+  color: #f7f7f7;
+  padding: 64px 72px 80px;
+}
+
+.about-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about-title {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.22);
+}
+
+.about-lead {
+  background: #e5f0f5;
+  color: #333c4a;
+  padding: 20px 28px;
+  border-radius: 999px;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+.about-cards {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.about-card {
+  flex: 1;
+  min-width: 260px;
+  background: #e5f0f5;
+  color: #123047;
+  border-radius: 32px;
+  padding: 24px 24px 28px;
+}
+
+.about-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.about-card-text {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ========= RESPONSIVE ========= */
+
 @media (max-width: 900px) {
+  /* navbar & hero */
+  .umum-nav {
+    padding: 12px 20px;
+  }
+
+  .umum-nav-left {
+    gap: 16px;
+  }
+
+  .umum-hero {
+    flex-direction: column-reverse;
+    padding: 32px 20px 40px;
+    text-align: left;
+  }
+
+  .umum-hero-title {
+    font-size: 30px;
+  }
+
+  .umum-hero-subtitle {
+    max-width: none;
+  }
+
+  /* pendaftaran anak */
   .daftar-page {
     padding: 24px 20px 40px;
   }
@@ -508,5 +642,26 @@
 
   .daftar-row {
     flex-direction: column;
+  }
+
+  /* kurikulum & about */
+  .kurikulum-section {
+    padding: 32px 20px 40px;
+  }
+
+  .kurikulum-inner {
+    flex-direction: column-reverse;
+  }
+
+  .about-section {
+    padding: 40px 20px 56px;
+  }
+
+  .about-lead {
+    border-radius: 24px;
+  }
+
+  .about-card {
+    border-radius: 24px;
   }
 }

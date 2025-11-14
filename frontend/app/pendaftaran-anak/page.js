@@ -20,14 +20,13 @@ export default function PendaftaranAnakPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ==== WAJIB LOGIN: kalau belum login, simpan redirect lalu ke halaman login ====
+  // ==== WAJIB LOGIN ====
   useEffect(() => {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     if (!token) {
-      // simpan tujuan setelah login
       localStorage.setItem("redirectAfterLogin", "/pendaftaran-anak");
-      router.replace("/"); // ke halaman login
+      router.replace("/");
     }
   }, [router]);
 
@@ -91,7 +90,7 @@ export default function PendaftaranAnakPage() {
 
   return (
     <div className="umum-page">
-      {/* NAVBAR */}
+      {/* ===== NAVBAR ===== */}
       <header className="umum-nav">
         <div className="umum-nav-left">
           <div className="umum-logo">
@@ -100,10 +99,18 @@ export default function PendaftaranAnakPage() {
           </div>
 
           <nav className="umum-nav-links">
-            <Link href="/umum">Beranda</Link>
-            <a href="#tentang-kami">Tentang Kami</a>
-            <a href="#kurikulum">Kurikulum</a>
-            <span className="umum-nav-active">Pendaftaran Anak</span>
+            <Link href="Dashboard/umum#beranda" className="nav-item">
+              Beranda
+            </Link>
+            <Link href="Dashboard/umum#tentang-kami" className="nav-item">
+              Tentang Kami
+            </Link>
+            <Link href="Dashboard/umum#kurikulum" className="nav-item">
+              Kurikulum
+            </Link>
+
+            {/* Halaman ini yang aktif */}
+            <span className="nav-item active">Pendaftaran Anak</span>
           </nav>
         </div>
 
@@ -122,7 +129,7 @@ export default function PendaftaranAnakPage() {
         </div>
       </header>
 
-      {/* FORM PENDAFTARAN ANAK */}
+      {/* ===== FORM PENDAFTARAN ANAK ===== */}
       <main className="daftar-page">
         <section className="daftar-card">
           <div className="daftar-left">
