@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function UmumDashboard() {
   const router = useRouter();
@@ -43,8 +42,11 @@ export default function UmumDashboard() {
             <a href="#beranda">Beranda</a>
             <a href="#tentang-kami">Tentang Kami</a>
             <a href="#kurikulum">Kurikulum</a>
-            {/* tombol, bukan Link langsung */}
-            <button className="auth-link" type="button" onClick={handleDaftarAnak}>
+            <button
+              type="button"
+              className="auth-link"
+              onClick={handleDaftarAnak}
+            >
               Pendaftaran Anak
             </button>
           </nav>
@@ -65,8 +67,8 @@ export default function UmumDashboard() {
         </div>
       </header>
 
-      {/* HERO */}
-      <main className="umum-hero" id="beranda">
+      {/* HERO BERANDA */}
+      <section className="umum-hero" id="beranda">
         <section className="umum-hero-left">
           <p className="umum-eyebrow">Di Little Garden Kindergarten</p>
           <h1 className="umum-hero-title">
@@ -100,7 +102,92 @@ export default function UmumDashboard() {
             className="umum-hero-image"
           />
         </section>
-      </main>
+      </section>
+
+      {/* KURIKULUM KAMI */}
+      <section className="kurikulum-section" id="kurikulum">
+        <div className="kurikulum-inner">
+          <div className="kurikulum-image-wrap">
+            <div className="kurikulum-bg-shape" />
+            {/* ganti path gambar kalau namanya beda */}
+            <img
+              src="/kurikulum-kids.jpg"
+              alt="Anak-anak Little Garden"
+              className="kurikulum-image"
+            />
+          </div>
+
+          <div className="kurikulum-text">
+            <h2 className="kurikulum-title">Kurikulum Kami</h2>
+            <p className="kurikulum-paragraph">
+              Dalam memelihara rasa ingin tahu dan kreativitas anak Anda, kami
+              menggunakan kurikulum berbasis bermain, yaitu IEYC. Dengan
+              kurikulum ini, kami percaya dapat memberdayakan anak-anak untuk
+              menjadi pelajar yang bahagia dan percaya diri, siap menghadapi
+              dunia.
+            </p>
+            <p className="kurikulum-paragraph">
+              IEYC adalah kurikulum yang dirancang untuk pendidikan anak usia
+              dini (TK dan prasekolah). Kurikulum ini komprehensif dan
+              berdasarkan penelitian. IEYC berfokus pada pengalaman belajar
+              yang menyenangkan yang menumbuhkan rasa ingin tahu, kemampuan
+              bertindak, dan kemampuan bertanya. Kurikulum ini juga
+              menekankan pentingnya pembelajaran dan perkembangan yang
+              berfokus pada anak.
+            </p>
+
+            <button
+              className="umum-cta-btn kurikulum-cta"
+              type="button"
+              onClick={handleDaftarAnak}
+            >
+              Daftar Sekarang →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* TENTANG KAMI + VISI MISI */}
+      <section className="about-section" id="tentang-kami">
+        <div className="about-inner">
+          <h2 className="about-title">
+            Sekilas Mengenai
+            <br />
+            Little Garden Kindergarten
+          </h2>
+
+          <p className="about-lead">
+            Di Little Garden Kindergarten, kami memandang setiap anak sebagai
+            benih kehidupan yang unik, lembut, dan penuh potensi. Kami percaya
+            bahwa masa depan yang cerah tidak lahir begitu saja, tetapi ditanam
+            dengan kasih, dirawat dengan perhatian, dan disinari oleh lingkungan
+            yang penuh kehangatan.
+          </p>
+
+          <div className="about-cards">
+            <div className="about-card">
+              <h3 className="about-card-title">Visi Kami</h3>
+              <p className="about-card-text">
+                Little Garden Kindergarten menjadi tempat di mana setiap anak
+                didorong dan diberi ruang untuk bertumbuh sesuai ritme dan
+                keunikannya sendiri — belajar dengan bahagia, bermain dengan
+                rasa ingin tahu, dan berkembang dengan cinta.
+              </p>
+            </div>
+
+            <div className="about-card">
+              <h3 className="about-card-title">Misi Kami</h3>
+              <p className="about-card-text">
+                Little Garden Kindergarten mendorong belajar dengan gembira dan
+                rasa ingin tahu, membentuk anak yang mandiri dan penuh kasih,
+                menciptakan lingkungan yang aman dan hangat, serta
+                berkolaborasi dengan orang tua dalam setiap langkah tumbuh
+                anak.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
