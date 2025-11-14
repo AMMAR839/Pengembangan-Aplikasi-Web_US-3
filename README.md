@@ -1,7 +1,7 @@
 # NITIP
 
 
-## 1. BACKEND – yang penting
+## 1. BACKEND 
 
 ### 1.1. Install & jalanin
 
