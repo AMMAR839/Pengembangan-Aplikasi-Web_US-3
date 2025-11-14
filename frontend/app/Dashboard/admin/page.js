@@ -4,9 +4,9 @@ export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-20 bg-[#5EAC9E] flex flex-col items-center py-6 space-y-8">
+      <aside className="w-20 bg-[#0A231A] flex flex-col items-center py-6 space-y-8">
         <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-          <span className="text-[#5EAC9E] font-bold text-xs">🌱</span>
+          <span className="text-[#0A231A] font-bold text-xs">🌱</span>
         </div>
         
         <nav className="flex-1 flex flex-col space-y-6">
