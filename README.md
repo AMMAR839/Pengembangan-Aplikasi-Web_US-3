@@ -15,9 +15,9 @@ npm run dev
 
 Buat file **`backend/.env`** isi minimal:
 
-```env
+env
 kukasih di wa
-```
+
 
 
 ## 2. FRONTEND 
@@ -34,9 +34,8 @@ npm run dev
 
 Buat file **`frontend/.env`**:
 
-```env
+env
 lewat wa
-```
 
 ---
 
