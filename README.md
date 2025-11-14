@@ -1,7 +1,5 @@
 # NITIP
 
-Siap, kita singkat banget ya — cuma yang *wajib* biar project-mu jalan ✅
-
 
 ## 1. BACKEND – yang penting
 
