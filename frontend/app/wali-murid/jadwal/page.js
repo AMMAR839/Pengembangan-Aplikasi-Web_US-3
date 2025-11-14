@@ -73,7 +73,7 @@ export default function JadwalPage() {
 
           <nav className="umum-nav-links">
             <a
-              href="/Dashboard/wali-murid"
+              href="/wali-murid/dashboard"
               className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveNav('dashboard')}
             >

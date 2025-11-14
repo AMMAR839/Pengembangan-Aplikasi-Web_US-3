@@ -1159,3 +1159,315 @@ html {
     height: 120px;
   }
 }
+
+/* ========== WALI-MURID DASHBOARD PAGE ========= */
+.dashboard-wali-page {
+  padding: 32px 72px 72px;
+  background: #e6f0f0;
+  min-height: 100vh;
+  color: #123047;
+}
+
+.dashboard-greeting {
+  margin-bottom: 32px;
+}
+
+.dashboard-greeting h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #123047;
+}
+
+.greeting-highlight {
+  color: #8fa9a9;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #123047;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Jadwal Card */
+.jadwal-card {
+  background: #f5f9f9;
+  border: 2px solid #d7e6e6;
+  border-radius: 12px;
+}
+
+.schedule-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px;
+}
+
+.schedule-row.header {
+  background: #e8f0f0;
+  font-weight: 700;
+  color: #123047;
+}
+
+.schedule-col {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  border-radius: 4px;
+  background: #f8fafa;
+}
+
+.schedule-row.header .schedule-col {
+  background: #d7e6e6;
+  font-weight: 700;
+}
+
+/* Info Card */
+.info-card {
+  background: #f5f9f9;
+  border: 2px solid #d7e6e6;
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-item {
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.info-item.attendance {
+  text-align: center;
+}
+
+.attendance-percentage {
+  font-size: 40px;
+  font-weight: 700;
+  color: #04291e;
+  margin-bottom: 8px;
+}
+
+.attendance-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #556b6b;
+  margin-bottom: 4px;
+}
+
+.info-item.announcement {
+  background: #f5f9f9;
+  border-left: 3px solid #8fa9a9;
+}
+
+.announcement-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #123047;
+  margin-bottom: 4px;
+}
+
+.announcement-date {
+  font-size: 11px;
+  color: #8fa9a9;
+}
+
+.announcement-text {
+  font-size: 12px;
+  color: #556b6b;
+  margin: 8px 0 4px 0;
+}
+
+/* Chart Card */
+.chart-card {
+  background: #f5f9f9;
+  border: 2px solid #d7e6e6;
+  padding: 16px;
+}
+
+.card-header-with-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-header-with-label .card-title {
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.chart-placeholder {
+  width: 100%;
+  height: 140px;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.chart-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chart-info {
+  width: 100%;
+  height: 120px;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.attendance-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Teachers Card */
+.teachers-card {
+  background: #f5f9f9;
+  border: 2px solid #d7e6e6;
+}
+
+.teachers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.teacher-item {
+  text-align: center;
+}
+
+.teacher-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  object-fit: cover;
+  margin: 0 auto 8px;
+  border: 3px solid #d7e6e6;
+}
+
+.teacher-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #556b6b;
+  margin: 0;
+  word-wrap: break-word;
+}
+
+/* Documentation Card */
+.documentation-card {
+  background: #f5f9f9;
+  border: 2px solid #d7e6e6;
+}
+
+.documentation-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.doc-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.doc-photo {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.doc-date {
+  font-size: 12px;
+  color: #556b6b;
+  margin: 0;
+}
+
+.documentation-link {
+  text-align: center;
+  font-size: 12px;
+  color: #8fa9a9;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f8fafa;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-wali-page {
+    padding: 24px 32px 40px;
+  }
+
+  .dashboard-grid {
+    gap: 20px;
+  }
+
+  .teachers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-wali-page {
+    padding: 20px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .schedule-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .teachers-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dashboard-greeting h1 {
+    font-size: 20px;
+  }
+}
