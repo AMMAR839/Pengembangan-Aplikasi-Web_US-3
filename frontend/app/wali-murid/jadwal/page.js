@@ -51,6 +51,9 @@ const classes = ['Senin', 'Selasa', 'Rabu'];
 export default function JadwalPage() {
   const router = useRouter();
   const [activeNav, setActiveNav] = useState('jadwal');
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   function handleLogout() {
     if (typeof window !== 'undefined') {
@@ -61,8 +64,20 @@ export default function JadwalPage() {
     router.replace('/');
   }
 
+  function handleSubmitFeedback() {
+    if (feedback.trim()) {
+      console.log('Feedback submitted:', feedback);
+      setFeedbackSubmitted(true);
+      setTimeout(() => {
+        setFeedback('');
+        setFeedbackSubmitted(false);
+        setShowFeedbackModal(false);
+      }, 2000);
+    }
+  }
+
   return (
-    <div className="umum-page">
+    <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
       {/* ========== NAVBAR ========== */}
       <header className="umum-nav">
         <div className="umum-nav-left">
@@ -166,10 +181,47 @@ export default function JadwalPage() {
 
         <div className="feedback-bar">
           Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
-          <a href="/wali-murid/feedback" style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline' }}>
+          <button 
+            onClick={() => setShowFeedbackModal(true)}
+            style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+          >
             disini
-          </a>
+          </button>
         </div>
+
+        {/* FEEDBACK MODAL */}
+        {showFeedbackModal && (
+          <div className="feedback-modal-overlay">
+            <div className="feedback-modal">
+              <button
+                className="feedback-modal-close"
+                onClick={() => setShowFeedbackModal(false)}
+                type="button"
+              >
+                ✕
+              </button>
+
+              <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
+
+              <textarea
+                className="feedback-textarea"
+                placeholder="Ketikkan saran anda disini...."
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                disabled={feedbackSubmitted}
+              />
+
+              <button
+                className={`feedback-submit-btn ${feedbackSubmitted ? 'success' : ''}`}
+                onClick={handleSubmitFeedback}
+                type="button"
+                disabled={feedbackSubmitted}
+              >
+                {feedbackSubmitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
