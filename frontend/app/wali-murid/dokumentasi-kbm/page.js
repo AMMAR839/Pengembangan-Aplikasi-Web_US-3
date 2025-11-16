@@ -88,6 +88,7 @@ export default function DokumentasiKBMPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Dashboard</span>
             </a>
 
             <a
@@ -105,6 +106,7 @@ export default function DokumentasiKBMPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Jadwal</span>
             </a>
 
             <a
@@ -122,6 +124,7 @@ export default function DokumentasiKBMPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Dokumentasi KBM</span>
             </a>
 
             <a
@@ -139,6 +142,7 @@ export default function DokumentasiKBMPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Profil Anak</span>
             </a>
           </nav>
         </div>

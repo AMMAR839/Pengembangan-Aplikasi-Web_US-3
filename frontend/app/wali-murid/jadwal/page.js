@@ -104,13 +104,14 @@ export default function JadwalPage() {
               <div className="umum-logo sidebar-logo">
                 <Image
                   src="/images/dashboard.png"
-                  alt="Little Garden Logo"
+                  alt="Dashboard"
                   width={20}
                   height={40}
                   className="umum-logo-image"
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Dashboard</span>
             </a>
 
             <a
@@ -128,6 +129,7 @@ export default function JadwalPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Jadwal</span>
             </a>
 
             <a
@@ -145,6 +147,7 @@ export default function JadwalPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Dokumentasi KBM</span>
             </a>
 
             <a
@@ -162,6 +165,7 @@ export default function JadwalPage() {
                   style={{ height: "auto" }}
                 />
               </div>
+              <span className="nav-label">Profil Anak</span>
             </a>
           </nav>
         </div>

@@ -272,6 +272,36 @@ body { margin: 0; padding: 0; }
   display: block;
 }
 
+/* Logo/icon image for sidebar */
+.umum-logo-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.nav-item .umum-logo-image {
+  max-width: 30px;
+  max-height: 30px;
+}
+
+.nav-label {
+  font-size: 14px;
+  color: #f7f7f7;
+  margin-left: 8px;
+  display: none;
+  position: absolute;
+  right: -120px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: rgba(4, 41, 30, 0.95);
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: opacity 0.2s ease;
+}
+
 .umum-nav-links {
   display: flex;
   align-items: center;
@@ -288,6 +318,17 @@ body { margin: 0; padding: 0; }
   font-size: 15px;
   cursor: pointer;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.umum-nav-links .nav-item:hover .nav-label {
+  display: block;
+}
+
+/* item aktif - keep label visible */
+.umum-nav-links .nav-item.active .nav-label {
+  display: block;
 }
 
 .umum-nav-links .nav-item::before {
