@@ -3,6 +3,9 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
+import Image from 'next/image';
+import { Montserrat_Underline } from 'next/font/google';
+
 
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
@@ -19,8 +22,8 @@ const teachersData = [
 ];
 
 const documentationData = [
-  { id: 1, date: 'Senin, 28 Agustus 2025', photo: '/kbm-photo-1.jpg' },
-  { id: 2, date: 'Jumat, 27 Agustus 2025', photo: '/kbm-photo-2.jpg' }
+  { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
+  { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
 ];
 
 export default function WaliMuridDashboard() {
@@ -54,28 +57,55 @@ export default function WaliMuridDashboard() {
 
   return (
     <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
-      {/* ========== NAVBAR ========== */}
-      <header className="umum-nav">
-        <div className="umum-nav-left">
-          <div className="umum-logo">
-            <img src="/logo-bw.png" alt="Little Garden" className="umum-logo-img" />
+      {/* ========== SIDEBAR ========== */}
+      <aside className="umum-nav sidebar-layout">
+        {/* LOGO */}
+          <div className="umum-logo sidebar-logo">
+            <Image
+              src="/images/logo.png"
+              alt="Little Garden Logo"
+              width={70}
+              height={40}
+              className="umum-logo-image"
+              style={{ height: "auto" }}
+            />
           </div>
+        <div className="umum-nav-left sidebar-content">
 
-          <nav className="umum-nav-links">
+          {/* MENU LIST */}
+          <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
               className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveNav('dashboard')}
             >
-              Dashboard
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dashboard.png"
+                  alt="Dashboard"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  data-alt="Dashboard"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
-
             <a
               href="/wali-murid/jadwal"
               className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
               onClick={() => setActiveNav('jadwal')}
             >
-              Jadwal
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/jadwal.png"
+                  alt="Jadwal"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -83,7 +113,16 @@ export default function WaliMuridDashboard() {
               className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
               onClick={() => setActiveNav('dokumentasi')}
             >
-              Dokumentasi KBM
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dokumentasikbm.png"
+                  alt="Dokumentasi KBM"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -91,25 +130,54 @@ export default function WaliMuridDashboard() {
               className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
               onClick={() => setActiveNav('profil')}
             >
-              Profil Anak
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profilanak.png"
+                  alt="Profil Anak"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
           </nav>
         </div>
 
-        <div className="umum-nav-right">
+        {/* BOTTOM ICONS */}
+        <div className="umum-nav-right sidebar-actions">
           <button className="umum-icon-btn" type="button">
-            🔔
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profil.png"
+                  alt="Profil"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
+
           <button
             className="umum-icon-btn"
             type="button"
             onClick={handleLogout}
             title="Logout"
           >
-            ⏻
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/setting.png"
+                  alt="Pengaturan"
+                  width={30}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
         </div>
-      </header>
+      </aside>
 
       {/* ========== DASHBOARD CONTENT ========== */}
       <div className="dashboard-wali-page">
@@ -157,8 +225,8 @@ export default function WaliMuridDashboard() {
             <div className="dashboard-card info-card">
               <div className="info-section">
                 <div className="info-item attendance">
-                  <div className="attendance-percentage">97%</div>
                   <p className="attendance-label">Presentase Kehadiran</p>
+                  <div className="attendance-percentage">97%</div>
                   <small>Hari selengkapnya...</small>
                 </div>
 
@@ -187,9 +255,7 @@ export default function WaliMuridDashboard() {
           <div className="dashboard-right">
             {/* Attendance Chart Card */}
             <div className="dashboard-card chart-card">
-              <div className="card-header-with-label">
                 <h2 className="card-title">Cuaca Hari Ini</h2>
-              </div>
               <div className="chart-placeholder">
                 <img src="/weather-chart.jpg" alt="Weather Chart" className="chart-image" />
               </div>
@@ -222,8 +288,8 @@ export default function WaliMuridDashboard() {
                   </div>
                 ))}
               </div>
-              <div className="documentation-link">
-                <a href="/wali-murid/dokumentasi-kbm" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <div className="documentation-link" style={{ color: '#193745', textDecoration: 'underline', fontWeight: '700'}}>
+                <a href="/wali-murid/dokumentasi-kbm">
                   Lihat selengkapnya →
                 </a>
               </div>
