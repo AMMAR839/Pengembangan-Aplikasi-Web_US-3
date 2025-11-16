@@ -1507,3 +1507,21 @@ body { margin: 0; padding: 0; }
     font-size: 20px;
   }
 }
+
+/* ===== KHUSUS HALAMAN LOGIN ===== */
+.auth-card.login-card {
+  height: auto;       /* tidak lagi fixed 92px */
+  min-height: 420px;  /* bebas sesuaikan selera */
+}
+
+.auth-card.login-card .auth-left {
+  height: auto;
+}
+
+/* kalau mau teks di kanan boleh turun ke baris baru hanya di login */
+.auth-card.login-card .auth-right {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
