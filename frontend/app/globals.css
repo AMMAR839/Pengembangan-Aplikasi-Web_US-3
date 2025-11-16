@@ -327,9 +327,9 @@ body { margin: 0; padding: 0; }
 }
 
 /* item aktif - keep label visible */
-.umum-nav-links .nav-item.active .nav-label {
-  display: block;
-}
+/* Removed: do not show tooltip solely because an item is "active".
+   Tooltips are now shown only on hover so they disappear when the cursor
+   leaves the icon even if the item remains active/pressed. */
 
 .umum-nav-links .nav-item::before {
   content: attr(data-alt);
