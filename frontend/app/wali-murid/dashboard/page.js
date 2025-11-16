@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState } from 'react';
 import Image from 'next/image';
 import { Montserrat_Underline } from 'next/font/google';
@@ -209,6 +210,15 @@ export default function WaliMuridDashboard() {
                   ))}
                 </div>
               </div>
+                <div className="jadwal-more-link" style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <Link
+                    href="/wali-murid/jadwal"
+                    className="jadwal-more"
+                    onClick={() => setActiveNav('jadwal')}
+                  >
+                    Selengkapnya →
+                  </Link>
+                </div>
             </div>
 
             {/* Attendance & Announcements Card */}
