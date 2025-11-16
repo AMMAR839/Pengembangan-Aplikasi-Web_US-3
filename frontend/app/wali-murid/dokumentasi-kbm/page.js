@@ -3,23 +3,25 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import Image from 'next/image';
+
 const documentationData = [
   {
     id: 1,
     date: 'Senin, 28 Agustus 2025',
-    photo: '/kbm-photo-1.jpg',
+    photo: 'images/dokumentasidummy1.png',
     notes: ''
   },
   {
     id: 2,
     date: 'Rabu, 23 Agustus 2025',
-    photo: '/kbm-photo-2.jpg',
+    photo: 'images/dokumentasidummy1.png',
     notes: ''
   },
   {
     id: 3,
     date: 'Selasa, 22 Agustus 2025',
-    photo: '/kbm-photo-3.jpg',
+    photo: 'mages/dokumentasidummy1.png',
     notes: ''
   }
 ];
@@ -54,21 +56,38 @@ export default function DokumentasiKBMPage() {
 
   return (
     <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
-      {/* ========== NAVBAR ========== */}
-      <header className="umum-nav">
-        <div className="umum-nav-left">
-          <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
+      {/* ========== SIDEBAR ========== */}
+      <aside className="umum-nav sidebar-layout">
+        {/* LOGO */}
+          <div className="umum-logo sidebar-logo">
+            <Image
+              src="/images/logo.png"
+              alt="Little Garden Logo"
+              width={70}
+              height={40}
+              className="umum-logo-image"
+              style={{ height: "auto" }}
+            />
           </div>
+        <div className="umum-nav-left sidebar-content">
 
-          <nav className="umum-nav-links">
+          {/* MENU LIST */}
+          <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
               className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveNav('dashboard')}
             >
-              Dashboard
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dashboard.png"
+                  alt="Little Garden Logo"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -76,7 +95,16 @@ export default function DokumentasiKBMPage() {
               className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
               onClick={() => setActiveNav('jadwal')}
             >
-              Jadwal
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/jadwal.png"
+                  alt="Jadwal"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -84,7 +112,16 @@ export default function DokumentasiKBMPage() {
               className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
               onClick={() => setActiveNav('dokumentasi')}
             >
-              Dokumentasi KBM
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dokumentasikbm.png"
+                  alt="Dokumentasi KBM"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -92,74 +129,103 @@ export default function DokumentasiKBMPage() {
               className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
               onClick={() => setActiveNav('profil')}
             >
-              Profil Anak
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profilanak.png"
+                  alt="Profil Anak"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
           </nav>
         </div>
 
-        <div className="umum-nav-right">
+        {/* BOTTOM ICONS */}
+        <div className="umum-nav-right sidebar-actions">
           <button className="umum-icon-btn" type="button">
-            🔔
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profil.png"
+                  alt="Profil"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
+
           <button
             className="umum-icon-btn"
             type="button"
             onClick={handleLogout}
             title="Logout"
           >
-            ⏻
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/setting.png"
+                  alt="Pengaturan"
+                  width={30}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
         </div>
-      </header>
+      </aside>
 
       {/* ========== DOKUMENTASI KBM ========== */}
-      <div className="dokumentasi-page">
+      <div className="wali-sub-page">
         <div className="dokumentasi-header">
-          <h1 className="dokumentasi-title">Dokumentasi KBM</h1>
+          <h1 className="wali-sub-page-title">Dokumentasi KBM</h1>
         </div>
 
         <div className="dokumentasi-container">
           <div className="dokumentasi-grid">
-            {/* Kolom Tanggal */}
-            <div className="dokumentasi-column">
-              <div className="dokumentasi-column-header">Tanggal</div>
-              <div className="dokumentasi-column-content">
-                {documentationData.map((item) => (
-                  <div key={item.id} className="dokumentasi-date-card">
-                    {item.date}
-                  </div>
-                ))}
+              {/* Kolom Tanggal */}
+              <div className="dokumentasi-column">
+                <div className="dokumentasi-column-header">Tanggal</div>
+                <div className="dokumentasi-column-content">
+                  {documentationData.map((item) => (
+                    <div key={item.id} className="dokumentasi-date-card">
+                      {item.date}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Kolom Foto Kegiatan */}
-            <div className="dokumentasi-column">
-              <div className="dokumentasi-column-header">Foto Kegiatan</div>
-              <div className="dokumentasi-column-content">
-                {documentationData.map((item) => (
-                  <div key={item.id} className="dokumentasi-photo-card">
-                    <img
-                      src={item.photo}
-                      alt={`Dokumentasi ${item.date}`}
-                      className="dokumentasi-photo"
-                    />
-                  </div>
-                ))}
-                <div className="dokumentasi-pagination">•••••</div>
+              {/* Kolom Foto Kegiatan */}
+              <div className="dokumentasi-column">
+                <div className="dokumentasi-column-header">Foto Kegiatan</div>
+                <div className="dokumentasi-column-content">
+                  {documentationData.map((item) => (
+                    <div key={item.id} className="dokumentasi-photo-card">
+                      <img
+                        src={item.photo}
+                        alt={`Dokumentasi ${item.date}`}
+                        className="dokumentasi-photo"
+                      />
+                    </div>
+                  ))}
+                  <div className="dokumentasi-pagination">•••••</div>
+                </div>
               </div>
-            </div>
 
-            {/* Kolom Catatan */}
-            <div className="dokumentasi-column">
-              <div className="dokumentasi-column-header">Catatan</div>
-              <div className="dokumentasi-column-content">
-                {documentationData.map((item) => (
-                  <div key={item.id} className="dokumentasi-notes-card">
-                    {item.notes || '-'}
-                  </div>
-                ))}
+              {/* Kolom Catatan */}
+              <div className="dokumentasi-column">
+                <div className="dokumentasi-column-header">Catatan</div>
+                <div className="dokumentasi-column-content">
+                  {documentationData.map((item) => (
+                    <div key={item.id} className="dokumentasi-notes-card">
+                      {item.notes || '-'}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
           </div>
         </div>
 
@@ -210,3 +276,4 @@ export default function DokumentasiKBMPage() {
     </div>
   );
 }
+

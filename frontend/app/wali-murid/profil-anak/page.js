@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 
 const childrenData = [
   {
@@ -56,21 +57,38 @@ export default function ProfilAnakPage() {
 
   return (
     <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
-      {/* ========== NAVBAR ========== */}
-      <header className="umum-nav">
-        <div className="umum-nav-left">
-          <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
+      {/* ========== SIDEBAR ========== */}
+      <aside className="umum-nav sidebar-layout">
+        {/* LOGO */}
+          <div className="umum-logo sidebar-logo">
+            <Image
+              src="/images/logo.png"
+              alt="Little Garden Logo"
+              width={70}
+              height={40}
+              className="umum-logo-image"
+              style={{ height: "auto" }}
+            />
           </div>
+        <div className="umum-nav-left sidebar-content">
 
-          <nav className="umum-nav-links">
+          {/* MENU LIST */}
+          <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
               className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveNav('dashboard')}
             >
-              Dashboard
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dashboard.png"
+                  alt="Little Garden Logo"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -78,7 +96,16 @@ export default function ProfilAnakPage() {
               className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
               onClick={() => setActiveNav('jadwal')}
             >
-              Jadwal
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/jadwal.png"
+                  alt="Jadwal"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -86,7 +113,16 @@ export default function ProfilAnakPage() {
               className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
               onClick={() => setActiveNav('dokumentasi')}
             >
-              Dokumentasi KBM
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dokumentasikbm.png"
+                  alt="Dokumentasi KBM"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
 
             <a
@@ -94,30 +130,59 @@ export default function ProfilAnakPage() {
               className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
               onClick={() => setActiveNav('profil')}
             >
-              Profil Anak
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profilanak.png"
+                  alt="Profil Anak"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
             </a>
           </nav>
         </div>
 
-        <div className="umum-nav-right">
+        {/* BOTTOM ICONS */}
+        <div className="umum-nav-right sidebar-actions">
           <button className="umum-icon-btn" type="button">
-            🔔
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profil.png"
+                  alt="Profil"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
+
           <button
             className="umum-icon-btn"
             type="button"
             onClick={handleLogout}
             title="Logout"
           >
-            ⏻
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/setting.png"
+                  alt="Pengaturan"
+                  width={30}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
         </div>
-      </header>
+      </aside>
 
       {/* ========== PROFIL ANAK ========== */}
-      <div className="profil-page">
+      <div className="wali-sub-page">
         <div className="profil-header">
-          <h1 className="profil-title">Profil Anak</h1>
+          <h1 className="wali-sub-page-title">Profil Anak</h1>
         </div>
 
         <div className="profil-container">
