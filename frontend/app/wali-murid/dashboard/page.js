@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState } from 'react';
 
 const scheduleData = [
@@ -57,8 +58,7 @@ export default function WaliMuridDashboard() {
       <header className="umum-nav">
         <div className="umum-nav-left">
           <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
+            <img src="/logo-bw.png" alt="Little Garden" className="umum-logo-img" />
           </div>
 
           <nav className="umum-nav-links">
@@ -142,6 +142,15 @@ export default function WaliMuridDashboard() {
                   ))}
                 </div>
               </div>
+                <div className="jadwal-more-link" style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <Link
+                    href="/wali-murid/jadwal"
+                    className="jadwal-more"
+                    onClick={() => setActiveNav('jadwal')}
+                  >
+                    Selengkapnya →
+                  </Link>
+                </div>
             </div>
 
             {/* Attendance & Announcements Card */}

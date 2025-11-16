@@ -60,8 +60,7 @@ export default function ProfilAnakPage() {
       <header className="umum-nav">
         <div className="umum-nav-left">
           <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
+            <img src="/logo-bw.png" alt="Little Garden" className="umum-logo-img" />
           </div>
 
           <nav className="umum-nav-links">
