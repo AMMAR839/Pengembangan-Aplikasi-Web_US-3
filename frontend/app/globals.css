@@ -775,7 +775,7 @@ body { margin: 0; padding: 0; }
   display: flex;
   flex-direction: column;
   gap: 32px;
-  margin-top: 200px;
+  margin-top: 20px;
 }
 
 /* LOGO */
@@ -945,13 +945,13 @@ body { margin: 0; padding: 0; }
 }
 
 .weather-item {
-  padding: 20px;
+  padding: 24px 20px;
   border-radius: 12px;
   background: #fffffc;
   text-align: center;
   font-size: 14px;
   width: 160px;
-  height: 200px;
+  height: 240px;
   display: flex;
   flex-direction: column;
   align-items: center;

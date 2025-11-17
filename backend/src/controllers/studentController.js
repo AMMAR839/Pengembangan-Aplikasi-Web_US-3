@@ -151,3 +151,61 @@ exports.updateStudentById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Admin: list semua siswa
+exports.listAllStudents = async (req, res) => {
+  try {
+    const { status, kelas, search } = req.query;
+    const filter = {};
+
+    if (status) filter.status = status; // pending | active | rejected
+    if (kelas) filter.kelas = kelas;     // A | B
+    if (search) {
+      filter.$or = [
+        { nama: { $regex: search, $options: 'i' } },
+        { nik: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const items = await Student.find(filter)
+      .populate('parentUserId', 'username email')
+      .select('nik nama status kelas tanggalLahir parentUserId paymentStatus photoUrl createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Admin/Parent: update siswa status (active/rejected/pending)
+exports.updateStudentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, kelas } = req.body;
+
+    if (!status && !kelas) {
+      return res.status(400).json({ message: 'status atau kelas harus diisi' });
+    }
+
+    const updates = {};
+    if (status && ['pending', 'active', 'rejected'].includes(status)) {
+      updates.status = status;
+    }
+    if (kelas && ['A', 'B', null].includes(kelas)) {
+      updates.kelas = kelas;
+    }
+
+    const updated = await Student.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Siswa tidak ditemukan' });
+
+    res.json({ message: 'Status siswa diupdate', student: updated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

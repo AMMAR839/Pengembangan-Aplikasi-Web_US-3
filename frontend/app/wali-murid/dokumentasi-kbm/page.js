@@ -1,31 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Image from 'next/image';
 import { NotificationList } from '@/app/components/NotificationList';
 
-const documentationData = [
-  {
-    id: 1,
-    date: 'Senin, 28 Agustus 2025',
-    photo: 'images/dokumentasidummy1.png',
-    notes: ''
-  },
-  {
-    id: 2,
-    date: 'Rabu, 23 Agustus 2025',
-    photo: 'images/dokumentasidummy1.png',
-    notes: ''
-  },
-  {
-    id: 3,
-    date: 'Selasa, 22 Agustus 2025',
-    photo: 'mages/dokumentasidummy1.png',
-    notes: ''
-  }
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function DokumentasiKBMPage() {
   const router = useRouter();
@@ -33,6 +14,65 @@ export default function DokumentasiKBMPage() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [documentationData, setDocumentationData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchDocumentation();
+  }, []);
+
+  async function fetchDocumentation() {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+      const res = await fetch(`${API_URL}/gallery`, {
+        method: 'GET',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Map gallery data to documentation format
+        const formatted = data.map((doc) => ({
+          id: doc._id,
+          date: new Date(doc.postedAt || doc.createdAt).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          photo: doc.imageUrl || 'images/dokumentasidummy1.png',
+          notes: doc.caption || ''
+        }));
+        setDocumentationData(formatted);
+      } else {
+        throw new Error('Failed to fetch documentation');
+      }
+    } catch (err) {
+      console.error('Error fetching documentation:', err);
+      setError('Tidak dapat memuat dokumentasi');
+      // Use default data if API fails
+      setDocumentationData([
+        {
+          id: 1,
+          date: 'Senin, 28 Agustus 2025',
+          photo: 'images/dokumentasidummy1.png',
+          notes: ''
+        },
+        {
+          id: 2,
+          date: 'Rabu, 23 Agustus 2025',
+          photo: 'images/dokumentasidummy1.png',
+          notes: ''
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function handleLogout() {
     if (typeof window !== 'undefined') {
@@ -45,13 +85,40 @@ export default function DokumentasiKBMPage() {
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      console.log('Feedback submitted:', feedback);
+      submitFeedbackToAPI(feedback);
+    }
+  }
+
+  async function submitFeedbackToAPI(feedbackText) {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        console.error('No token found');
+        setFeedbackSubmitted(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ feedback: feedbackText })
+      });
+
+      if (!res.ok) throw new Error('Gagal mengirim feedback');
+
       setFeedbackSubmitted(true);
       setTimeout(() => {
         setFeedback('');
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
+    } catch (err) {
+      console.error('Feedback API error:', err);
+      setFeedback('');
+      setShowFeedbackModal(false);
     }
   }
 
@@ -179,8 +246,16 @@ export default function DokumentasiKBMPage() {
           <h1 className="wali-sub-page-title">Dokumentasi KBM</h1>
         </div>
 
-        <div className="dokumentasi-container">
-          <div className="dokumentasi-grid">
+        {loading && <p style={{ textAlign: 'center', padding: '20px' }}>Memuat dokumentasi...</p>}
+        {error && <p style={{ textAlign: 'center', color: '#e74c3c', padding: '20px' }}>{error}</p>}
+
+        {!loading && documentationData.length === 0 && (
+          <p style={{ textAlign: 'center', padding: '20px' }}>Belum ada dokumentasi tersedia</p>
+        )}
+
+        {!loading && documentationData.length > 0 && (
+          <div className="dokumentasi-container">
+            <div className="dokumentasi-grid">
               {/* Kolom Tanggal */}
               <div className="dokumentasi-column">
                 <div className="dokumentasi-column-header">Tanggal</div>
@@ -221,8 +296,9 @@ export default function DokumentasiKBMPage() {
                   ))}
                 </div>
               </div>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="feedback-bar">
           Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan

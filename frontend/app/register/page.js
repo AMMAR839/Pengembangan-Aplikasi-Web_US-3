@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./Register.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/register`, {
+      const res = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, username, password }),

@@ -1,14 +1,27 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NotificationList } from '@/app/components/NotificationList';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function FeedbackPage() {
   const router = useRouter();
   const [activeNav, setActiveNav] = useState('jadwal');
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.replace('/');
+      }
+    }
+  }, [router]);
 
   function handleLogout() {
     if (typeof window !== 'undefined') {
@@ -19,17 +32,49 @@ export default function FeedbackPage() {
     router.replace('/');
   }
 
-  function handleSubmitFeedback() {
-    if (feedback.trim()) {
-      // Handle feedback submission here (send to backend)
-      console.log('Feedback submitted:', feedback);
+  async function handleSubmitFeedback() {
+    if (!feedback.trim()) {
+      setError('Masukan tidak boleh kosong');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+      if (!token) {
+        setError('Anda harus login untuk mengirim feedback');
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ feedback: feedback.trim() })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Gagal mengirim feedback');
+      }
+
       setSubmitted(true);
-      
-      // Reset form after 2 seconds
       setTimeout(() => {
         setFeedback('');
         setSubmitted(false);
+        router.back();
       }, 2000);
+    } catch (err) {
+      console.error('Feedback submission error:', err);
+      setError(err.message || 'Terjadi kesalahan saat mengirim feedback');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -113,21 +158,24 @@ export default function FeedbackPage() {
 
           <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
 
+          {error && <div style={{ color: '#e74c3c', marginBottom: '12px', fontSize: '14px' }}>{error}</div>}
+          {submitted && <div style={{ color: '#2ecc71', marginBottom: '12px', fontSize: '14px' }}>✓ Feedback terkirim!</div>}
+
           <textarea
             className="feedback-textarea"
             placeholder="Ketikkan saran anda disini...."
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            disabled={submitted}
+            disabled={submitted || loading}
           />
 
           <button
             className={`feedback-submit-btn ${submitted ? 'success' : ''}`}
             onClick={handleSubmitFeedback}
             type="button"
-            disabled={submitted}
+            disabled={submitted || loading}
           >
-            {submitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
+            {loading ? 'Mengirim...' : submitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
           </button>
         </div>
       </div>
