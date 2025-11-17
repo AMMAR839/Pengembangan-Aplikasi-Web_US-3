@@ -775,7 +775,7 @@ body { margin: 0; padding: 0; }
   display: flex;
   flex-direction: column;
   gap: 32px;
-  margin-top: 200px;
+  margin-top: 20px;
 }
 
 /* LOGO */

@@ -522,7 +522,7 @@ export default function AdminDashboardNew() {
             >
               <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/jadwal.png"
+                  src="/images/alarm.png"
                   alt="Notifikasi"
                   width={20}
                   height={40}
@@ -585,7 +585,7 @@ export default function AdminDashboardNew() {
             >
               <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/dashboard.png"
+                  src="/images/checklist.png"
                   alt="Manajemen Siswa"
                   width={20}
                   height={40}
@@ -606,8 +606,8 @@ export default function AdminDashboardNew() {
             >
               <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/dashboard.png"
-                  alt="Ulasan Feedback"
+                  src="/images/circular-arrows.png"
+                  alt="Feedback"
                   width={20}
                   height={40}
                   className="umum-logo-image"
