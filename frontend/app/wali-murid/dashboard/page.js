@@ -360,7 +360,7 @@ useEffect(() => {
                       <div key={idx} className="weather-item">
                         <p><strong>{hari.tanggal}</strong></p>
                         <div className='weather-icon-wrapper'>
-                          <img src={`https:${hari.icon}`} alt="icon cuaca" onError={(e) => e.target.src = '/weather-default.png'} />
+                          <img src={hari.icon} alt="icon cuaca" onError={(e) => e.target.textContent = '⛅'} />
                         </div>
                         <p>{hari.kota}</p>
                         <p>{hari.kondisi}</p>
