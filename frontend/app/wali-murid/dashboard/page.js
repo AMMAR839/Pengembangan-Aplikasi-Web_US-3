@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { formatTanggalSmart } from '@/utils/date';
 import { NotificationList } from '@/app/components/NotificationList';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
@@ -34,13 +33,25 @@ export default function WaliMuridDashboard() {
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
 
   useEffect(() => {
-    fetchDocumentation();
+    if (typeof window !== 'undefined') {
+      fetchDocumentation();
+    }
   }, []);
 
   const fetchDocumentation = async () => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        setDocumentationData([
+          { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
+          { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
+        ]);
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch(`${API_URL}/gallery`, {
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -52,6 +63,8 @@ export default function WaliMuridDashboard() {
           photo: doc.imageUrl || 'images/dokumentasidummy1.png'
         }));
         setDocumentationData(formatted.slice(0, 2));
+      } else {
+        throw new Error('Failed to fetch documentation');
       }
     } catch (err) {
       console.error('Error fetching documentation:', err);
@@ -90,15 +103,21 @@ const [weather, setWeather] = useState(null);
 const [loadingWeather, setLoadingWeather] = useState(true);
 const [errorWeather, setErrorWeather] = useState(null);
 
+
 useEffect(() => {
+  if (typeof window === 'undefined') return;
+
   async function fetchWeather() {
     try {
-      const res = await fetch("http://localhost:5000/api/weather");
+      const res = await fetch(`${API_URL}/weather`, {
+        method: 'GET'
+      });
       if (!res.ok) throw new Error("Gagal mengambil data cuaca");
 
       const data = await res.json();
       setWeather(data);
     } catch (err) {
+      console.error('Weather fetch error:', err);
       setErrorWeather(err.message);
     } finally {
       setLoadingWeather(false);
