@@ -18,9 +18,9 @@ const scheduleData = [
 ];
 
 const teachersData = [
-  { id: 1, name: 'Ibu Cantika S.Pd.', photo: '/teacher-1.jpg' },
-  { id: 2, name: 'Ibu Cantika S.Pd.', photo: '/teacher-2.jpg' },
-  { id: 3, name: 'Ibu Cantika S.Pd.', photo: '/teacher-3.jpg' }
+  { id: 1, name: 'Dr. Bimo Sunarfri Hantono, S.T., M.Eng.', photo: '/teacher-1.jpg' },
+  { id: 2, name: 'Benaya Imanuela', photo: '/teacher-2.jpg' },
+  { id: 3, name: 'Petrus Aria Chevalier Rambing', photo: '/teacher-3.jpg' }
 ];
 
 export default function WaliMuridDashboard() {
