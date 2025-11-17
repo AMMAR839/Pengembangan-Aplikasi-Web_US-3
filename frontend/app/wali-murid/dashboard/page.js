@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { formatTanggalSmart } from '@/utils/date';
 import { NotificationList } from '@/app/components/NotificationList';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
