@@ -28,11 +28,11 @@ export default function JadwalPage() {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       
-      // Fetch schedule for class A (default) for each day
+      // Fetch schedule for each day
       const allSlots = [];
       for (const day of classes) {
         const dayNum = dayMap[day];
-        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
+        const res = await fetch(`${API_URL}/activities/jadwal?day=${dayNum}`, {
           headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
           }

@@ -87,11 +87,10 @@ export default function AdminDashboardNew() {
   const [docFile, setDocFile] = useState(null);
   const [loadingDoc, setLoadingDoc] = useState(false);
   
-  // Announcement states
-  const [announcements, setAnnouncements] = useState([]);
-  const [announcementTitle, setAnnouncementTitle] = useState('');
-  const [announcementBody, setAnnouncementBody] = useState('');
-  const [loadingAnnounce, setLoadingAnnounce] = useState(false);
+  // Schedule management states
+  const [scheduleDay, setScheduleDay] = useState('1');
+  const [scheduleSlots, setScheduleSlots] = useState([{ start: '', end: '', title: '', note: '' }]);
+  const [allSchedules, setAllSchedules] = useState([]);
   
   // Attendance states
   const [attendances, setAttendances] = useState([]);
@@ -113,9 +112,8 @@ export default function AdminDashboardNew() {
     if (typeof window === 'undefined' || !token) return;
     
     fetchNotifications();
-    fetchSchedules();
+    fetchAllSchedules();
     fetchDocumentation();
-    fetchAnnouncements();
     fetchAttendance();
   }, [token]);
 
@@ -279,41 +277,70 @@ export default function AdminDashboardNew() {
     }
   };
 
-  const handleCreateAnnouncement = async () => {
-    if (!announcementTitle || !announcementBody) {
-      alert('Judul dan isi pengumuman wajib diisi');
+  const fetchAllSchedules = async () => {
+    try {
+      const res = await fetch(`${API_URL}/activities`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllSchedules(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Error fetching all schedules:', err);
+      setAllSchedules([]);
+    }
+  };
+
+  const handleAddSlot = () => {
+    setScheduleSlots([...scheduleSlots, { start: '', end: '', title: '', note: '' }]);
+  };
+
+  const handleRemoveSlot = (idx) => {
+    setScheduleSlots(scheduleSlots.filter((_, i) => i !== idx));
+  };
+
+  const handleSlotChange = (idx, field, value) => {
+    const updated = [...scheduleSlots];
+    updated[idx][field] = value;
+    setScheduleSlots(updated);
+  };
+
+  const handleSaveSchedule = async () => {
+    if (scheduleSlots.some(s => !s.start || !s.end || !s.title)) {
+      alert('Semua field wajib diisi (start, end, title)');
       return;
     }
 
-    setLoadingAnnounce(true);
+    setLoadingSchedule(true);
     try {
-      const res = await fetch(`${API_URL}/notification`, {
+      const res = await fetch(`${API_URL}/activities/jadwal`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: announcementTitle,
-          body: announcementBody,
-          audience: 'all'
+          dayOfWeek: parseInt(scheduleDay),
+          slots: scheduleSlots
         }),
         signal: AbortSignal.timeout(10000)
       });
 
       if (res.ok) {
-        alert('Pengumuman berhasil ditambahkan!');
-        setAnnouncementTitle('');
-        setAnnouncementBody('');
-        fetchAnnouncements();
+        alert('Jadwal berhasil disimpan! Wali-murid akan melihat perubahan secara real-time.');
+        setScheduleSlots([{ start: '', end: '', title: '', note: '' }]);
+        fetchAllSchedules();
       } else {
-        alert('Gagal membuat pengumuman');
+        const error = await res.json();
+        alert('Gagal menyimpan jadwal: ' + error.message);
       }
     } catch (err) {
-      console.error('Error creating announcement:', err);
+      console.error('Error saving schedule:', err);
       alert('Terjadi kesalahan: ' + err.message);
     } finally {
-      setLoadingAnnounce(false);
+      setLoadingSchedule(false);
     }
   };
 
@@ -431,21 +458,21 @@ export default function AdminDashboardNew() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                setActiveTab('announcements');
+                setActiveTab('editjadwal');
               }}
-              className={`nav-item ${activeTab === 'announcements' ? 'active' : ''}`}
+              className={`nav-item ${activeTab === 'editjadwal' ? 'active' : ''}`}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/dokumentasikbm.png"
-                  alt="Pengumuman"
+                  src="/images/jadwal.png"
+                  alt="Edit Jadwal"
                   width={20}
                   height={40}
                   className="umum-logo-image"
                   style={{ height: "auto" }}
                 />
               </div>
-              <span className="nav-label">Pengumuman</span>
+              <span className="nav-label">Edit Jadwal</span>
             </a>
 
             <a
@@ -787,11 +814,11 @@ export default function AdminDashboardNew() {
           </div>
         )}
 
-        {/* TAB: Announcements */}
-        {activeTab === 'announcements' && (
+        {/* TAB: Edit Jadwal */}
+        {activeTab === 'editjadwal' && (
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
-              Kelola Pengumuman
+              Kelola Jadwal Pembelajaran
             </h2>
             <div style={{
               background: '#ffffff',
@@ -801,63 +828,182 @@ export default function AdminDashboardNew() {
               marginBottom: '24px'
             }}>
               <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-                Tambah Pengumuman Baru
+                Edit Jadwal Kelas
               </h3>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
-                  Judul Pengumuman
-                </label>
-                <input
-                  type="text"
-                  value={announcementTitle}
-                  onChange={(e) => setAnnouncementTitle(e.target.value)}
-                  placeholder="Masukkan judul pengumuman"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
+              
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
-                  Isi Pengumuman
-                </label>
-                <textarea
-                  value={announcementBody}
-                  onChange={(e) => setAnnouncementBody(e.target.value)}
-                  placeholder="Masukkan isi pengumuman"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box',
-                    minHeight: '100px',
-                    fontFamily: 'inherit'
-                  }}
-                />
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
+                    Hari
+                  </label>
+                  <select
+                    value={scheduleDay}
+                    onChange={(e) => setScheduleDay(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="1">Senin</option>
+                    <option value="2">Selasa</option>
+                    <option value="3">Rabu</option>
+                    <option value="4">Kamis</option>
+                    <option value="5">Jumat</option>
+                  </select>
+                </div>
               </div>
-              <button
-                onClick={handleCreateAnnouncement}
-                disabled={loadingAnnounce}
-                style={{
-                  padding: '10px 20px',
-                  background: loadingAnnounce ? '#ccc' : '#10b981',
-                  color: 'white',
-                  border: 'none',
+
+              <div style={{ marginBottom: '16px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Slot Kegiatan</h4>
+                <div style={{ 
+                  maxHeight: '400px', 
+                  overflowY: 'auto',
+                  border: '1px solid #e0e0e0',
                   borderRadius: '8px',
-                  cursor: loadingAnnounce ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                {loadingAnnounce ? 'Menyimpan...' : 'Tambah Pengumuman'}
-              </button>
+                  padding: '12px'
+                }}>
+                  {scheduleSlots.map((slot, idx) => (
+                    <div key={idx} style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr 2fr 2fr auto',
+                      gap: '8px',
+                      marginBottom: '12px',
+                      padding: '12px',
+                      background: '#f9f9f9',
+                      borderRadius: '6px',
+                      alignItems: 'end'
+                    }}>
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '500', display: 'block', marginBottom: '4px' }}>
+                          Mulai
+                        </label>
+                        <input
+                          type="time"
+                          value={slot.start}
+                          onChange={(e) => handleSlotChange(idx, 'start', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '500', display: 'block', marginBottom: '4px' }}>
+                          Selesai
+                        </label>
+                        <input
+                          type="time"
+                          value={slot.end}
+                          onChange={(e) => handleSlotChange(idx, 'end', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '500', display: 'block', marginBottom: '4px' }}>
+                          Kegiatan
+                        </label>
+                        <input
+                          type="text"
+                          value={slot.title}
+                          onChange={(e) => handleSlotChange(idx, 'title', e.target.value)}
+                          placeholder="Nama kegiatan"
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '500', display: 'block', marginBottom: '4px' }}>
+                          Catatan
+                        </label>
+                        <input
+                          type="text"
+                          value={slot.note}
+                          onChange={(e) => handleSlotChange(idx, 'note', e.target.value)}
+                          placeholder="Catatan tambahan"
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleRemoveSlot(idx)}
+                        style={{
+                          padding: '6px 10px',
+                          background: '#ff6b6b',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                <button
+                  onClick={handleAddSlot}
+                  style={{
+                    padding: '10px 16px',
+                    background: '#e8f5e9',
+                    color: '#2e7d32',
+                    border: '1px solid #2e7d32',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  + Tambah Slot
+                </button>
+                <button
+                  onClick={handleSaveSchedule}
+                  disabled={loadingSchedule}
+                  style={{
+                    flex: 1,
+                    padding: '10px 20px',
+                    background: loadingSchedule ? '#ccc' : '#04291e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: loadingSchedule ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  {loadingSchedule ? 'Menyimpan...' : '✓ Simpan Jadwal'}
+                </button>
+              </div>
             </div>
 
             <div style={{
@@ -867,20 +1013,34 @@ export default function AdminDashboardNew() {
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
             }}>
               <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-                Daftar Pengumuman
+                Daftar Jadwal Tersimpan
               </h3>
-              {announcements.length === 0 ? (
-                <p style={{ color: '#666', fontSize: '14px' }}>Belum ada pengumuman</p>
+              {allSchedules.length === 0 ? (
+                <p style={{ color: '#666', fontSize: '14px' }}>Belum ada jadwal tersimpan</p>
               ) : (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {announcements.map((ann) => (
-                    <div key={ann._id} style={{
-                      padding: '12px',
-                      borderBottom: '1px solid #eee',
-                      fontSize: '14px'
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                  gap: '16px'
+                }}>
+                  {allSchedules.map((sched) => (
+                    <div key={sched._id} style={{
+                      background: '#f5f5f5',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #04291e'
                     }}>
-                      <div style={{ fontWeight: '600', color: '#123047' }}>{ann.title}</div>
-                      <div style={{ color: '#666', fontSize: '13px', marginTop: '4px' }}>{ann.body}</div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#123047', marginBottom: '8px' }}>
+                        {['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'][sched.dayOfWeek]}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        Jumlah slot: {sched.slots?.length || 0}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#999', marginTop: '8px' }}>
+                        {sched.slots?.map((s, i) => (
+                          <div key={i}>{s.start} - {s.end}: {s.title}</div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
