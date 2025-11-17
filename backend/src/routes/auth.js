@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
-const { register, login } = require('../controllers/authController');
+const { register, login, verifyEmail } = require('../controllers/authController');
 
 // Register & login biasa
 router.post('/register', register);
@@ -29,6 +29,8 @@ router.get(
     state: 'register',
   })
 );
+
+router.get('/verify-email', verifyEmail);
 
 // Callback dari Google (dipanggil oleh Google, bukan frontend)
 router.get(
