@@ -1,55 +1,97 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import Image from 'next/image';
-import { NotificationList } from '@/app/components/NotificationList';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
-const childrenData = [
-  {
-    id: 1,
-    nama: 'Ahmad Rizki',
-    tanggalLahir: '15 Januari 2021',
-    alamat: 'Jl. Merdeka No. 45, Jakarta',
-    golonganDarah: 'O+',
-    jenisKelamin: 'Laki-laki',
-    agama: 'Islam',
-    status: 'Aktif'
-  },
-  {
-    id: 2,
-    nama: 'Siti Nurhaliza',
-    tanggalLahir: '22 Maret 2021',
-    alamat: 'Jl. Gatot Subroto No. 12, Jakarta',
-    golonganDarah: 'A-',
-    jenisKelamin: 'Perempuan',
-    agama: 'Islam',
-    status: 'Aktif'
-  }
-];
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ProfilAnakPage() {
   const router = useRouter();
-  const [activeNav, setActiveNav] = useState('profil');
+
+  const [activeNav, setActiveNav] = useState("profil");
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [feedback, setFeedback] = useState('');
+  const [feedback, setFeedback] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  function handleLogout() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      localStorage.removeItem('role');
+  const [children, setChildren] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Ambil data anak dari backend
+  useEffect(() => {
+    async function fetchChildren() {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token")
+            : null;
+        const role =
+          typeof window !== "undefined"
+            ? localStorage.getItem("role")
+            : null;
+
+        // Belum login → lempar ke login
+        if (!token) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              "redirectAfterLogin",
+              "/wali-murid/profil-anak"
+            );
+          }
+          router.replace("/");
+          return;
+        }
+
+        // Optional: batasi hanya parent/admin
+        if (role !== "parent" && role !== "admin") {
+          setError("Halaman ini hanya untuk wali murid / admin.");
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/api/student/my?showNik=1`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.message || "Gagal memuat data anak.");
+          setChildren([]);
+        } else {
+          setChildren(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Terjadi kesalahan saat memuat data anak.");
+      } finally {
+        setLoading(false);
+      }
     }
-    router.replace('/');
+
+    fetchChildren();
+  }, [router]);
+
+  function handleLogout() {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      localStorage.removeItem("role");
+    }
+    router.replace("/");
   }
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      console.log('Feedback submitted:', feedback);
+      console.log("Feedback submitted:", feedback);
       setFeedbackSubmitted(true);
       setTimeout(() => {
-        setFeedback('');
+        setFeedback("");
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
@@ -57,36 +99,34 @@ export default function ProfilAnakPage() {
   }
 
   return (
-    <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
-      {/* Notification Bell */}
-      <NotificationList />
-
+    <div className={`umum-page ${showFeedbackModal ? "blur-bg" : ""}`}>
       {/* ========== SIDEBAR ========== */}
       <aside className="umum-nav sidebar-layout">
         {/* LOGO */}
-          <div className="umum-logo sidebar-logo">
-            <Image
-              src="/images/logo.png"
-              alt="Little Garden Logo"
-              width={70}
-              height={40}
-              className="umum-logo-image"
-              style={{ height: "auto" }}
-            />
-          </div>
-        <div className="umum-nav-left sidebar-content">
+        <div className="umum-logo sidebar-logo">
+          <Image
+            src="/images/logo.png"
+            alt="Little Garden Logo"
+            width={70}
+            height={40}
+            className="umum-logo-image"
+            style={{ height: "auto" }}
+          />
+        </div>
 
-          {/* MENU LIST */}
+        <div className="umum-nav-left sidebar-content">
           <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
-              className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveNav('dashboard')}
+              className={`nav-item ${
+                activeNav === "dashboard" ? "active" : ""
+              }`}
+              onClick={() => setActiveNav("dashboard")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
                   src="/images/dashboard.png"
-                  alt="Little Garden Logo"
+                  alt="Dashboard"
                   width={20}
                   height={40}
                   className="umum-logo-image"
@@ -98,8 +138,10 @@ export default function ProfilAnakPage() {
 
             <a
               href="/wali-murid/jadwal"
-              className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
-              onClick={() => setActiveNav('jadwal')}
+              className={`nav-item ${
+                activeNav === "jadwal" ? "active" : ""
+              }`}
+              onClick={() => setActiveNav("jadwal")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
@@ -116,8 +158,10 @@ export default function ProfilAnakPage() {
 
             <a
               href="/wali-murid/dokumentasi-kbm"
-              className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
-              onClick={() => setActiveNav('dokumentasi')}
+              className={`nav-item ${
+                activeNav === "dokumentasi" ? "active" : ""
+              }`}
+              onClick={() => setActiveNav("dokumentasi")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
@@ -134,8 +178,10 @@ export default function ProfilAnakPage() {
 
             <a
               href="/wali-murid/profil-anak"
-              className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
-              onClick={() => setActiveNav('profil')}
+              className={`nav-item ${
+                activeNav === "profil" ? "active" : ""
+              }`}
+              onClick={() => setActiveNav("profil")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
@@ -154,6 +200,8 @@ export default function ProfilAnakPage() {
 
         {/* BOTTOM ICONS */}
         <div className="umum-nav-right sidebar-actions">
+          
+
           <button
             className="umum-icon-btn"
             type="button"
@@ -161,91 +209,166 @@ export default function ProfilAnakPage() {
             title="Logout"
           >
             <div className="umum-logo sidebar-logo">
-                <Image
-                  src="/images/logout.png"
-                  alt="Logout"
-                  width={30}
-                  height={40}
-                  className="umum-logo-image"
-                  style={{ height: "auto" }}
-                />
-              </div>
+              <Image
+                src="/images/profil.png"
+                alt="Profil"
+                width={30}
+                height={40}
+                className="umum-logo-image"
+                style={{ height: "auto" }}
+              />
+            </div>
           </button>
         </div>
       </aside>
 
-      {/* ========== PROFIL ANAK ========== */}
+      {/* ========== KONTEN PROFIL ANAK ========== */}
       <div className="wali-sub-page">
         <div className="profil-header">
           <h1 className="wali-sub-page-title">Profil Anak</h1>
         </div>
 
-        <div className="profil-container">
-          {childrenData.map((child) => (
-            <div key={child.id} className="profil-card">
-              {/* Photo Section */}
-              <div className="profil-photo-section">
-                <img
-                  src="/child-photo.jpg"
-                  alt={child.nama}
-                  className="profil-photo"
-                />
-              </div>
+        {loading && (
+          <p style={{ textAlign: "center" }}>Memuat data anak...</p>
+        )}
+        {error && (
+          <p
+            style={{
+              textAlign: "center",
+              color: "#b91c1c",
+              marginBottom: 16,
+            }}
+          >
+            {error}
+          </p>
+        )}
 
-              {/* Data Section */}
-              <div className="profil-data-section">
-                <div className="profil-field">
-                  <label className="profil-label">Nama</label>
-                  <div className="profil-value">{child.nama}</div>
-                </div>
+        {!loading && !error && (
+          <>
+            <div className="profil-container">
+              {children.length === 0 ? (
+                <p style={{ textAlign: "center" }}>
+                  Belum ada data anak terdaftar.
+                </p>
+              ) : (
+                children.map((child) => (
+                  <div key={child._id} className="profil-card">
+                    {/* Photo */}
+                    <div className="profil-photo-section">
+                      <img
+                        src={
+                          child.photoUrl ||
+                          "/child-photo.jpg" // fallback kalau belum ada foto
+                        }
+                        alt={child.nama}
+                        className="profil-photo"
+                      />
+                    </div>
 
-                <div className="profil-field">
-                  <label className="profil-label">Tanggal Lahir</label>
-                  <div className="profil-value">{child.tanggalLahir}</div>
-                </div>
+                    {/* Data */}
+                    <div className="profil-data-section">
+                      <div className="profil-field">
+                        <label className="profil-label">Nama</label>
+                        <div className="profil-value">{child.nama}</div>
+                      </div>
 
-                <div className="profil-field">
-                  <label className="profil-label">Alamat</label>
-                  <div className="profil-value">{child.alamat}</div>
-                </div>
+                      <div className="profil-field">
+                        <label className="profil-label">
+                          Tanggal Lahir
+                        </label>
+                        <div className="profil-value">
+                          {child.tanggalLahir
+                            ? new Date(
+                                child.tanggalLahir
+                              ).toLocaleDateString("id-ID", {
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              })
+                            : "-"}
+                        </div>
+                      </div>
 
-                <div className="profil-field">
-                  <label className="profil-label">Golongan Darah</label>
-                  <div className="profil-value">{child.golonganDarah}</div>
-                </div>
+                      <div className="profil-field">
+                        <label className="profil-label">Alamat</label>
+                        <div className="profil-value">
+                          {child.alamat || "-"}
+                        </div>
+                      </div>
 
-                <div className="profil-field">
-                  <label className="profil-label">Jenis Kelamin</label>
-                  <div className="profil-value">{child.jenisKelamin}</div>
-                </div>
+                      <div className="profil-field">
+                        <label className="profil-label">
+                          Golongan Darah
+                        </label>
+                        <div className="profil-value">
+                          {child.golonganDarah || "-"}
+                        </div>
+                      </div>
 
-                <div className="profil-field">
-                  <label className="profil-label">Agama</label>
-                  <div className="profil-value">{child.agama}</div>
-                </div>
+                      <div className="profil-field">
+                        <label className="profil-label">
+                          Jenis Kelamin
+                        </label>
+                        <div className="profil-value">
+                          {child.jenisKelamin || "-"}
+                        </div>
+                      </div>
 
-                <div className="profil-field">
-                  <label className="profil-label">Status</label>
-                  <div className="profil-value">{child.status}</div>
-                </div>
-              </div>
+                      <div className="profil-field">
+                        <label className="profil-label">Agama</label>
+                        <div className="profil-value">
+                          {child.agama || "-"}
+                        </div>
+                      </div>
+
+                      <div className="profil-field">
+                        <label className="profil-label">Status</label>
+                        <div className="profil-value">
+                          {child.status === "active"
+                            ? "Aktif"
+                            : child.status === "pending"
+                            ? "Menunggu Konfirmasi"
+                            : child.status || "-"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          ))}
-        </div>
 
-        <div className="profil-change-note">
-          Ingin melakukan perubahan? Hubungi admin sekolah
-          <a href="#" style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline' }}>
-            disini
-          </a>
-          .
-        </div>
+            <div className="profil-change-note">
+              Ingin melakukan perubahan? Hubungi admin sekolah
+              <a
+                href="#"
+                style={{
+                  marginLeft: "4px",
+                  color: "#052826",
+                  textDecoration: "underline",
+                }}
+              >
+                disini
+              </a>
+              .
+            </div>
+          </>
+        )}
 
         <div className="feedback-bar">
-          Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
-          <button 
+          Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi
+          form masukan
+          <button
             onClick={() => setShowFeedbackModal(true)}
-            style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+            style={{
+              marginLeft: "4px",
+              color: "#052826",
+              textDecoration: "underline",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              fontFamily: "inherit",
+            }}
           >
             disini
           </button>
@@ -263,7 +386,9 @@ export default function ProfilAnakPage() {
                 ✕
               </button>
 
-              <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
+              <h2 className="feedback-modal-title">
+                Form Pengisisan Kritik/Saran
+              </h2>
 
               <textarea
                 className="feedback-textarea"
@@ -274,12 +399,14 @@ export default function ProfilAnakPage() {
               />
 
               <button
-                className={`feedback-submit-btn ${feedbackSubmitted ? 'success' : ''}`}
+                className={`feedback-submit-btn ${
+                  feedbackSubmitted ? "success" : ""
+                }`}
                 onClick={handleSubmitFeedback}
                 type="button"
                 disabled={feedbackSubmitted}
               >
-                {feedbackSubmitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
+                {feedbackSubmitted ? "✓ Terkirim!" : "Kirimkan Saran!"}
               </button>
             </div>
           </div>

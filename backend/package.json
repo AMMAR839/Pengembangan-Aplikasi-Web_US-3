@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "Backend API for PAUD Web Application",
   "dependencies": {
+    "@supabase/supabase-js": "^2.81.1",
     "axios": "^1.7.9",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
