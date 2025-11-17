@@ -27,6 +27,7 @@ const documentationData = [
   { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
 ];
 
+
 export default function WaliMuridDashboard() {
   const router = useRouter();
   const [activeNav, setActiveNav] = useState('dashboard');
@@ -177,7 +178,7 @@ useEffect(() => {
           <button className="umum-icon-btn" type="button">
             <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/profil.png"
+                  src="/images/setting.png"
                   alt="Profil"
                   width={25}
                   height={40}
@@ -195,7 +196,7 @@ useEffect(() => {
           >
             <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/setting.png"
+                  src="/images/profil.png"
                   alt="Pengaturan"
                   width={30}
                   height={40}

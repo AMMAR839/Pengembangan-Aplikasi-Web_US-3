@@ -17,7 +17,7 @@ export default function LoginPage() {
   function goToDashboard(role) {
     let path = "/umum"; // default user biasa
     if (role === "admin") path = "/admin";
-    else if (role === "parent" || role === "wali-murid") path = "/wali-murid";
+    else if (role === "parent" ) path = "/wali-murid/dashboard";
     router.replace(path);
   }
 

@@ -6,15 +6,14 @@
   justify-content: center;
   padding: 40px 0;
 
-  /* 👉 foto + gradient overlay */
+  /*  foto + gradient overlay */
   background-image:
     linear-gradient(
       to bottom right,
-      rgba(3, 52, 4, 0.7),   /* warna atas + opacity 0.35 */
-      rgba(0, 0, 0, 0.5)    /* warna bawah + opacity 0.65 */
+      rgba(3, 52, 4, 0.7),  
+      rgba(0, 0, 0, 0.5)    
     ),
-    url("/login-bg.jpg");     /* ganti dengan nama file fotomu di /public */
-
+    url("/login-bg.jpg");     
   background-size: cover;     /* foto full layar */
   background-position: center;
   background-repeat: no-repeat;
@@ -24,7 +23,6 @@
 }
 
 
-/* ===== CARD UTAMA ===== */
     .loginCard {
     width: 100%;
     max-width: 850px;
@@ -36,7 +34,7 @@
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
     }
 
-    /* ===== KIRI: GAMBAR ===== */
+   /* gambar kiri */
     .loginLeft {
     flex: 1;
     min-height: 420px;
@@ -74,18 +72,16 @@
     .logo {
     display: flex;
     align-items: center;
-    /* kalau mau agak ke kiri: */
     justify-content: flex-start;
     margin-bottom: 0px;
     }
 
     .logoImage {
-    width: 150;        /* atur ukuran sesuai logo kamu */
+    width: 150;        
     height: auto;
     object-fit: contain;
-     /* biar proporsinya tetap bagus */
+     
     }
-
 
     /* Judul besar */
     .title {
@@ -122,7 +118,7 @@
   background: transparent;
   color: #f7f7f7;
   outline: none;
-  font-size: 14px;
+  font-size: 18px;
   width: 380px;
 }
 
