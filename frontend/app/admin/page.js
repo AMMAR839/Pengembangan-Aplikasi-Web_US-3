@@ -97,16 +97,19 @@ export default function AdminDashboardNew() {
 
   // Fetch all data on mount
   useEffect(() => {
+    if (typeof window === 'undefined' || !token) return;
+    
     fetchNotifications();
     fetchSchedules();
     fetchDocumentation();
     fetchAnnouncements();
-  }, []);
+  }, [token]);
 
   const fetchNotifications = async () => {
     try {
       const res = await fetch(`${API_URL}/notification`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
       });
       if (res.ok) {
         const data = await res.json();
@@ -114,13 +117,15 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error fetching notifications:', err);
+      setNotifications([]);
     }
   };
 
   const fetchSchedules = async () => {
     try {
       const res = await fetch(`${API_URL}/activities`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
       });
       if (res.ok) {
         const data = await res.json();
@@ -128,13 +133,15 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error fetching schedules:', err);
+      setSchedules([]);
     }
   };
 
   const fetchDocumentation = async () => {
     try {
       const res = await fetch(`${API_URL}/gallery`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
       });
       if (res.ok) {
         const data = await res.json();
@@ -142,13 +149,15 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error fetching documentation:', err);
+      setDocs([]);
     }
   };
 
   const fetchAnnouncements = async () => {
     try {
       const res = await fetch(`${API_URL}/notification`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
       });
       if (res.ok) {
         const data = await res.json();
@@ -156,6 +165,7 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error fetching announcements:', err);
+      setAnnouncements([]);
     }
   };
 
@@ -177,7 +187,8 @@ export default function AdminDashboardNew() {
           title: notifTitle,
           body: notifBody,
           audience: notifAudience
-        })
+        }),
+        signal: AbortSignal.timeout(10000)
       });
 
       if (res.ok) {
@@ -191,7 +202,7 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error creating notification:', err);
-      alert('Terjadi kesalahan');
+      alert('Terjadi kesalahan: ' + err.message);
     } finally {
       setLoadingNotif(false);
     }
@@ -215,7 +226,8 @@ export default function AdminDashboardNew() {
           title: announcementTitle,
           body: announcementBody,
           audience: 'all'
-        })
+        }),
+        signal: AbortSignal.timeout(10000)
       });
 
       if (res.ok) {
@@ -228,7 +240,7 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error creating announcement:', err);
-      alert('Terjadi kesalahan');
+      alert('Terjadi kesalahan: ' + err.message);
     } finally {
       setLoadingAnnounce(false);
     }
@@ -250,7 +262,8 @@ export default function AdminDashboardNew() {
       const res = await fetch(`${API_URL}/gallery/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
+        body: formData,
+        signal: AbortSignal.timeout(15000)
       });
 
       if (res.ok) {
@@ -263,7 +276,7 @@ export default function AdminDashboardNew() {
       }
     } catch (err) {
       console.error('Error uploading documentation:', err);
-      alert('Terjadi kesalahan');
+      alert('Terjadi kesalahan: ' + err.message);
     } finally {
       setLoadingDoc(false);
     }
