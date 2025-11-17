@@ -71,14 +71,29 @@ exports.register = async (req, res) => {
   }
 };
 
-// LOGIN (hanya yang sudah verifikasi)
+
+// LOGIN (boleh pakai username ATAU email, dan hanya yang sudah verifikasi)
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const user = await User.findOne({ username });
-    if (!user)
+    // di frontend field-nya namanya "username", tapi isinya boleh username atau email
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ message: 'Username / email dan password wajib diisi' });
+    }
+
+    const identifier = username; // bisa username, bisa email
+
+    // cari user berdasarkan username ATAU email
+    const user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    });
+
+    if (!user) {
       return res.status(400).json({ message: 'User tidak ditemukan' });
+    }
 
     if (!user.isVerified) {
       return res.status(400).json({
@@ -87,8 +102,9 @@ exports.login = async (req, res) => {
     }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
+    if (!match) {
       return res.status(400).json({ message: 'Password salah' });
+    }
 
     const token = jwt.sign(
       { id: user._id },
@@ -98,8 +114,8 @@ exports.login = async (req, res) => {
 
     res.json({ token, username: user.username, role: user.role });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
+    console.error('LOGIN ERROR:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan di server (login)' });
   }
 };
 

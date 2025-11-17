@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Montserrat_Underline } from 'next/font/google';
 
 
+
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
   { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
@@ -25,6 +26,7 @@ const documentationData = [
   { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
   { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
 ];
+
 
 export default function WaliMuridDashboard() {
   const router = useRouter();
