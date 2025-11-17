@@ -932,8 +932,10 @@ body { margin: 0; padding: 0; }
 .weather-grid{
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 20px;
   align-items: center;
+  justify-items: center;
+  padding: 20px 0;
 }
 
 .weather-card{
@@ -942,21 +944,46 @@ body { margin: 0; padding: 0; }
   padding: 15px;
 }
 
-
 .weather-item {
-  
-  padding: 16px;
+  padding: 24px 20px;
   border-radius: 12px;
   background: #fffffc;
-  text-align :center;
+  text-align: center;
   align-items: center;
-  font-size: small;
+  font-size: 14px;
+  width: 100%;
+  max-width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.weather-item p {
+  margin: 8px 0;
+  font-weight: 500;
+}
+
+.weather-item p strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #123047;
+  margin-bottom: 4px;
 }
 
 .weather-icon-wrapper {
   display: flex;
   justify-content: center;
-  margin: 6px 0;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.weather-icon-wrapper img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
 }
 
 
@@ -1496,7 +1523,12 @@ body { margin: 0; padding: 0; }
 .chart-card {
   background: #C9D1D2;
   border: px solid #d7e6e6;
-  padding: 15px;
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
 }
 
 .card-header-with-label {
