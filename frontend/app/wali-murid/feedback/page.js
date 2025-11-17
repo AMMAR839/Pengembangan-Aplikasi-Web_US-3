@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { NotificationList } from '@/app/components/NotificationList';
 
 export default function FeedbackPage() {
   const router = useRouter();
@@ -38,6 +39,9 @@ export default function FeedbackPage() {
 
   return (
     <div className="umum-page">
+      {/* Notification Bell */}
+      <NotificationList />
+
       {/* ========== NAVBAR ========== */}
       <header className="umum-nav">
         <div className="umum-nav-left">

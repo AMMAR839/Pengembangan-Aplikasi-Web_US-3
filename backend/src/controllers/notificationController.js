@@ -84,6 +84,31 @@ exports.createNotification = async (req, res) => {
       createdAt: notif.createdAt
     });
 
+    // Emit real-time notification via Socket.IO
+    const io = req.app.locals.io;
+    if (io) {
+      const notifData = {
+        _id: notif._id,
+        title: notif.title,
+        body: notif.body,
+        audience: notif.audience,
+        createdAt: notif.createdAt
+      };
+
+      if (audience === 'all') {
+        // Broadcast to all connected users
+        io.emit('notification:new', notifData);
+      } else if (audience === 'parents') {
+        // Emit to users with role 'parent'
+        io.emit('notification:parents', notifData);
+      } else if (audience === 'byUser') {
+        // Emit to specific users
+        resolvedIds.forEach(userId => {
+          io.to(`user_${userId}`).emit('notification:new', notifData);
+        });
+      }
+    }
+
     res.status(201).json({ message: 'Notifikasi dibuat', data: notif });
   } catch (err) {
     res.status(500).json({ message: err.message });

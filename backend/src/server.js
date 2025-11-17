@@ -6,6 +6,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const passport = require('passport');
+const http = require('http');
+const socketIO = require('socket.io');
 
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +15,17 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST']
+  }
+});
+
+// Make io accessible to routes
+app.locals.io = io;
 
 // Penting kalau deploy di balik proxy (agar req.protocol = https saat perlu)
 app.set('trust proxy', true);
@@ -46,15 +59,28 @@ app.use('/api/feedback',     require('./routes/feedback'));
 // Healthcheck sederhana
 app.get('/healthz', (req, res) => res.send('OK'));
 
-// 404 handler
-app.use((req, res) => res.status(404).json({ message: 'Not Found' }));
-
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
 });
 
-// Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Socket.IO connection handler
+io.on('connection', (socket) => {
+  console.log(`User connected: ${socket.id}`);
 
+  socket.on('join_room', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined room user_${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
+
+// Start server
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// 404 handler
+app.use((req, res) => res.status(404).json({ message: 'Not Found' }));
