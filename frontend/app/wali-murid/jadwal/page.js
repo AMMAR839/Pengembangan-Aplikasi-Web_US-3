@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
+import { NotificationList } from '@/app/components/NotificationList';
 
 const scheduleData = [
   {
@@ -79,6 +80,9 @@ export default function JadwalPage() {
 
   return (
     <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
+      {/* Notification Bell */}
+      <NotificationList />
+
       {/* ========== SIDEBAR ========== */}
       <aside className="umum-nav sidebar-layout">
         {/* LOGO */}
@@ -172,19 +176,6 @@ export default function JadwalPage() {
 
         {/* BOTTOM ICONS */}
         <div className="umum-nav-right sidebar-actions">
-          <button className="umum-icon-btn" type="button">
-            <div className="umum-logo sidebar-logo">
-                <Image
-                  src="/images/setting.png"
-                  alt="Profil"
-                  width={25}
-                  height={40}
-                  className="umum-logo-image"
-                  style={{ height: "auto" }}
-                />
-              </div>
-          </button>
-
           <button
             className="umum-icon-btn"
             type="button"
@@ -193,8 +184,8 @@ export default function JadwalPage() {
           >
             <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/profil.png"
-                  alt="Pengaturan"
+                  src="/images/logout.png"
+                  alt="Logout"
                   width={30}
                   height={40}
                   className="umum-logo-image"

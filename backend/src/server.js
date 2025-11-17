@@ -6,6 +6,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const passport = require('passport');
+const http = require('http');
+const socketIO = require('socket.io');
 
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +15,17 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST']
+  }
+});
+
+// Make io accessible to routes
+app.locals.io = io;
 
 // Penting kalau deploy di balik proxy (agar req.protocol = https saat perlu)
 app.set('trust proxy', true);
@@ -55,6 +68,20 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
 });
 
+// Socket.IO connection handler
+io.on('connection', (socket) => {
+  console.log(`User connected: ${socket.id}`);
+
+  socket.on('join_room', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined room user_${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
+
 // Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
