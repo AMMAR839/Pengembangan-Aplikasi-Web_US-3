@@ -175,7 +175,7 @@ export default function JadwalPage() {
           <button className="umum-icon-btn" type="button">
             <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/profil.png"
+                  src="/images/setting.png"
                   alt="Profil"
                   width={25}
                   height={40}
@@ -193,7 +193,7 @@ export default function JadwalPage() {
           >
             <div className="umum-logo sidebar-logo">
                 <Image
-                  src="/images/setting.png"
+                  src="/images/profil.png"
                   alt="Pengaturan"
                   width={30}
                   height={40}
