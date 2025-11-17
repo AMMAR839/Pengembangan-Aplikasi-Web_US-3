@@ -11,7 +11,6 @@ const API_URL =
 export default function PendaftaranAnakPage() {
   const router = useRouter();
 
-  
   // form state
   const [nik, setNik] = useState("");
   const [nama, setNama] = useState("");
@@ -31,7 +30,11 @@ export default function PendaftaranAnakPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // navbar state (sama dengan Umum)
+  // untuk pembayaran
+  const [lastNikForPayment, setLastNikForPayment] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  // navbar state
   const [activeNav, setActiveNav] = useState("pendaftaran");
   const [openProfile, setOpenProfile] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -68,12 +71,12 @@ export default function PendaftaranAnakPage() {
 
   function handleProfil() {
     setOpenProfile(false);
-    router.push("/profil"); // sesuaikan kalau rutenya beda
+    router.push("/profil");
   }
 
   function handleGantiPassword() {
     setOpenProfile(false);
-    router.push("/ganti-password"); // sesuaikan kalau rutenya beda
+    router.push("/ganti-password");
   }
 
   async function handleSubmit(e) {
@@ -88,7 +91,7 @@ export default function PendaftaranAnakPage() {
           ? localStorage.getItem("token")
           : null;
 
-      const res = await fetch(`${API_URL}/api/student`, {
+      const res = await fetch(`${API_URL}/api/student/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +119,12 @@ export default function PendaftaranAnakPage() {
         return;
       }
 
-      setSuccess("Data anak berhasil didaftarkan 🎉");
+      // Simpan NIK terakhir untuk pembayaran
+      setLastNikForPayment(nik);
+
+      setSuccess(
+        "Data anak berhasil didaftarkan . Silakan lanjut ke pembayaran."
+      );
       setNik("");
       setNama("");
       setAlamat("");
@@ -137,9 +145,67 @@ export default function PendaftaranAnakPage() {
     }
   }
 
+  // Panggil Midtrans Snap lewat backend
+  async function handleCheckout() {
+    setError("");
+    setSuccess("");
+
+    if (!lastNikForPayment) {
+      setError(
+        "NIK anak untuk pembayaran tidak ditemukan. Silakan isi ulang formulir."
+      );
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token")
+          : null;
+
+      if (!token) {
+        setError("Anda harus login untuk melakukan pembayaran.");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/payment/checkout-by-nik`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nik: lastNikForPayment }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Gagal memulai pembayaran.");
+        return;
+      }
+
+      // Redirect / open tab ke Midtrans Snap → QRIS akan tampil di sana
+      if (data.payment_url) {
+        window.open(data.payment_url, "_blank");
+        setSuccess(
+          data.message ||
+            "Silakan lanjutkan pembayaran di tab baru (QRIS / metode lain)."
+        );
+      } else {
+        setSuccess(data.message || "Status pembayaran berhasil diambil.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Terjadi kesalahan saat menghubungi server pembayaran.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
+
   return (
     <div className={styles.page}>
-      {/* NAVBAR – sama seperti halaman UMUM */}
+      {/* NAVBAR */}
       <header className={styles.nav}>
         <div className={styles.navLeft}>
           <div className={styles.logo}>
@@ -188,12 +254,20 @@ export default function PendaftaranAnakPage() {
             >
               Pendaftaran Anak
             </span>
+
+            <Link
+              href="/riwayat-pembayaran"
+              className={`${styles.navItem} ${
+                activeNav === "riwayat" ? styles.navItemActive : ""
+              }`}
+              onClick={() => setActiveNav("riwayat")}
+            >
+              Riwayat Pembayaran
+            </Link>
           </nav>
         </div>
 
         <div className={styles.navRight}>
-
-
           {/* PROFILE / LOGIN DROPDOWN */}
           <div className={styles.profileWrapper}>
             <button
@@ -216,7 +290,6 @@ export default function PendaftaranAnakPage() {
                       className={styles.profileItem}
                       onClick={handleProfil}
                     >
-                      
                       <span>Profil Saya</span>
                     </button>
 
@@ -225,7 +298,6 @@ export default function PendaftaranAnakPage() {
                       className={styles.profileItem}
                       onClick={handleGantiPassword}
                     >
-                    
                       <span>Ganti Password</span>
                     </button>
 
@@ -246,7 +318,7 @@ export default function PendaftaranAnakPage() {
                     className={styles.profileItem}
                     onClick={() => {
                       setOpenProfile(false);
-                      router.push("/"); // halaman login
+                      router.push("/");
                     }}
                   >
                     <span className={styles.profileItemIcon}>🔑</span>
@@ -264,7 +336,7 @@ export default function PendaftaranAnakPage() {
         <section className={styles.card}>
           <div className={styles.left}>
             <p className={styles.badge}>Formulir Pendaftaran</p>
-            <h2 className={styles.title}>Daftarkan Little Explorer Anda </h2>
+            <h2 className={styles.title}>Daftarkan Little Explorer Anda</h2>
             <p className={styles.subtitle}>
               Isi data di bawah ini dengan lengkap dan benar. Tim Little Garden
               akan menghubungi Ayah/Bunda setelah berkas diverifikasi.
@@ -433,14 +505,35 @@ export default function PendaftaranAnakPage() {
                 </label>
               </div>
 
-              <button
-                type="submit"
-                className={styles.submitBtn}
-                disabled={loading || !agree}
-              >
-                {loading ? "Menyimpan data..." : "Kirim Pendaftaran"}
-              </button>
+              {/* BUTTON GROUP: submit + bayar */}
+              <div className={styles.dualButtons}>
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={loading || !agree}
+                >
+                  {loading ? "Menyimpan data..." : "Kirim Pendaftaran"}
+                </button>
+
+                {lastNikForPayment && (
+                  <button
+                    type="button"
+                    className={styles.payBtn}
+                    onClick={handleCheckout}
+                    disabled={paymentLoading}
+                  >
+                    {paymentLoading
+                      ? "Membuka halaman pembayaran..."
+                      : "Bayar Biaya Pendaftaran"}
+                  </button>
+                )}
+              </div>
             </form>
+
+            <p className={styles.helperText}>
+              Ingin mengecek status pembayaran sebelumnya? Buka menu{" "}
+              <strong>Riwayat Pembayaran</strong> di navbar.
+            </p>
           </div>
         </section>
       </main>

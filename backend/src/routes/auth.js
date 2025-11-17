@@ -1,3 +1,4 @@
+// src/routes/auth.js
 const express = require('express');
 const router = express.Router();
 
@@ -6,11 +7,28 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
-const { register, login, verifyEmail } = require('../controllers/authController');
 
-// Register & login biasa
+const {
+  register,
+  login,
+  verifyEmail,
+  me,
+  changePassword,
+} = require('../controllers/authController');
+
+const { auth } = require('../middleware/auth');  // ⬅️ PERHATIKAN: ../middleware/auth
+
+// ===== REGISTER & LOGIN BIASA =====
 router.post('/register', register);
 router.post('/login', login);
+
+// PROFIL USER LOGIN
+router.get('/me', auth, me);
+
+// GANTI PASSWORD USER LOGIN
+router.post('/change-password', auth, changePassword);
+
+// ===== GOOGLE AUTH (login & register) =====
 
 // Login pakai Google (user yang SUDAH terdaftar)
 router.get(
@@ -30,40 +48,35 @@ router.get(
   })
 );
 
+// Verifikasi email (link dari Gmail)
 router.get('/verify-email', verifyEmail);
 
-// Callback dari Google (dipanggil oleh Google, bukan frontend)
+// Callback dari Google
 router.get(
   '/google/callback',
   passport.authenticate('google', { session: false }),
   async (req, res) => {
     const profile = req.user;
-    const mode = req.query.state || 'login';
+    const mode = req.query.state || 'login'; // 'login' atau 'register'
     const email = profile.emails?.[0]?.value;
     const googleId = profile.id;
 
     const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    try {
-      let user =
-        (await User.findOne({ googleId })) ||
-        (email ? await User.findOne({ email }) : null);
+    let user =
+      (await User.findOne({ googleId })) ||
+      (email ? await User.findOne({ email }) : null);
 
+    try {
       if (mode === 'login') {
-        // kalau login tapi belum pernah daftar sama sekali
+        // LOGIN: kalau belum terdaftar, jangan auto register
         if (!user) {
           return res.redirect(
             `${frontend}/auth/google/callback?error=not_registered`
           );
         }
-
-        // kalau user ditemukan lewat email, tapi belum punya googleId → link akun
-        if (!user.googleId) {
-          user.googleId = googleId;
-          await user.save();
-        }
       } else if (mode === 'register') {
-        // register pakai Google → jangan buat kalau sudah ada (baik email atau googleId)
+        // REGISTER: kalau sudah ada, jangan buat lagi
         if (user) {
           return res.redirect(
             `${frontend}/auth/google/callback?error=already_registered`
@@ -76,15 +89,15 @@ router.get(
         );
 
         user = await User.create({
-          email: email || `${googleId}@dummy.local`,
+          email: email || undefined,
           username: email || googleId,
           password: randomPass,
           googleId,
-          isVerified: true, // kalau mau Google dianggap otomatis verified
+          isVerified: true, // login via Google → kita anggap verified
         });
       }
 
-      // sampai sini user pasti ada
+      // Sampai sini user pasti ada
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: '1d',
       });
@@ -102,6 +115,5 @@ router.get(
     }
   }
 );
-
 
 module.exports = router;

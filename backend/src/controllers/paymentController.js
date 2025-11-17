@@ -112,6 +112,17 @@ function verifyMidtransSignature(body) {
   }
 }
 
+exports.listMyPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find({ userId: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.json(payments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // === CALLBACK Midtrans
 exports.callback = async (req, res) => {
   try {
@@ -144,6 +155,19 @@ exports.callback = async (req, res) => {
     }
 
     res.status(200).send('OK');
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// == Riwayatr pembayaran milik user yg login==
+exports.listMyPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find({ userId: req.user._id }).sort({
+      createdAt: -1,
+    });
+
+    res.json(payments);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

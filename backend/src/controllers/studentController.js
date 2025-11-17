@@ -29,9 +29,10 @@ exports.registerStudent = async (req, res) => {
       golonganDarah: req.body.golonganDarah,
       jenisKelamin: req.body.jenisKelamin,
       agama: req.body.agama,
-      NamaOrangtua: req.body.NamaOrangtua,
-      NoHPOrangtua: req.body.NoHPOrangtua,
+      namaOrangtua: req.body.namaOrangtua,
+      noHPOrangtua: req.body.noHPOrangtua,
     };
+
 
     if (!data.nik || !data.nama || !data.tanggalLahir || !data.alamat) {
       return res.status(400).json({ message: 'nik, nama, tanggalLahir, alamat wajib diisi' });
