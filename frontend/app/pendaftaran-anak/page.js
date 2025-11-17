@@ -11,26 +11,47 @@ const API_URL =
 export default function PendaftaranAnakPage() {
   const router = useRouter();
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  
+  // form state
+  const [nik, setNik] = useState("");
+  const [nama, setNama] = useState("");
   const [alamat, setAlamat] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [jenisKelamin, setJenisKelamin] = useState("");
-  const [namaOrangTua, setNamaOrangTua] = useState("");
+  const [golonganDarah, setGolonganDarah] = useState("");
+  const [agama, setAgama] = useState("");
+  const [namaOrangtua, setNamaOrangtua] = useState("");
+  const [noHPOrangtua, setNoHPOrangtua] = useState("");
+  const [alergiMakanan, setAlergiMakanan] = useState("");
+  const [catatanKesehatan, setCatatanKesehatan] = useState("");
+
+  const [agree, setAgree] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // navbar state (sama dengan Umum)
+  const [activeNav, setActiveNav] = useState("pendaftaran");
+  const [openProfile, setOpenProfile] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+
   // Proteksi: harus login dulu
   useEffect(() => {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
+    const storedUsername = localStorage.getItem("username") || "";
+
     if (!token) {
-      // simpan redirect supaya setelah login balik ke sini
+      // kalau belum login, simpan tujuan lalu ke halaman login
       localStorage.setItem("redirectAfterLogin", "/pendaftaran-anak");
       router.replace("/");
+      return;
     }
+
+    setIsLoggedIn(true);
+    setUsername(storedUsername);
   }, [router]);
 
   function handleLogout() {
@@ -39,7 +60,20 @@ export default function PendaftaranAnakPage() {
       localStorage.removeItem("username");
       localStorage.removeItem("role");
     }
+    setIsLoggedIn(false);
+    setUsername("");
+    setOpenProfile(false);
     router.replace("/");
+  }
+
+  function handleProfil() {
+    setOpenProfile(false);
+    router.push("/profil"); // sesuaikan kalau rutenya beda
+  }
+
+  function handleGantiPassword() {
+    setOpenProfile(false);
+    router.push("/ganti-password"); // sesuaikan kalau rutenya beda
   }
 
   async function handleSubmit(e) {
@@ -61,12 +95,17 @@ export default function PendaftaranAnakPage() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          firstName,
-          lastName,
+          nik,
+          nama,
           alamat,
           tanggalLahir,
           jenisKelamin,
-          parentName: namaOrangTua,
+          golonganDarah,
+          agama,
+          namaOrangtua,
+          noHPOrangtua,
+          alergiMakanan,
+          catatanKesehatan,
         }),
       });
 
@@ -78,12 +117,18 @@ export default function PendaftaranAnakPage() {
       }
 
       setSuccess("Data anak berhasil didaftarkan 🎉");
-      setFirstName("");
-      setLastName("");
+      setNik("");
+      setNama("");
       setAlamat("");
       setTanggalLahir("");
       setJenisKelamin("");
-      setNamaOrangTua("");
+      setGolonganDarah("");
+      setAgama("");
+      setNamaOrangtua("");
+      setNoHPOrangtua("");
+      setAlergiMakanan("");
+      setCatatanKesehatan("");
+      setAgree(false);
     } catch (err) {
       console.error(err);
       setError("Terjadi kesalahan pada server.");
@@ -94,27 +139,52 @@ export default function PendaftaranAnakPage() {
 
   return (
     <div className={styles.page}>
-      {/* NAVBAR */}
+      {/* NAVBAR – sama seperti halaman UMUM */}
       <header className={styles.nav}>
         <div className={styles.navLeft}>
           <div className={styles.logo}>
-            {/* kalau punya logo PNG sendiri, ganti span ini dengan <img /> */}
-            <span className={styles.logoFlower}>🌼</span>
-            <span className={styles.logoText}>Little Garden</span>
+            <img
+              src="/logo-bw.png"
+              alt="Little Garden"
+              className={styles.logoImage}
+            />
           </div>
 
           <nav className={styles.navLinks}>
-            <Link href="/umum" className={styles.navItem}>
+            <Link
+              href="/umum#beranda"
+              className={`${styles.navItem} ${
+                activeNav === "beranda" ? styles.navItemActive : ""
+              }`}
+              onClick={() => setActiveNav("beranda")}
+            >
               Beranda
             </Link>
-            <a href="/umum#tentang-kami" className={styles.navItem}>
+
+            <Link
+              href="/umum#tentang-kami"
+              className={`${styles.navItem} ${
+                activeNav === "tentang" ? styles.navItemActive : ""
+              }`}
+              onClick={() => setActiveNav("tentang")}
+            >
               Tentang Kami
-            </a>
-            <a href="/umum#kurikulum" className={styles.navItem}>
+            </Link>
+
+            <Link
+              href="/umum#kurikulum"
+              className={`${styles.navItem} ${
+                activeNav === "kurikulum" ? styles.navItemActive : ""
+              }`}
+              onClick={() => setActiveNav("kurikulum")}
+            >
               Kurikulum
-            </a>
+            </Link>
+
             <span
-              className={`${styles.navItem} ${styles.navItemActive}`}
+              className={`${styles.navItem} ${
+                activeNav === "pendaftaran" ? styles.navItemActive : ""
+              }`}
             >
               Pendaftaran Anak
             </span>
@@ -122,126 +192,255 @@ export default function PendaftaranAnakPage() {
         </div>
 
         <div className={styles.navRight}>
-          <button className={styles.iconBtn} type="button">
-            🔔
-          </button>
-          <button
-            className={styles.iconBtn}
-            type="button"
-            title="Logout"
-            onClick={handleLogout}
-          >
-            ⏻
-          </button>
+
+
+          {/* PROFILE / LOGIN DROPDOWN */}
+          <div className={styles.profileWrapper}>
+            <button
+              type="button"
+              className={styles.profileBtn}
+              onClick={() => setOpenProfile((prev) => !prev)}
+            >
+              <span className={styles.profileAvatar}>👤</span>
+              <span className={styles.profileLabel}>
+                {isLoggedIn ? username || "Profil" : "Login"}
+              </span>
+            </button>
+
+            {openProfile && (
+              <div className={styles.profileMenu}>
+                {isLoggedIn ? (
+                  <>
+                    <button
+                      type="button"
+                      className={styles.profileItem}
+                      onClick={handleProfil}
+                    >
+                      
+                      <span>Profil Saya</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={styles.profileItem}
+                      onClick={handleGantiPassword}
+                    >
+                    
+                      <span>Ganti Password</span>
+                    </button>
+
+                    <hr className={styles.profileDivider} />
+
+                    <button
+                      type="button"
+                      className={`${styles.profileItem} ${styles.profileItemDanger}`}
+                      onClick={handleLogout}
+                    >
+                      <span className={styles.profileItemIcon}>⏻</span>
+                      <span>Log Out</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.profileItem}
+                    onClick={() => {
+                      setOpenProfile(false);
+                      router.push("/"); // halaman login
+                    }}
+                  >
+                    <span className={styles.profileItemIcon}>🔑</span>
+                    <span>Login</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN – card form saja */}
       <main className={styles.main}>
         <section className={styles.card}>
-          {/* kiri: form */}
           <div className={styles.left}>
-            <h2 className={styles.title}>Pendaftaran Anak</h2>
+            <p className={styles.badge}>Formulir Pendaftaran</p>
+            <h2 className={styles.title}>Daftarkan Little Explorer Anda </h2>
             <p className={styles.subtitle}>
-              Lengkapi data berikut untuk mendaftarkan putra / putri
-              Anda di Little Garden Kindergarten.
+              Isi data di bawah ini dengan lengkap dan benar. Tim Little Garden
+              akan menghubungi Ayah/Bunda setelah berkas diverifikasi.
             </p>
 
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.row}>
                 <div className={styles.field}>
-                  <label>Nama Depan</label>
+                  <label>
+                    NIK Anak
+                    <span className={styles.requiredMark}>*</span>
+                  </label>
                   <input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={nik}
+                    onChange={(e) => setNik(e.target.value)}
+                    placeholder="16 digit NIK"
+                    maxLength={16}
                     required
                   />
                 </div>
-                <div className={styles.field}>
-                  <label>Nama Belakang</label>
-                  <input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className={styles.field}>
-                <label>Alamat</label>
-                <input
-                  value={alamat}
-                  onChange={(e) => setAlamat(e.target.value)}
-                  required
-                />
+                <div className={styles.field}>
+                  <label>
+                    Nama Lengkap Anak
+                    <span className={styles.requiredMark}>*</span>
+                  </label>
+                  <input
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
+                    placeholder="Sesuai akta kelahiran"
+                    required
+                  />
+                </div>
               </div>
 
               <div className={styles.row}>
                 <div className={styles.field}>
-                  <label>Tanggal Lahir</label>
+                  <label>
+                    Tanggal Lahir
+                    <span className={styles.requiredMark}>*</span>
+                  </label>
                   <input
                     type="date"
                     value={tanggalLahir}
-                    onChange={(e) =>
-                      setTanggalLahir(e.target.value)
-                    }
+                    onChange={(e) => setTanggalLahir(e.target.value)}
                     required
                   />
                 </div>
 
                 <div className={styles.field}>
-                  <label>Jenis Kelamin</label>
+                  <label>
+                    Jenis Kelamin
+                    <span className={styles.requiredMark}>*</span>
+                  </label>
                   <select
                     value={jenisKelamin}
-                    onChange={(e) =>
-                      setJenisKelamin(e.target.value)
-                    }
+                    onChange={(e) => setJenisKelamin(e.target.value)}
                     required
                   >
                     <option value="">Pilih...</option>
-                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Laki-Laki">Laki-laki</option>
                     <option value="Perempuan">Perempuan</option>
                   </select>
                 </div>
               </div>
 
               <div className={styles.field}>
-                <label>Nama Orang Tua</label>
+                <label>
+                  Alamat Lengkap
+                  <span className={styles.requiredMark}>*</span>
+                </label>
                 <input
-                  value={namaOrangTua}
-                  onChange={(e) =>
-                    setNamaOrangTua(e.target.value)
-                  }
+                  value={alamat}
+                  onChange={(e) => setAlamat(e.target.value)}
+                  placeholder="Nama jalan, RT/RW, kelurahan, kecamatan"
                   required
                 />
               </div>
 
-              {error && (
-                <p className={styles.error}>{error}</p>
-              )}
-              {success && (
-                <p className={styles.success}>{success}</p>
-              )}
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label>
+                    Nama Orang Tua / Wali
+                    <span className={styles.requiredMark}>*</span>
+                  </label>
+                  <input
+                    value={namaOrangtua}
+                    onChange={(e) => setNamaOrangtua(e.target.value)}
+                    placeholder="Nama Ayah / Bunda / Wali"
+                    required
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label>
+                    No. HP Orang Tua
+                    <span className={styles.requiredMark}>*</span>
+                  </label>
+                  <input
+                    value={noHPOrangtua}
+                    onChange={(e) => setNoHPOrangtua(e.target.value)}
+                    placeholder="0812xxxxxxx"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label>Golongan Darah</label>
+                  <select
+                    value={golonganDarah}
+                    onChange={(e) => setGolonganDarah(e.target.value)}
+                  >
+                    <option value="">Tidak tahu / kosong</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                  </select>
+                </div>
+
+                <div className={styles.field}>
+                  <label>Agama</label>
+                  <input
+                    value={agama}
+                    onChange={(e) => setAgama(e.target.value)}
+                    placeholder="Islam, Kristen, dll"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.field}>
+                <label>Alergi Makanan (jika ada)</label>
+                <input
+                  value={alergiMakanan}
+                  onChange={(e) => setAlergiMakanan(e.target.value)}
+                  placeholder="Contoh: susu sapi, telur, seafood"
+                />
+              </div>
+
+              <div className={styles.field}>
+                <label>Catatan Kesehatan</label>
+                <textarea
+                  className={styles.textarea}
+                  value={catatanKesehatan}
+                  onChange={(e) => setCatatanKesehatan(e.target.value)}
+                  placeholder="Riwayat penyakit, obat rutin, dll (opsional)"
+                />
+              </div>
+
+              {error && <p className={styles.error}>{error}</p>}
+              {success && <p className={styles.success}>{success}</p>}
+
+              <div className={styles.agreement}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                  />
+                  <span>
+                    Dengan mengirim formulir ini, Ayah/Bunda menyetujui bahwa
+                    data yang diisi adalah benar dan dapat digunakan untuk
+                    keperluan administrasi sekolah.
+                  </span>
+                </label>
+              </div>
 
               <button
                 type="submit"
                 className={styles.submitBtn}
-                disabled={loading}
+                disabled={loading || !agree}
               >
-                {loading ? "Menyimpan..." : "Kirim Pendaftaran"}
+                {loading ? "Menyimpan data..." : "Kirim Pendaftaran"}
               </button>
             </form>
-          </div>
-
-          {/* kanan: ilustrasi anak + shape */}
-          <div className={styles.right}>
-            <div className={styles.bgShapeOuter} />
-            <div className={styles.bgShapeInner} />
-            <img
-              src="/daftar-kid.png" // taruh file ini di /public
-              alt="Anak Little Garden"
-              className={styles.kidImage}
-            />
           </div>
         </section>
       </main>
