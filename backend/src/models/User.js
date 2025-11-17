@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
       default: 'user',
     },
 
-    googleId: { type: String, unique: true, sparse: true },
+    googleId: { type: String, unique: true, sparse: true },   
 
     //  field untuk verifikasi email
     isVerified: { type: Boolean, default: false },
