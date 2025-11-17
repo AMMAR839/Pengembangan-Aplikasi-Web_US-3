@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -199,18 +200,7 @@ export default function ProfilAnakPage() {
 
         {/* BOTTOM ICONS */}
         <div className="umum-nav-right sidebar-actions">
-          <button className="umum-icon-btn" type="button">
-            <div className="umum-logo sidebar-logo">
-              <Image
-                src="/images/setting.png"
-                alt="Pengaturan"
-                width={25}
-                height={40}
-                className="umum-logo-image"
-                style={{ height: "auto" }}
-              />
-            </div>
-          </button>
+          
 
           <button
             className="umum-icon-btn"
