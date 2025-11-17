@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
 import Image from 'next/image';
+import {useEffect } from 'react';
+import { formatTanggalSmart } from '@/utils/date';
 import { Montserrat_Underline } from 'next/font/google';
-
 
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
@@ -54,6 +55,29 @@ export default function WaliMuridDashboard() {
       }, 2000);
     }
   }
+
+const [weather, setWeather] = useState(null);
+const [loadingWeather, setLoadingWeather] = useState(true);
+const [errorWeather, setErrorWeather] = useState(null);
+
+useEffect(() => {
+  async function fetchWeather() {
+    try {
+      const res = await fetch("http://localhost:5000/api/weather");
+      if (!res.ok) throw new Error("Gagal mengambil data cuaca");
+
+      const data = await res.json();
+      setWeather(data);
+    } catch (err) {
+      setErrorWeather(err.message);
+    } finally {
+      setLoadingWeather(false);
+    }
+  }
+
+  fetchWeather();
+}, []);
+
 
   return (
     <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
@@ -243,6 +267,19 @@ export default function WaliMuridDashboard() {
               </div>
             </div>
 
+            {/* Teachers Card */}
+            <div className="dashboard-card teachers-card">
+              <h2 className="card-title">Guru Kami</h2>
+              <div className="teachers-grid">
+                {teachersData.map((teacher) => (
+                  <div key={teacher.id} className="teacher-item">
+                    <img src={teacher.photo} alt={teacher.name} className="teacher-photo" />
+                    <p className="teacher-name">{teacher.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Feedback Bar */}
             <div className="feedback-bar">
               Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
@@ -258,27 +295,33 @@ export default function WaliMuridDashboard() {
           {/* Right Column */}
           <div className="dashboard-right">
             {/* Attendance Chart Card */}
-            <div className="dashboard-card chart-card">
-                <h2 className="card-title">Cuaca Hari Ini</h2>
-              <div className="chart-placeholder">
-                <img src="/weather-chart.jpg" alt="Weather Chart" className="chart-image" />
-              </div>
-              <div className="chart-info">
-                <img src="/attendance-chart.jpg" alt="Attendance Chart" className="attendance-image" />
-              </div>
-            </div>
+            <div className="chart-card dashboard-card">
+                <h2 className="card-title">Perkiraan Cuaca Terdekat</h2>
+                {loadingWeather && <p>Mengambil data...</p>}
+                {errorWeather && <p style={{color: 'red'}}>{errorWeather}</p>}
 
-            {/* Teachers Card */}
-            <div className="dashboard-card teachers-card">
-              <h2 className="card-title">Guru Kami</h2>
-              <div className="teachers-grid">
-                {teachersData.map((teacher) => (
-                  <div key={teacher.id} className="teacher-item">
-                    <img src={teacher.photo} alt={teacher.name} className="teacher-photo" />
-                    <p className="teacher-name">{teacher.name}</p>
+                {weather && (
+                  <div className="weather-forecast weather-grid">
+                    {weather.data_cuaca.map((hari, idx) => {
+                      const { relative, fullDate } = formatTanggalSmart(hari.tanggal);
+                      return (
+                      <div key={idx} className="weather-item">
+                      <p>
+                      <strong>
+                      {formatTanggalSmart(hari.tanggal)}
+                      </strong></p>
+                      <p>{fullDate}</p>
+                      <div className='weather-icon-wrapper'>
+                        <img src={`https:${hari.icon}`} alt="icon cuaca" />
+                      </div>
+                      <p>{hari.kota}</p>
+                      <p>{hari.kondisi}</p>
+                      <p>{hari.suhu_min} - {hari.suhu_max}</p>
+                    </div>
+                    );
+                    })}
                   </div>
-                ))}
-              </div>
+                )}
             </div>
 
             {/* Documentation Card */}
@@ -336,5 +379,4 @@ export default function WaliMuridDashboard() {
         )}
       </div>
     </div>
-  );
-}
+  );}

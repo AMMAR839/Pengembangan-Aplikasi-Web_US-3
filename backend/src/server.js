@@ -46,9 +46,6 @@ app.use('/api/feedback',     require('./routes/feedback'));
 // Healthcheck sederhana
 app.get('/healthz', (req, res) => res.send('OK'));
 
-// 404 handler
-app.use((req, res) => res.status(404).json({ message: 'Not Found' }));
-
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err);
@@ -58,3 +55,5 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// 404 handler
+app.use((req, res) => res.status(404).json({ message: 'Not Found' }));
