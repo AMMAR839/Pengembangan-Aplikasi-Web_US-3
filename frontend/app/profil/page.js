@@ -20,6 +20,7 @@ export default function ProfilPage() {
   const [openProfile, setOpenProfile] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
+  
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -182,7 +183,7 @@ export default function ProfilPage() {
                       className={styles.profileItem}
                       onClick={handleProfil}
                     >
-                      <span className={styles.profileItemIcon}>🙋‍♂️</span>
+                      <span className={styles.profileItemIcon}></span>
                       <span>Profil Saya</span>
                     </button>
 
@@ -191,7 +192,7 @@ export default function ProfilPage() {
                       className={styles.profileItem}
                       onClick={handleGantiPassword}
                     >
-                      <span className={styles.profileItemIcon}>🔒</span>
+                      <span className={styles.profileItemIcon}></span>
                       <span>Ganti Password</span>
                     </button>
 

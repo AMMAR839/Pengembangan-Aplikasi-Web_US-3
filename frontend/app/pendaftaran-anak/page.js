@@ -24,6 +24,10 @@ export default function PendaftaranAnakPage() {
   const [alergiMakanan, setAlergiMakanan] = useState("");
   const [catatanKesehatan, setCatatanKesehatan] = useState("");
 
+  // FOTO ANAK
+  const [foto, setFoto] = useState(null);
+  const [fotoName, setFotoName] = useState("");
+
   const [agree, setAgree] = useState(false);
 
   const [error, setError] = useState("");
@@ -79,11 +83,29 @@ export default function PendaftaranAnakPage() {
     router.push("/ganti-password");
   }
 
+  function handleFileChange(e) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFoto(file);
+      setFotoName(file.name);
+    } else {
+      setFoto(null);
+      setFotoName("");
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
     setLoading(true);
+
+    // kalau mau diwajibkan upload foto:
+    if (!foto) {
+      setLoading(false);
+      setError("Foto anak wajib diupload.");
+      return;
+    }
 
     try {
       const token =
@@ -91,25 +113,31 @@ export default function PendaftaranAnakPage() {
           ? localStorage.getItem("token")
           : null;
 
+      // KIRIM PAKAI FORMDATA (karena ada file)
+      const formData = new FormData();
+      formData.append("nik", nik);
+      formData.append("nama", nama);
+      formData.append("alamat", alamat);
+      formData.append("tanggalLahir", tanggalLahir);
+      formData.append("jenisKelamin", jenisKelamin);
+      formData.append("golonganDarah", golonganDarah);
+      formData.append("agama", agama);
+      formData.append("namaOrangtua", namaOrangtua);
+      formData.append("noHPOrangtua", noHPOrangtua);
+      formData.append("alergiMakanan", alergiMakanan);
+      formData.append("catatanKesehatan", catatanKesehatan);
+      if (foto) {
+        // nama field "foto" HARUS sama dengan upload.single('foto') di backend
+        formData.append("foto", foto);
+      }
+
       const res = await fetch(`${API_URL}/api/student/register`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // JANGAN set "Content-Type" di sini, biar browser yang atur boundary multipart
         },
-        body: JSON.stringify({
-          nik,
-          nama,
-          alamat,
-          tanggalLahir,
-          jenisKelamin,
-          golonganDarah,
-          agama,
-          namaOrangtua,
-          noHPOrangtua,
-          alergiMakanan,
-          catatanKesehatan,
-        }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -123,7 +151,7 @@ export default function PendaftaranAnakPage() {
       setLastNikForPayment(nik);
 
       setSuccess(
-        "Data anak berhasil didaftarkan . Silakan lanjut ke pembayaran."
+        "Data anak berhasil didaftarkan. Silakan lanjut ke pembayaran."
       );
       setNik("");
       setNama("");
@@ -136,6 +164,8 @@ export default function PendaftaranAnakPage() {
       setNoHPOrangtua("");
       setAlergiMakanan("");
       setCatatanKesehatan("");
+      setFoto(null);
+      setFotoName("");
       setAgree(false);
     } catch (err) {
       console.error(err);
@@ -185,7 +215,6 @@ export default function PendaftaranAnakPage() {
         return;
       }
 
-      // Redirect / open tab ke Midtrans Snap → QRIS akan tampil di sana
       if (data.payment_url) {
         window.open(data.payment_url, "_blank");
         setSuccess(
@@ -466,6 +495,32 @@ export default function PendaftaranAnakPage() {
                     placeholder="Islam, Kristen, dll"
                   />
                 </div>
+              </div>
+
+              {/* 🔽 TOMBOL UPLOAD FOTO DI BAWAH GOLONGAN DARAH */}
+              <div className={styles.field}>
+                <label>
+                  Foto Anak
+                  <span className={styles.requiredMark}>*</span>
+                </label>
+                <div className={styles.fileInputRow}>
+                  <label
+                    htmlFor="fotoInput"
+                    className={styles.uploadBtn}
+                  >
+                    Upload Foto
+                  </label>
+                  <span className={styles.fileName}>
+                    {fotoName || "Belum ada file dipilih"}
+                  </span>
+                </div>
+                <input
+                  id="fotoInput"
+                  type="file"
+                  accept="image/*"
+                  className={styles.hiddenFileInput}
+                  onChange={handleFileChange}
+                />
               </div>
 
               <div className={styles.field}>

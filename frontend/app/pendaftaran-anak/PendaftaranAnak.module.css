@@ -524,3 +524,43 @@
     flex-direction: column;
   }
 }
+
+/* ===== FILE INPUT (UPLOAD FOTO) ===== */
+.fileInputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.uploadBtn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(to right, #22c55e, #22c55e, #16a34a);
+  color: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 18px rgba(22, 163, 74, 0.35);
+}
+
+.uploadBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(22, 163, 74, 0.45);
+}
+
+.fileName {
+  font-size: 12px;
+  color: #6b7280;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hiddenFileInput {
+  display: none;
+}
