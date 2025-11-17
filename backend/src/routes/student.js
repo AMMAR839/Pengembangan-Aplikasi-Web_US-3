@@ -8,8 +8,15 @@ const {
   updateStudentById
 } = require('../controllers/studentController');
 
+const multer = require('multer');
+
+const upload = multer({
+  storage: multer.memoryStorage(), // BUKAN diskStorage
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+});
+
 // daftar anak: user/parent/admin boleh
-router.post('/register', auth, requireRole('user','parent','admin'), registerStudent);
+router.post('/register', auth, requireRole('user','parent','admin'), upload.single('foto'), registerStudent);
 
 // lihat anak saya: khusus parent/admin (setelah bayar jadi parent)
 router.get('/my', auth, requireRole('parent','admin'), listMyStudents);

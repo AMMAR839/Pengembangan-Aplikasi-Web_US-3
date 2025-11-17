@@ -17,6 +17,9 @@ const studentSchema = new mongoose.Schema({
 
   namaOrangtua: { type: String, trim: true },
   noHPOrangtua: { type: String, trim: true },
+  
+  // photo 
+  photoUrl: { type: String, trim: true },
 
   // Opsional dari form
   alergiMakanan: { type: String, trim: true },
