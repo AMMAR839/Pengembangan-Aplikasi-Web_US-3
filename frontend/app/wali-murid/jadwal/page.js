@@ -1,54 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { NotificationList } from '@/app/components/NotificationList';
 
-const scheduleData = [
-  {
-    time: '09.00 - 09.30',
-    activities: [
-      { title: 'Senam Pagi', subtitle: 'Senam Anak Sehat' },
-      { title: 'Senam Pagi', subtitle: 'Senam SKJ' },
-      { title: 'Senam Pagi', subtitle: 'Senam Anak Sehat' }
-    ]
-  },
-  {
-    time: '09.30 - 10.30',
-    activities: [
-      { title: 'Bermain Aktif', subtitle: 'Lempar & Tangkap Bola' },
-      { title: 'Bermain Aktif', subtitle: 'Patung & Lilin' },
-      { title: 'Bermain Aktif', subtitle: 'Tikus & Kucing' }
-    ]
-  },
-  {
-    time: '10.30 - 11.30',
-    activities: [
-      { title: 'Waktu Cerita', subtitle: 'Kancil & Timun' },
-      { title: 'Waktu Cerita', subtitle: 'Malin Kundang' },
-      { title: 'Waktu Cerita', subtitle: 'Malin Kundang' }
-    ]
-  },
-  {
-    time: '11.30 - 12.00',
-    activities: [
-      { title: 'Makan Siang', subtitle: '' },
-      { title: 'Makan Siang', subtitle: '' },
-      { title: 'Makan Siang', subtitle: '' }
-    ]
-  },
-  {
-    time: '12.00',
-    activities: [
-      { title: 'Jam Pulang', subtitle: '' },
-      { title: 'Jam Pulang', subtitle: '' },
-      { title: 'Jam Pulang', subtitle: '' }
-    ]
-  }
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const classes = ['Senin', 'Selasa', 'Rabu'];
+const dayMap = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5 };
 
 export default function JadwalPage() {
   const router = useRouter();
@@ -56,6 +16,115 @@ export default function JadwalPage() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [scheduleData, setScheduleData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchScheduleData();
+  }, []);
+
+  async function fetchScheduleData() {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      
+      // Fetch schedule for class A (default) for each day
+      const allSlots = [];
+      for (const day of classes) {
+        const dayNum = dayMap[day];
+        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          // Store slots by day
+          if (data.slots && data.slots.length > 0) {
+            allSlots.push(...data.slots.map((slot, idx) => ({ ...slot, dayIndex: classes.indexOf(day), timeSlot: idx })));
+          }
+        }
+      }
+
+      // If we got data, restructure it; otherwise use default structure
+      if (allSlots.length > 0) {
+        // Restructure to match UI expectations
+        const times = new Set();
+        allSlots.forEach(s => times.add(s.start));
+        const sortedTimes = Array.from(times).sort();
+
+        const restructured = sortedTimes.map(time => {
+          const slotsByTime = allSlots.filter(s => s.start === time);
+          return {
+            time: time.replace(':', '.') + ' - ' + (slotsByTime[0]?.end || time).replace(':', '.'),
+            activities: classes.map(day => {
+              const slot = slotsByTime.find(s => s.dayIndex === classes.indexOf(day));
+              return {
+                title: slot?.title || day,
+                subtitle: slot?.note || ''
+              };
+            })
+          };
+        });
+
+        setScheduleData(restructured.length > 0 ? restructured : getDefaultSchedule());
+      } else {
+        setScheduleData(getDefaultSchedule());
+      }
+    } catch (err) {
+      console.error('Error fetching schedule:', err);
+      setError('Tidak dapat memuat jadwal, menampilkan jadwal default');
+      setScheduleData(getDefaultSchedule());
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function getDefaultSchedule() {
+    return [
+      {
+        time: '09.00 - 09.30',
+        activities: [
+          { title: 'Senam Pagi', subtitle: 'Senam Anak Sehat' },
+          { title: 'Senam Pagi', subtitle: 'Senam SKJ' },
+          { title: 'Senam Pagi', subtitle: 'Senam Anak Sehat' }
+        ]
+      },
+      {
+        time: '09.30 - 10.30',
+        activities: [
+          { title: 'Bermain Aktif', subtitle: 'Lempar & Tangkap Bola' },
+          { title: 'Bermain Aktif', subtitle: 'Patung & Lilin' },
+          { title: 'Bermain Aktif', subtitle: 'Tikus & Kucing' }
+        ]
+      },
+      {
+        time: '10.30 - 11.30',
+        activities: [
+          { title: 'Waktu Cerita', subtitle: 'Kancil & Timun' },
+          { title: 'Waktu Cerita', subtitle: 'Malin Kundang' },
+          { title: 'Waktu Cerita', subtitle: 'Malin Kundang' }
+        ]
+      },
+      {
+        time: '11.30 - 12.00',
+        activities: [
+          { title: 'Makan Siang', subtitle: '' },
+          { title: 'Makan Siang', subtitle: '' },
+          { title: 'Makan Siang', subtitle: '' }
+        ]
+      },
+      {
+        time: '12.00',
+        activities: [
+          { title: 'Jam Pulang', subtitle: '' },
+          { title: 'Jam Pulang', subtitle: '' },
+          { title: 'Jam Pulang', subtitle: '' }
+        ]
+      }
+    ];
+  }
 
   function handleLogout() {
     if (typeof window !== 'undefined') {
@@ -68,13 +137,40 @@ export default function JadwalPage() {
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      console.log('Feedback submitted:', feedback);
+      submitFeedbackToAPI(feedback);
+    }
+  }
+
+  async function submitFeedbackToAPI(feedbackText) {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        console.error('No token found');
+        setFeedbackSubmitted(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ feedback: feedbackText })
+      });
+
+      if (!res.ok) throw new Error('Gagal mengirim feedback');
+
       setFeedbackSubmitted(true);
       setTimeout(() => {
         setFeedback('');
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
+    } catch (err) {
+      console.error('Feedback API error:', err);
+      setFeedback('');
+      setShowFeedbackModal(false);
     }
   }
 
@@ -202,42 +298,47 @@ export default function JadwalPage() {
           <h1 className="wali-sub-page-title">Jadwal Harian</h1>
         </div>
 
-        <div className="schedule-container">
-          <div className="schedule-grid">
-            {/* Kolom pertama: Jam */}
-            <div className="schedule-day">
-              <div className="day-header">Jam</div>
-              {scheduleData.map((slot, idx) => (
-                <div key={`time-${idx}`} className="time-cell">
-                  {slot.time}
-                </div>
-              ))}
-            </div>
+        {loading && <p style={{ textAlign: 'center', padding: '20px' }}>Memuat jadwal...</p>}
+        {error && <p style={{ textAlign: 'center', color: '#e74c3c', padding: '20px' }}>{error}</p>}
 
-            {/* Kolom untuk setiap kelas */}
-            {classes.map((className, classIdx) => (
-              <div key={className} className="schedule-day">
-                <div className="day-header">{className}</div>
+        {!loading && (
+          <div className="schedule-container">
+            <div className="schedule-grid">
+              {/* Kolom pertama: Jam */}
+              <div className="schedule-day">
+                <div className="day-header">Jam</div>
                 {scheduleData.map((slot, idx) => (
-                  <div key={`${className}-${idx}`} className="activity-cell">
-                    {slot.activities[classIdx]?.title && (
-                      <>
-                        <div className="activity-title">
-                          {slot.activities[classIdx].title}
-                        </div>
-                        {slot.activities[classIdx].subtitle && (
-                          <div className="activity-sub">
-                            {slot.activities[classIdx].subtitle}
-                          </div>
-                        )}
-                      </>
-                    )}
+                  <div key={`time-${idx}`} className="time-cell">
+                    {slot.time}
                   </div>
                 ))}
               </div>
-            ))}
+
+              {/* Kolom untuk setiap kelas */}
+              {classes.map((className, classIdx) => (
+                <div key={className} className="schedule-day">
+                  <div className="day-header">{className}</div>
+                  {scheduleData.map((slot, idx) => (
+                    <div key={`${className}-${idx}`} className="activity-cell">
+                      {slot.activities[classIdx]?.title && (
+                        <>
+                          <div className="activity-title">
+                            {slot.activities[classIdx].title}
+                          </div>
+                          {slot.activities[classIdx].subtitle && (
+                            <div className="activity-sub">
+                              {slot.activities[classIdx].subtitle}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="feedback-bar">
           Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan

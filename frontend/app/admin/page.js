@@ -92,6 +92,19 @@ export default function AdminDashboardNew() {
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementBody, setAnnouncementBody] = useState('');
   const [loadingAnnounce, setLoadingAnnounce] = useState(false);
+  
+  // Attendance states
+  const [attendances, setAttendances] = useState([]);
+  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
+  const [studentsList, setStudentsList] = useState([
+    { id: 1, name: 'Adi Suryanto' },
+    { id: 2, name: 'Budi Santoso' },
+    { id: 3, name: 'Citra Dewi' },
+    { id: 4, name: 'Doni Hermawan' },
+    { id: 5, name: 'Eka Putri' }
+  ]);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
@@ -103,6 +116,7 @@ export default function AdminDashboardNew() {
     fetchSchedules();
     fetchDocumentation();
     fetchAnnouncements();
+    fetchAttendance();
   }, [token]);
 
   const fetchNotifications = async () => {
@@ -166,6 +180,63 @@ export default function AdminDashboardNew() {
     } catch (err) {
       console.error('Error fetching announcements:', err);
       setAnnouncements([]);
+    }
+  };
+
+  const fetchAttendance = async () => {
+    try {
+      const res = await fetch(`${API_URL}/attendance`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAttendances(data);
+      }
+    } catch (err) {
+      console.error('Error fetching attendance:', err);
+      setAttendances([]);
+    }
+  };
+
+  const handleMarkAttendance = async () => {
+    if (typeof window === 'undefined' || !token) {
+      alert('Harap login terlebih dahulu');
+      return;
+    }
+
+    if (attendanceRecords.length === 0) {
+      alert('Pilih minimal satu siswa');
+      return;
+    }
+
+    setLoadingAttendance(true);
+    try {
+      const res = await fetch(`${API_URL}/attendance`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          date: attendanceDate,
+          studentIds: attendanceRecords
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (res.ok) {
+        alert('Absensi berhasil disimpan!');
+        setAttendanceRecords([]);
+        fetchAttendance();
+      } else {
+        alert('Gagal menyimpan absensi');
+      }
+    } catch (err) {
+      console.error('Error marking attendance:', err);
+      alert('Terjadi kesalahan: ' + err.message);
+    } finally {
+      setLoadingAttendance(false);
     }
   };
 
@@ -396,6 +467,27 @@ export default function AdminDashboardNew() {
                 />
               </div>
               <span className="nav-label">Dokumentasi</span>
+            </a>
+
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('attendance');
+              }}
+              className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+            >
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/jadwal.png"
+                  alt="Absensi"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Absensi</span>
             </a>
           </nav>
         </div>
@@ -956,6 +1048,134 @@ export default function AdminDashboardNew() {
                       )}
                       <div style={{ fontSize: '12px', color: '#666' }}>
                         {new Date(doc.createdAt).toLocaleDateString('id-ID')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: Attendance */}
+        {activeTab === 'attendance' && (
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+              Kelola Absensi Siswa
+            </h2>
+            <div style={{
+              background: '#ffffff',
+              padding: '24px',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                Catat Absensi Baru
+              </h3>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
+                  Tanggal
+                </label>
+                <input
+                  type="date"
+                  value={attendanceDate}
+                  onChange={(e) => setAttendanceDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                  Pilih Siswa Hadir
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                  gap: '12px'
+                }}>
+                  {studentsList.map((student) => (
+                    <label key={student.id} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      background: attendanceRecords.includes(student.id) ? '#e8f5e9' : '#fff'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={attendanceRecords.includes(student.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setAttendanceRecords([...attendanceRecords, student.id]);
+                          } else {
+                            setAttendanceRecords(attendanceRecords.filter(id => id !== student.id));
+                          }
+                        }}
+                        style={{ marginRight: '8px', width: '16px', height: '16px' }}
+                      />
+                      <span style={{ fontSize: '14px' }}>{student.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={handleMarkAttendance}
+                disabled={loadingAttendance}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: loadingAttendance ? '#ccc' : '#04291e',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: loadingAttendance ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {loadingAttendance ? '⏳ Menyimpan...' : '✓ Simpan Absensi'}
+              </button>
+            </div>
+
+            <div style={{
+              background: '#ffffff',
+              padding: '24px',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+            }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                Riwayat Absensi
+              </h3>
+              {attendances.length === 0 ? (
+                <p style={{ color: '#666', fontSize: '14px' }}>Belum ada data absensi</p>
+              ) : (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                  gap: '12px'
+                }}>
+                  {attendances.slice(0, 10).map((att, idx) => (
+                    <div key={idx} style={{
+                      background: '#f5f5f5',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      borderLeft: '4px solid #04291e'
+                    }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#123047', marginBottom: '4px' }}>
+                        {new Date(att.date || att.createdAt).toLocaleDateString('id-ID')}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        Siswa Hadir: {att.studentIds?.length || 0}
                       </div>
                     </div>
                   ))}

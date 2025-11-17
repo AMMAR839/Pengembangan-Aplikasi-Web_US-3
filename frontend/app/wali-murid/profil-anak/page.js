@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function ProfilAnakPage() {
   const router = useRouter();
@@ -52,7 +51,7 @@ export default function ProfilAnakPage() {
           return;
         }
 
-        const res = await fetch(`${API_URL}/api/student/my?showNik=1`, {
+        const res = await fetch(`${API_URL}/student/my?showNik=1`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -88,13 +87,40 @@ export default function ProfilAnakPage() {
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      console.log("Feedback submitted:", feedback);
+      submitFeedbackToAPI(feedback);
+    }
+  }
+
+  async function submitFeedbackToAPI(feedbackText) {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        console.error('No token found');
+        setFeedbackSubmitted(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ feedback: feedbackText })
+      });
+
+      if (!res.ok) throw new Error('Gagal mengirim feedback');
+
       setFeedbackSubmitted(true);
       setTimeout(() => {
-        setFeedback("");
+        setFeedback('');
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
+    } catch (err) {
+      console.error('Feedback API error:', err);
+      setFeedback('');
+      setShowFeedbackModal(false);
     }
   }
 

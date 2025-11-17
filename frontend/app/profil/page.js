@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./Profil.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function ProfilPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function ProfilPage() {
 
   async function fetchProfile(token) {
     try {
-      const res = await fetch(`${API_URL}/api/auth/me`, {
+      const res = await fetch(`${API_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

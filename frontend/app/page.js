@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./Login.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -74,7 +74,7 @@ export default function LoginPage() {
   }
 
   function handleGoogleLogin() {
-    window.location.href = `${API_URL}/api/auth/google/login`;
+    window.location.href = `${API_URL}/auth/google/login`;
   }
 
   return (

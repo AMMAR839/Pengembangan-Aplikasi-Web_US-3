@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "../pendaftaran-anak/PendaftaranAnak.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function RiwayatPembayaranPage() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function RiwayatPembayaranPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API_URL}/api/payment/my-payments`, {
+      const res = await fetch(`${API_URL}/payment/my-payments`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -103,7 +103,7 @@ export default function RiwayatPembayaranPage() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/api/payment/checkout-by-nik`, {
+      const res = await fetch(`${API_URL}/payment/checkout-by-nik`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

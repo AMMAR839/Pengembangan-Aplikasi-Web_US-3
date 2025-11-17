@@ -31,11 +31,13 @@ export default function WaliMuridDashboard() {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [documentationData, setDocumentationData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [attendancePercentage, setAttendancePercentage] = useState(97);
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       fetchDocumentation();
+      fetchAttendancePercentage();
     }
   }, []);
 
@@ -79,6 +81,35 @@ export default function WaliMuridDashboard() {
     }
   };
 
+  const fetchAttendancePercentage = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // Use default if no token
+        setAttendancePercentage(97);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/attendance/my`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Calculate percentage from attendance data
+        if (data.totalDays && data.presentDays) {
+          const percentage = Math.round((data.presentDays / data.totalDays) * 100);
+          setAttendancePercentage(percentage);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching attendance:', err);
+      // Keep default percentage on error
+      setAttendancePercentage(97);
+    }
+  };
+
   function handleLogout() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
@@ -90,13 +121,41 @@ export default function WaliMuridDashboard() {
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      console.log('Feedback submitted:', feedback);
+      // Submit feedback to API
+      submitFeedbackToAPI(feedback);
+    }
+  }
+
+  async function submitFeedbackToAPI(feedbackText) {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        console.error('No token found');
+        setFeedbackSubmitted(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ feedback: feedbackText })
+      });
+
+      if (!res.ok) throw new Error('Gagal mengirim feedback');
+
       setFeedbackSubmitted(true);
       setTimeout(() => {
         setFeedback('');
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
+    } catch (err) {
+      console.error('Feedback API error:', err);
+      setFeedback('');
+      setShowFeedbackModal(false);
     }
   }
 
@@ -118,8 +177,10 @@ useEffect(() => {
 
       const data = await res.json();
       setWeather(data);
+      setErrorWeather(null);
     } catch (err) {
       console.error('Weather fetch error:', err);
+      setErrorWeather(err.message);
       // Use default weather data if API fails
       setWeather({
         lokasi: 'Yogyakarta',
@@ -132,6 +193,24 @@ useEffect(() => {
             kondisi: 'Berawan',
             icon: 'https://cdn.weatherapi.com/weather/128x128/day/119.png',
             persentase_hujan: '20%'
+          },
+          {
+            tanggal: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            kota: 'Yogyakarta',
+            suhu_max: '31°C',
+            suhu_min: '23°C',
+            kondisi: 'Cerah',
+            icon: 'https://cdn.weatherapi.com/weather/128x128/day/113.png',
+            persentase_hujan: '0%'
+          },
+          {
+            tanggal: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+            kota: 'Yogyakarta',
+            suhu_max: '33°C',
+            suhu_min: '25°C',
+            kondisi: 'Hujan',
+            icon: 'https://cdn.weatherapi.com/weather/128x128/day/302.png',
+            persentase_hujan: '80%'
           }
         ]
       });
@@ -309,8 +388,12 @@ useEffect(() => {
               <div className="info-section">
                 <div className="info-item attendance">
                   <p className="attendance-label">Presentase Kehadiran</p>
-                  <div className="attendance-percentage">97%</div>
-                  <small>Hari selengkapnya...</small>
+                  <div className="attendance-percentage">{attendancePercentage}%</div>
+                  <Link href="/wali-murid/attendance" style={{ textDecoration: 'none' }}>
+                    <small style={{ color: '#193745', textDecoration: 'underline', cursor: 'pointer' }}>
+                      Lihat detail absensi →
+                    </small>
+                  </Link>
                 </div>
 
                 <div className="info-item announcement">
