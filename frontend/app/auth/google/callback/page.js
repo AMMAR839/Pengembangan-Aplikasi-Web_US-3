@@ -50,8 +50,8 @@ export default function GoogleCallbackPage() {
           router.replace(redirect);
         } else {
           if (role === "admin") router.replace("/admin");
-          else if (role === "parent" || role === "wali-murid")
-            router.replace("/wali-murid");
+          else if (role === "parent")
+            router.replace("/wali-murid/dashboard");
           else router.replace("/umum");
         }
       }

@@ -1,3 +1,4 @@
+// src/routes/auth.js
 const express = require('express');
 const router = express.Router();
 
@@ -6,11 +7,28 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
-const { register, login } = require('../controllers/authController');
 
-// Register & login biasa
+const {
+  register,
+  login,
+  verifyEmail,
+  me,
+  changePassword,
+} = require('../controllers/authController');
+
+const { auth } = require('../middleware/auth');  // ⬅️ PERHATIKAN: ../middleware/auth
+
+// ===== REGISTER & LOGIN BIASA =====
 router.post('/register', register);
 router.post('/login', login);
+
+// PROFIL USER LOGIN
+router.get('/me', auth, me);
+
+// GANTI PASSWORD USER LOGIN
+router.post('/change-password', auth, changePassword);
+
+// ===== GOOGLE AUTH (login & register) =====
 
 // Login pakai Google (user yang SUDAH terdaftar)
 router.get(
@@ -30,7 +48,10 @@ router.get(
   })
 );
 
-// Callback dari Google (dipanggil oleh Google, bukan frontend)
+// Verifikasi email (link dari Gmail)
+router.get('/verify-email', verifyEmail);
+
+// Callback dari Google
 router.get(
   '/google/callback',
   passport.authenticate('google', { session: false }),
@@ -44,7 +65,7 @@ router.get(
 
     let user =
       (await User.findOne({ googleId })) ||
-      (email ? await User.findOne({ username: email }) : null);
+      (email ? await User.findOne({ email }) : null);
 
     try {
       if (mode === 'login') {
@@ -68,9 +89,11 @@ router.get(
         );
 
         user = await User.create({
+          email: email || undefined,
           username: email || googleId,
           password: randomPass,
           googleId,
+          isVerified: true, // login via Google → kita anggap verified
         });
       }
 
