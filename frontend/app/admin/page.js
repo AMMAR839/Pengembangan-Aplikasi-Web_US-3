@@ -247,6 +247,11 @@ export default function AdminDashboardNew() {
   };
 
   const handleDocumentUpload = async (e) => {
+    if (typeof window === 'undefined' || !token) {
+      alert('Harap login terlebih dahulu');
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file || !docDate) {
       alert('Pilih file dan tanggal');
@@ -830,23 +835,86 @@ export default function AdminDashboardNew() {
                 <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
                   File Gambar
                 </label>
-                <input
-                  type="file"
-                  onChange={(e) => {
-                    setDocFile(e.target.files?.[0] || null);
-                    handleDocumentUpload(e);
-                  }}
-                  accept="image/*"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="file"
+                    id="docFileInput"
+                    onChange={(e) => {
+                      setDocFile(e.target.files?.[0] || null);
+                    }}
+                    accept="image/*"
+                    style={{
+                      display: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={() => document.getElementById('docFileInput').click()}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px dashed #8fa9a9',
+                      borderRadius: '8px',
+                      background: '#f8fafa',
+                      color: '#123047',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#e8f0f0';
+                      e.target.style.borderColor = '#04291e';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = '#f8fafa';
+                      e.target.style.borderColor = '#8fa9a9';
+                    }}
+                  >
+                    📸 Pilih Foto Kegiatan KBM
+                  </button>
+                  {docFile && (
+                    <p style={{ fontSize: '13px', color: '#04291e', marginTop: '8px' }}>
+                      ✓ File dipilih: {docFile.name}
+                    </p>
+                  )}
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  if (!docDate || !docFile) {
+                    alert('Pilih tanggal dan file terlebih dahulu');
+                    return;
+                  }
+                  const event = { target: { files: [docFile] } };
+                  handleDocumentUpload(event);
+                }}
+                disabled={loadingDoc || !docDate || !docFile}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: loadingDoc ? '#ccc' : '#04291e',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: loadingDoc ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s ease',
+                  opacity: loadingDoc ? 0.6 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!loadingDoc && docDate && docFile) {
+                    e.target.style.background = '#052826';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loadingDoc && docDate && docFile) {
+                    e.target.style.background = '#04291e';
+                  }
+                }}
+              >
+                {loadingDoc ? '⏳ Mengirim...' : '✓ Kirim Dokumentasi'}
+              </button>
             </div>
 
             <div style={{
