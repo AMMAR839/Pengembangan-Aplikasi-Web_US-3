@@ -38,26 +38,32 @@ router.get(
   passport.authenticate('google', { session: false }),
   async (req, res) => {
     const profile = req.user;
-    const mode = req.query.state || 'login'; // 'login' atau 'register'
+    const mode = req.query.state || 'login';
     const email = profile.emails?.[0]?.value;
     const googleId = profile.id;
 
     const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    let user =
-      (await User.findOne({ googleId })) ||
-      (email ? await User.findOne({ username: email }) : null);
-
     try {
+      let user =
+        (await User.findOne({ googleId })) ||
+        (email ? await User.findOne({ email }) : null);
+
       if (mode === 'login') {
-        // LOGIN: kalau belum terdaftar, jangan auto register
+        // kalau login tapi belum pernah daftar sama sekali
         if (!user) {
           return res.redirect(
             `${frontend}/auth/google/callback?error=not_registered`
           );
         }
+
+        // kalau user ditemukan lewat email, tapi belum punya googleId → link akun
+        if (!user.googleId) {
+          user.googleId = googleId;
+          await user.save();
+        }
       } else if (mode === 'register') {
-        // REGISTER: kalau sudah ada, jangan buat lagi
+        // register pakai Google → jangan buat kalau sudah ada (baik email atau googleId)
         if (user) {
           return res.redirect(
             `${frontend}/auth/google/callback?error=already_registered`
@@ -70,13 +76,15 @@ router.get(
         );
 
         user = await User.create({
+          email: email || `${googleId}@dummy.local`,
           username: email || googleId,
           password: randomPass,
           googleId,
+          isVerified: true, // kalau mau Google dianggap otomatis verified
         });
       }
 
-      // Sampai sini user pasti ada
+      // sampai sini user pasti ada
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: '1d',
       });
@@ -94,5 +102,6 @@ router.get(
     }
   }
 );
+
 
 module.exports = router;

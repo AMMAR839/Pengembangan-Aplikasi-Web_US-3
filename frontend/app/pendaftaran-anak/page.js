@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import styles from "./PendaftaranAnak.module.css";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -16,15 +17,17 @@ export default function PendaftaranAnakPage() {
   const [tanggalLahir, setTanggalLahir] = useState("");
   const [jenisKelamin, setJenisKelamin] = useState("");
   const [namaOrangTua, setNamaOrangTua] = useState("");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ==== WAJIB LOGIN ====
+  // Proteksi: harus login dulu
   useEffect(() => {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     if (!token) {
+      // simpan redirect supaya setelah login balik ke sini
       localStorage.setItem("redirectAfterLogin", "/pendaftaran-anak");
       router.replace("/");
     }
@@ -68,12 +71,13 @@ export default function PendaftaranAnakPage() {
       });
 
       const data = await res.json();
+
       if (!res.ok) {
-        setError(data.message || "Gagal mendaftarkan anak");
+        setError(data.message || "Gagal mendaftarkan anak.");
         return;
       }
 
-      setSuccess("Data anak berhasil didaftarkan");
+      setSuccess("Data anak berhasil didaftarkan 🎉");
       setFirstName("");
       setLastName("");
       setAlamat("");
@@ -82,62 +86,70 @@ export default function PendaftaranAnakPage() {
       setNamaOrangTua("");
     } catch (err) {
       console.error(err);
-      setError("Terjadi kesalahan server");
+      setError("Terjadi kesalahan pada server.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="umum-page">
-      {/* ===== NAVBAR ===== */}
-      <header className="umum-nav">
-        <div className="umum-nav-left">
-          <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
+    <div className={styles.page}>
+      {/* NAVBAR */}
+      <header className={styles.nav}>
+        <div className={styles.navLeft}>
+          <div className={styles.logo}>
+            {/* kalau punya logo PNG sendiri, ganti span ini dengan <img /> */}
+            <span className={styles.logoFlower}>🌼</span>
+            <span className={styles.logoText}>Little Garden</span>
           </div>
 
-          <nav className="umum-nav-links">
-            <Link href="Dashboard/umum#beranda" className="nav-item">
+          <nav className={styles.navLinks}>
+            <Link href="/umum" className={styles.navItem}>
               Beranda
             </Link>
-            <Link href="Dashboard/umum#tentang-kami" className="nav-item">
+            <a href="/umum#tentang-kami" className={styles.navItem}>
               Tentang Kami
-            </Link>
-            <Link href="Dashboard/umum#kurikulum" className="nav-item">
+            </a>
+            <a href="/umum#kurikulum" className={styles.navItem}>
               Kurikulum
-            </Link>
-
-            {/* Halaman ini yang aktif */}
-            <span className="nav-item active">Pendaftaran Anak</span>
+            </a>
+            <span
+              className={`${styles.navItem} ${styles.navItemActive}`}
+            >
+              Pendaftaran Anak
+            </span>
           </nav>
         </div>
 
-        <div className="umum-nav-right">
-          <button className="umum-icon-btn" type="button">
+        <div className={styles.navRight}>
+          <button className={styles.iconBtn} type="button">
             🔔
           </button>
           <button
-            className="umum-icon-btn"
+            className={styles.iconBtn}
             type="button"
-            onClick={handleLogout}
             title="Logout"
+            onClick={handleLogout}
           >
             ⏻
           </button>
         </div>
       </header>
 
-      {/* ===== FORM PENDAFTARAN ANAK ===== */}
-      <main className="daftar-page">
-        <section className="daftar-card">
-          <div className="daftar-left">
-            <h2 className="daftar-title">Pendaftaran Anak</h2>
+      {/* MAIN CONTENT */}
+      <main className={styles.main}>
+        <section className={styles.card}>
+          {/* kiri: form */}
+          <div className={styles.left}>
+            <h2 className={styles.title}>Pendaftaran Anak</h2>
+            <p className={styles.subtitle}>
+              Lengkapi data berikut untuk mendaftarkan putra / putri
+              Anda di Little Garden Kindergarten.
+            </p>
 
-            <form className="daftar-form" onSubmit={handleSubmit}>
-              <div className="daftar-row">
-                <div className="daftar-field">
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <div className={styles.row}>
+                <div className={styles.field}>
                   <label>Nama Depan</label>
                   <input
                     value={firstName}
@@ -145,7 +157,7 @@ export default function PendaftaranAnakPage() {
                     required
                   />
                 </div>
-                <div className="daftar-field">
+                <div className={styles.field}>
                   <label>Nama Belakang</label>
                   <input
                     value={lastName}
@@ -155,7 +167,7 @@ export default function PendaftaranAnakPage() {
                 </div>
               </div>
 
-              <div className="daftar-field">
+              <div className={styles.field}>
                 <label>Alamat</label>
                 <input
                   value={alamat}
@@ -164,21 +176,26 @@ export default function PendaftaranAnakPage() {
                 />
               </div>
 
-              <div className="daftar-row">
-                <div className="daftar-field">
+              <div className={styles.row}>
+                <div className={styles.field}>
                   <label>Tanggal Lahir</label>
                   <input
                     type="date"
                     value={tanggalLahir}
-                    onChange={(e) => setTanggalLahir(e.target.value)}
+                    onChange={(e) =>
+                      setTanggalLahir(e.target.value)
+                    }
                     required
                   />
                 </div>
-                <div className="daftar-field">
+
+                <div className={styles.field}>
                   <label>Jenis Kelamin</label>
                   <select
                     value={jenisKelamin}
-                    onChange={(e) => setJenisKelamin(e.target.value)}
+                    onChange={(e) =>
+                      setJenisKelamin(e.target.value)
+                    }
                     required
                   >
                     <option value="">Pilih...</option>
@@ -188,21 +205,27 @@ export default function PendaftaranAnakPage() {
                 </div>
               </div>
 
-              <div className="daftar-field">
+              <div className={styles.field}>
                 <label>Nama Orang Tua</label>
                 <input
                   value={namaOrangTua}
-                  onChange={(e) => setNamaOrangTua(e.target.value)}
+                  onChange={(e) =>
+                    setNamaOrangTua(e.target.value)
+                  }
                   required
                 />
               </div>
 
-              {error && <p className="auth-error">{error}</p>}
-              {success && <p className="daftar-success">{success}</p>}
+              {error && (
+                <p className={styles.error}>{error}</p>
+              )}
+              {success && (
+                <p className={styles.success}>{success}</p>
+              )}
 
               <button
                 type="submit"
-                className="daftar-submit-btn"
+                className={styles.submitBtn}
                 disabled={loading}
               >
                 {loading ? "Menyimpan..." : "Kirim Pendaftaran"}
@@ -210,12 +233,14 @@ export default function PendaftaranAnakPage() {
             </form>
           </div>
 
-          <div className="daftar-right">
-            <div className="daftar-bg-shape" />
+          {/* kanan: ilustrasi anak + shape */}
+          <div className={styles.right}>
+            <div className={styles.bgShapeOuter} />
+            <div className={styles.bgShapeInner} />
             <img
-              src="/umum-kid.jpg"
+              src="/daftar-kid.png" // taruh file ini di /public
               alt="Anak Little Garden"
-              className="daftar-image"
+              className={styles.kidImage}
             />
           </div>
         </section>
