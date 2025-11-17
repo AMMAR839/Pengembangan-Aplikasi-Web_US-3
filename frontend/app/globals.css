@@ -926,7 +926,39 @@ body { margin: 0; padding: 0; }
 @media (max-width: 900px) {
   .wali-page { padding: 20px; }
   .schedule-grid { grid-template-columns: 1fr; }
+  .weather-grid { grid-template-columns: 1fr; }
 }
+
+.weather-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.weather-card{
+  background: #C9D1D2;
+  border: px solid #d7e6e6;
+  padding: 15px;
+}
+
+
+.weather-item {
+  
+  padding: 16px;
+  border-radius: 12px;
+  background: #fffffc;
+  text-align :center;
+  align-items: center;
+  font-size: small;
+}
+
+.weather-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0;
+}
+
 
 /* ========== FEEDBACK MODAL ========= */
 .feedback-modal-overlay {
@@ -1319,11 +1351,11 @@ body { margin: 0; padding: 0; }
 }
 
 .dashboard-card {
-  background: #C9D1D2;
+  background: #FFFFFC;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  gap: 20px;
+  gap: 50px;
 }
 
 .card-title {
@@ -1416,7 +1448,7 @@ body { margin: 0; padding: 0; }
 .info-item {
   padding: 16px;
   border-radius: 12px;
-  background: #E8F0F3;
+  background: #fffffc;
 }
 
 .info-item.attendance {
@@ -1464,7 +1496,7 @@ body { margin: 0; padding: 0; }
 .chart-card {
   background: #C9D1D2;
   border: px solid #d7e6e6;
-  padding: 16px;
+  padding: 15px;
 }
 
 .card-header-with-label {
@@ -1611,7 +1643,7 @@ body { margin: 0; padding: 0; }
   }
 
   .dashboard-grid {
-    gap: 20px;
+    gap: px;
     margin-bottom: px;
   }
 
@@ -1622,7 +1654,7 @@ body { margin: 0; padding: 0; }
 
 @media (max-width: 900px) {
   .dashboard-wali-page {
-    padding: 20px;
+    padding: 0px 10px;
     gap: 32px;
   }
 
