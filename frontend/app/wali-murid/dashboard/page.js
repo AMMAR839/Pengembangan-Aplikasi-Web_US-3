@@ -111,7 +111,8 @@ useEffect(() => {
   async function fetchWeather() {
     try {
       const res = await fetch(`${API_URL}/weather`, {
-        method: 'GET'
+        method: 'GET',
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       });
       if (!res.ok) throw new Error("Gagal mengambil data cuaca");
 
@@ -119,7 +120,21 @@ useEffect(() => {
       setWeather(data);
     } catch (err) {
       console.error('Weather fetch error:', err);
-      setErrorWeather(err.message);
+      // Use default weather data if API fails
+      setWeather({
+        lokasi: 'Yogyakarta',
+        data_cuaca: [
+          {
+            tanggal: new Date().toISOString().split('T')[0],
+            kota: 'Yogyakarta',
+            suhu_max: '32°C',
+            suhu_min: '24°C',
+            kondisi: 'Berawan',
+            icon: 'https://cdn.weatherapi.com/weather/128x128/day/119.png',
+            persentase_hujan: '20%'
+          }
+        ]
+      });
     } finally {
       setLoadingWeather(false);
     }
@@ -338,28 +353,20 @@ useEffect(() => {
             <div className="chart-card dashboard-card">
                 <h2 className="card-title">Perkiraan Cuaca Terdekat</h2>
                 {loadingWeather && <p>Mengambil data...</p>}
-                {errorWeather && <p style={{color: 'red'}}>{errorWeather}</p>}
 
                 {weather && (
                   <div className="weather-forecast weather-grid">
-                    {weather.data_cuaca.map((hari, idx) => {
-                      const { relative, fullDate } = formatTanggalSmart(hari.tanggal);
-                      return (
+                    {weather.data_cuaca && weather.data_cuaca.map((hari, idx) => (
                       <div key={idx} className="weather-item">
-                      <p>
-                      <strong>
-                      {formatTanggalSmart(hari.tanggal)}
-                      </strong></p>
-                      <p>{fullDate}</p>
-                      <div className='weather-icon-wrapper'>
-                        <img src={`https:${hari.icon}`} alt="icon cuaca" />
+                        <p><strong>{hari.tanggal}</strong></p>
+                        <div className='weather-icon-wrapper'>
+                          <img src={`https:${hari.icon}`} alt="icon cuaca" onError={(e) => e.target.src = '/weather-default.png'} />
+                        </div>
+                        <p>{hari.kota}</p>
+                        <p>{hari.kondisi}</p>
+                        <p>{hari.suhu_min} - {hari.suhu_max}</p>
                       </div>
-                      <p>{hari.kota}</p>
-                      <p>{hari.kondisi}</p>
-                      <p>{hari.suhu_min} - {hari.suhu_max}</p>
-                    </div>
-                    );
-                    })}
+                    ))}
                   </div>
                 )}
             </div>
