@@ -2,12 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Montserrat_Underline } from 'next/font/google';
 import { NotificationList } from '@/app/components/NotificationList';
 
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
@@ -23,19 +23,47 @@ const teachersData = [
   { id: 3, name: 'Ibu Cantika S.Pd.', photo: '/teacher-3.jpg' }
 ];
 
-const documentationData = [
-  { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
-  { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
-];
-
-
 export default function WaliMuridDashboard() {
   const router = useRouter();
   const [activeNav, setActiveNav] = useState('dashboard');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [documentationData, setDocumentationData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
+
+  useEffect(() => {
+    fetchDocumentation();
+  }, []);
+
+  const fetchDocumentation = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/gallery`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Format the data to match expected structure
+        const formatted = data.map((doc) => ({
+          id: doc._id,
+          date: new Date(doc.createdAt).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+          photo: doc.imageUrl || 'images/dokumentasidummy1.png'
+        }));
+        setDocumentationData(formatted.slice(0, 2));
+      }
+    } catch (err) {
+      console.error('Error fetching documentation:', err);
+      // Use default data if API fails
+      setDocumentationData([
+        { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
+        { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   function handleLogout() {
     if (typeof window !== 'undefined') {
