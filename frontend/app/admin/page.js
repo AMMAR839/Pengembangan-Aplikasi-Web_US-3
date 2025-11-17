@@ -87,6 +87,21 @@ export default function AdminDashboardNew() {
   const [docFile, setDocFile] = useState(null);
   const [loadingDoc, setLoadingDoc] = useState(false);
   
+  // Admin stats - will be fetched from API
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalClasses, setTotalClasses] = useState(0);
+  const [totalTeachers, setTotalTeachers] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(false);
+  
+  // Student management states
+  const [allStudents, setAllStudents] = useState([]);
+  const [studentFilter, setStudentFilter] = useState('all'); // all | pending | active | rejected
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  
+  // Feedback management states
+  const [allFeedback, setAllFeedback] = useState([]);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  
   // Schedule management states
   const [scheduleDay, setScheduleDay] = useState('1');
   const [scheduleSlots, setScheduleSlots] = useState([{ start: '', end: '', title: '', note: '' }]);
@@ -115,6 +130,8 @@ export default function AdminDashboardNew() {
     fetchAllSchedules();
     fetchDocumentation();
     fetchAttendance();
+    fetchAllStudents();
+    fetchAllFeedback();
   }, [token]);
 
   const fetchNotifications = async () => {
@@ -194,6 +211,68 @@ export default function AdminDashboardNew() {
     } catch (err) {
       console.error('Error fetching attendance:', err);
       setAttendances([]);
+    }
+  };
+
+  const fetchAllStudents = async () => {
+    setLoadingStudents(true);
+    try {
+      const statusFilter = studentFilter !== 'all' ? `?status=${studentFilter}` : '';
+      const res = await fetch(`${API_URL}/student${statusFilter}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllStudents(data);
+      }
+    } catch (err) {
+      console.error('Error fetching students:', err);
+      setAllStudents([]);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const fetchAllFeedback = async () => {
+    setLoadingFeedback(true);
+    try {
+      const res = await fetch(`${API_URL}/feedback`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllFeedback(data);
+      }
+    } catch (err) {
+      console.error('Error fetching feedback:', err);
+      setAllFeedback([]);
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
+
+  const handleUpdateStudentStatus = async (studentId, newStatus, newKelas) => {
+    try {
+      const res = await fetch(`${API_URL}/student/${studentId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus, kelas: newKelas })
+      });
+
+      if (res.ok) {
+        alert('Status siswa berhasil diupdate');
+        fetchAllStudents();
+      } else {
+        alert('Gagal mengupdate status');
+      }
+    } catch (err) {
+      console.error('Error updating student:', err);
+      alert('Terjadi kesalahan: ' + err.message);
     }
   };
 
@@ -494,6 +573,48 @@ export default function AdminDashboardNew() {
                 />
               </div>
               <span className="nav-label">Dokumentasi</span>
+            </a>
+
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('students');
+              }}
+              className={`nav-item ${activeTab === 'students' ? 'active' : ''}`}
+            >
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dashboard.png"
+                  alt="Manajemen Siswa"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Manajemen Siswa</span>
+            </a>
+
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('feedback');
+              }}
+              className={`nav-item ${activeTab === 'feedback' ? 'active' : ''}`}
+            >
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dashboard.png"
+                  alt="Ulasan Feedback"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Feedback</span>
             </a>
 
             <a
@@ -1336,6 +1457,215 @@ export default function AdminDashboardNew() {
                       </div>
                       <div style={{ fontSize: '12px', color: '#666' }}>
                         Siswa Hadir: {att.studentIds?.length || 0}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: Students Management */}
+        {activeTab === 'students' && (
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+              Manajemen Siswa
+            </h2>
+            <div style={{
+              background: '#ffffff',
+              padding: '24px',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              marginBottom: '24px'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                  Filter Status
+                </label>
+                <select
+                  value={studentFilter}
+                  onChange={(e) => {
+                    setStudentFilter(e.target.value);
+                    fetchAllStudents();
+                  }}
+                  style={{
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="all">Semua Siswa</option>
+                  <option value="pending">Pending</option>
+                  <option value="active">Aktif</option>
+                  <option value="rejected">Ditolak</option>
+                </select>
+              </div>
+
+              {loadingStudents ? (
+                <p style={{ color: '#666' }}>Memuat data siswa...</p>
+              ) : allStudents.length === 0 ? (
+                <p style={{ color: '#666', fontSize: '14px' }}>Tidak ada siswa</p>
+              ) : (
+                <div style={{
+                  overflowX: 'auto',
+                  borderRadius: '8px',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse'
+                  }}>
+                    <thead>
+                      <tr style={{ background: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600', fontSize: '13px' }}>Nama</th>
+                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600', fontSize: '13px' }}>Status</th>
+                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600', fontSize: '13px' }}>Kelas</th>
+                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600', fontSize: '13px' }}>Pembayaran</th>
+                        <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600', fontSize: '13px' }}>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allStudents.map((student) => (
+                        <tr key={student._id} style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '12px', fontSize: '13px' }}>{student.nama}</td>
+                          <td style={{ padding: '12px', fontSize: '13px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              background: student.status === 'active' ? '#e8f5e9' : student.status === 'pending' ? '#fff3e0' : '#ffebee',
+                              color: student.status === 'active' ? '#2e7d32' : student.status === 'pending' ? '#f57c00' : '#c62828'
+                            }}>
+                              {student.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px', fontSize: '13px' }}>
+                            <select
+                              value={student.kelas || ''}
+                              onChange={(e) => handleUpdateStudentStatus(student._id, student.status, e.target.value || null)}
+                              style={{
+                                padding: '6px',
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                fontSize: '12px'
+                              }}
+                            >
+                              <option value="">Belum Ditentukan</option>
+                              <option value="A">A</option>
+                              <option value="B">B</option>
+                            </select>
+                          </td>
+                          <td style={{ padding: '12px', fontSize: '13px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              background: student.paymentStatus === 'paid' ? '#e8f5e9' : '#fff3e0'
+                            }}>
+                              {student.paymentStatus}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>
+                            {student.status === 'pending' && (
+                              <button
+                                onClick={() => handleUpdateStudentStatus(student._id, 'active', student.kelas)}
+                                style={{
+                                  padding: '6px 12px',
+                                  background: '#4caf50',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  marginRight: '4px'
+                                }}
+                              >
+                                Terima
+                              </button>
+                            )}
+                            {student.status !== 'rejected' && (
+                              <button
+                                onClick={() => handleUpdateStudentStatus(student._id, 'rejected', student.kelas)}
+                                style={{
+                                  padding: '6px 12px',
+                                  background: '#f44336',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px'
+                                }}
+                              >
+                                Tolak
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: Feedback Review */}
+        {activeTab === 'feedback' && (
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+              Ulasan Feedback Orang Tua
+            </h2>
+            <div style={{
+              background: '#ffffff',
+              padding: '24px',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+            }}>
+              {loadingFeedback ? (
+                <p style={{ color: '#666' }}>Memuat feedback...</p>
+              ) : allFeedback.length === 0 ? (
+                <p style={{ color: '#666', fontSize: '14px' }}>Belum ada feedback</p>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}>
+                  {allFeedback.map((feedback) => (
+                    <div key={feedback._id} style={{
+                      background: '#f9f9f9',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #04291e'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'start',
+                        marginBottom: '8px'
+                      }}>
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#123047' }}>
+                            {feedback.parentUserId?.username || 'Orang Tua'}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#999' }}>
+                            {new Date(feedback.createdAt).toLocaleString('id-ID')}
+                          </div>
+                        </div>
+                        <span style={{
+                          padding: '4px 12px',
+                          borderRadius: '4px',
+                          background: '#e3f2fd',
+                          color: '#0d47a1',
+                          fontSize: '12px',
+                          fontWeight: '500'
+                        }}>
+                          Feedback #{feedback._id?.slice(-6)}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#333', marginTop: '12px' }}>
+                        {feedback.feedback}
                       </div>
                     </div>
                   ))}

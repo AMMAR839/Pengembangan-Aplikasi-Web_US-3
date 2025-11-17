@@ -389,11 +389,6 @@ useEffect(() => {
                 <div className="info-item attendance">
                   <p className="attendance-label">Presentase Kehadiran</p>
                   <div className="attendance-percentage">{attendancePercentage}%</div>
-                  <Link href="/wali-murid/attendance" style={{ textDecoration: 'none' }}>
-                    <small style={{ color: '#193745', textDecoration: 'underline', cursor: 'pointer' }}>
-                      Lihat detail absensi →
-                    </small>
-                  </Link>
                 </div>
 
                 <div className="info-item announcement">
