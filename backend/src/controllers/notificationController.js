@@ -6,6 +6,13 @@ const Student = require('../models/Student');
 
 exports.createNotification = async (req, res) => {
   try {
+    console.log('[NOTIFICATION] Creating notification request:', {
+      userId: req.user._id,
+      username: req.user.username,
+      role: req.user.role,
+      body: req.body
+    });
+
     let {
       title,
       body,

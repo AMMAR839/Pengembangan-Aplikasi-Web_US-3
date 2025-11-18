@@ -5,9 +5,11 @@ import "./dokumentasi-kbm.css";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { io } from "socket.io-client";
 import { NotificationList } from "@/app/components/NotificationList";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function DokumentasiKBMPage() {
   const router = useRouter();
@@ -78,7 +80,7 @@ export default function DokumentasiKBMPage() {
             day: "numeric",
           }
         ),
-        photo: doc.imageUrl || "/images/dokumentasidummy1.png",
+        photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : "/images/dokumentasidummy1.png",
         notes: doc.caption || "",
       }));
 
