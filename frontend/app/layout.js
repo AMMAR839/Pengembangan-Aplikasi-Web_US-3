@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Little Garden Pre-school - Sekolah Berkualitas untuk Anak Usia Dini",
   description: "Little Garden Pre-school menyediakan Sekolah terbaik untuk anak usia dini dengan kurikulum berkualitas, guru berpengalaman, dan fasilitas lengkap. Daftar sekarang untuk masa depan anak yang lebih baik.",
-  keywords: "sekolah islam, PAUD islam, TK islam, pendidikan anak usia dini, sekolah islam terbaik, kurikulum islam, tahfidz anak, pendidikan karakter islami",
+  keywords: "sekolah , PAUD , TK , pendidikan anak usia dini, sekolah  terbaik, kurikulum , tahfidz anak, pendidikan karakter",
   authors: [{ name: "Little Garden Pre-school" }],
   openGraph: {
     title: "Little Garden Pre-school - Sekolah Berkualitas",
-    description: "Sekolah Islam terbaik untuk anak usia dini dengan pendidikan berkualitas, guru profesional, dan lingkungan Islami yang nyaman.",
+    description: "Sekolah  terbaik untuk anak usia dini dengan pendidikan berkualitas, guru profesional, dan lingkungan yang nyaman.",
     type: "website",
     locale: "id_ID",
   },
