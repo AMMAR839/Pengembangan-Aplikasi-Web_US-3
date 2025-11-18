@@ -99,8 +99,9 @@ exports.createNotification = async (req, res) => {
         // Broadcast to all connected users
         io.emit('notification:new', notifData);
       } else if (audience === 'parents') {
-        // Emit to users with role 'parent'
-        io.emit('notification:parents', notifData);
+        // Emit to all connected clients - they will handle based on their role
+        // Frontend should check if user role is 'parent'
+        io.emit('notification:new', notifData);
       } else if (audience === 'byUser') {
         // Emit to specific users
         resolvedIds.forEach(userId => {

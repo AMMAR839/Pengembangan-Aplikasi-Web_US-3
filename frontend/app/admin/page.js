@@ -84,6 +84,7 @@ export default function AdminDashboardNew() {
   // Documentation states
   const [docs, setDocs] = useState([]);
   const [docDate, setDocDate] = useState('');
+  const [docCaption, setDocCaption] = useState('');
   const [docFile, setDocFile] = useState(null);
   const [loadingDoc, setLoadingDoc] = useState(false);
   
@@ -451,7 +452,7 @@ export default function AdminDashboardNew() {
     setLoadingDoc(true);
     const formData = new FormData();
     formData.append('photo', file);
-    formData.append('caption', docDate);
+    formData.append('caption', docCaption || docDate);
 
     try {
       const res = await fetch(`${API_URL}/gallery/upload`, {
@@ -467,6 +468,7 @@ export default function AdminDashboardNew() {
       if (res.ok) {
         alert('Dokumentasi berhasil diunggah!');
         setDocDate('');
+        setDocCaption('');
         setDocFile(null);
         // Reset file input
         const fileInput = document.querySelector('input[type="file"][accept*="image"]');
@@ -1227,6 +1229,27 @@ export default function AdminDashboardNew() {
                   }}
                 />
               </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
+                  Catatan / Deskripsi Kegiatan
+                </label>
+                <textarea
+                  value={docCaption}
+                  onChange={(e) => setDocCaption(e.target.value)}
+                  placeholder="Masukkan catatan tentang kegiatan KBM (opsional)"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                    minHeight: '80px',
+                    fontFamily: 'inherit',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
                   File Gambar
@@ -1351,7 +1374,16 @@ export default function AdminDashboardNew() {
                         />
                       )}
                       <div style={{ fontSize: '12px', color: '#666' }}>
-                        {new Date(doc.createdAt).toLocaleDateString('id-ID')}
+                        {(() => {
+                          try {
+                            const dateObj = new Date(doc.createdAt);
+                            return !isNaN(dateObj.getTime()) 
+                              ? dateObj.toLocaleDateString('id-ID')
+                              : 'Tanggal tidak valid';
+                          } catch (e) {
+                            return 'Tanggal tidak valid';
+                          }
+                        })()}
                       </div>
                     </div>
                   ))}
@@ -1404,29 +1436,30 @@ export default function AdminDashboardNew() {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
                   gap: '12px'
                 }}>
-                  {studentsList.map((student) => (
-                    <label key={student.id} style={{
+                  {(allStudents && allStudents.length > 0 ? allStudents : studentsList).map((student) => (
+                    <label key={student._id || student.id} style={{
                       display: 'flex',
                       alignItems: 'center',
                       padding: '12px',
                       border: '1px solid #ddd',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      background: attendanceRecords.includes(student.id) ? '#e8f5e9' : '#fff'
+                      background: attendanceRecords.includes(student._id || student.id) ? '#e8f5e9' : '#fff'
                     }}>
                       <input
                         type="checkbox"
-                        checked={attendanceRecords.includes(student.id)}
+                        checked={attendanceRecords.includes(student._id || student.id)}
                         onChange={(e) => {
+                          const studentId = student._id || student.id;
                           if (e.target.checked) {
-                            setAttendanceRecords([...attendanceRecords, student.id]);
+                            setAttendanceRecords([...attendanceRecords, studentId]);
                           } else {
-                            setAttendanceRecords(attendanceRecords.filter(id => id !== student.id));
+                            setAttendanceRecords(attendanceRecords.filter(id => id !== studentId));
                           }
                         }}
                         style={{ marginRight: '8px', width: '16px', height: '16px' }}
                       />
-                      <span style={{ fontSize: '14px' }}>{student.name}</span>
+                      <span style={{ fontSize: '14px' }}>{student.nama || student.name}</span>
                     </label>
                   ))}
                 </div>

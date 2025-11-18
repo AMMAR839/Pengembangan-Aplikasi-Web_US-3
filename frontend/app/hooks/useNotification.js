@@ -55,23 +55,51 @@ export function useNotification() {
     // Listen for new notifications
     socketRef.current.on('notification:new', (data) => {
       console.log('New notification received:', data);
-      addNotification({
-        type: 'info',
-        title: data.title || 'New Notification',
-        body: data.body || '',
-        notificationId: data._id
-      });
+      
+      // Get user role from localStorage
+      const userRole = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
+      
+      // Filter notifications based on audience
+      if (data.audience === 'all') {
+        // All users get this
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      } else if (data.audience === 'parents' && userRole === 'parent') {
+        // Only parents get this
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      } else if (data.audience === 'byUser') {
+        // Specific users only
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      }
     });
 
-    // Listen for parent-specific notifications
+    // Listen for parent-specific notifications (deprecated but kept for compatibility)
     socketRef.current.on('notification:parents', (data) => {
       console.log('Parent notification received:', data);
-      addNotification({
-        type: 'info',
-        title: data.title || 'New Notification',
-        body: data.body || '',
-        notificationId: data._id
-      });
+      const userRole = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
+      
+      if (userRole === 'parent') {
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      }
     });
 
     // Cleanup on unmount

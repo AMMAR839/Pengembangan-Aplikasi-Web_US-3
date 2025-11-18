@@ -60,11 +60,24 @@ export default function WaliMuridDashboard() {
       if (res.ok) {
         const data = await res.json();
         // Format the data to match expected structure
-        const formatted = data.map((doc) => ({
-          id: doc._id,
-          date: new Date(doc.createdAt).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-          photo: doc.imageUrl || 'images/dokumentasidummy1.png'
-        }));
+        const formatted = data.map((doc) => {
+          try {
+            const dateObj = new Date(doc.createdAt);
+            const isValidDate = !isNaN(dateObj.getTime());
+            return {
+              id: doc._id,
+              date: isValidDate ? dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Tanggal tidak valid',
+              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png'
+            };
+          } catch (e) {
+            console.error('Error parsing date:', e);
+            return {
+              id: doc._id,
+              date: 'Tanggal tidak valid',
+              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png'
+            };
+          }
+        });
         setDocumentationData(formatted.slice(0, 2));
       } else {
         throw new Error('Failed to fetch documentation');

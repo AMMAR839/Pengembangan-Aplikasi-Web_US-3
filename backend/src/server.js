@@ -73,6 +73,9 @@ io.on('connection', (socket) => {
   socket.on('join_room', (userId) => {
     socket.join(`user_${userId}`);
     console.log(`User ${userId} joined room user_${userId}`);
+    
+    // Also join role-based room if user has role in auth data
+    // This will be used to broadcast role-specific notifications
   });
 
   socket.on('disconnect', () => {
