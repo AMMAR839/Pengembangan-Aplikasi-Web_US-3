@@ -1,4 +1,13 @@
-# NITIP
+# Little Garden
+
+## Nama Kelompok & Anggota
+- **Kelompok 9** 
+- **Anggota**:
+  1. Ammar Ali Yasir (23/520644/TK/57406)
+  2. Davana Nico Fadla (23/522338/TK/57649)
+  3. Grace Anre Marcheline (23/522372/TK/57654)
+  4. Mirsad Alganawi Azma (23/522716/TK/57737) 
+  5. Muhammad Muqtada Alhaddad (22/500341/TK/54841)
 
 
 ## 1. BACKEND 
@@ -79,13 +88,28 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 Backend API 
 
 ## 1 Deskripsi Aplikasi
-Aplikasi ini merupakan **backend REST API** untuk mendukung operasional harian PAUD. Fokusnya adalah menghubungkan **admin/guru** dan **orang tua** melalui alur data yang rapi: pendaftaran siswa, penjadwalan kegiatan, dokumentasi aktivitas harian (beserta foto), komunikasi dua arah, notifikasi realtime, serta pembayaran biaya pendaftaran yang aman. Seluruh akses dikendalikan oleh **role-based access control** sehingga setiap pengguna hanya bisa melakukan aksi sesuai perannya.
 
-**Tujuan utama:** menyederhanakan administrasi PAUD, meningkatkan transparansi kegiatan harian anak kepada orang tua, dan mempercepat proses pembayaran/aktivasi siswa.
+**Little Garden** adalah platform digital terintegrasi untuk manajemen PAUD yang menghubungkan **admin/guru** dan **orang tua** dalam satu ekosistem. Sistem ini menyediakan solusi lengkap dari pendaftaran siswa, manajemen kelas, dokumentasi aktivitas harian, komunikasi realtime, hingga pembayaran biaya pendaftaran secara aman.
 
-**Pengguna sasaran:** admin, guru, orang tua (dan akun user biasa yang belum menjadi parent).
+### Visi & Misi
+- **Visi:** Memodernisasi administrasi PAUD dan meningkatkan transparansi kegiatan anak kepada orang tua
+- **Misi:** Menyederhanakan proses operasional, mempercepat aktivasi siswa, dan memfasilitasi komunikasi dua arah yang efektif
 
-**Alur kerja singkat:** Register/Login → Daftarkan siswa (NIK) → Lakukan pembayaran pendaftaran → Sistem mengaktifkan status siswa → Guru set template jadwal mingguan → Sistem membentuk log harian otomatis → Guru unggah foto per slot → Orang tua memantau "anak sedang apa" dan menerima notifikasi/pesan.
+### Pengguna Sasaran
+- **Admin:** Manajemen sistem, pembuatan template jadwal, verifikasi pembayaran
+- **Guru/Pendidik:** Dokumentasi aktivitas harian, upload foto, mengirim pesan ke orang tua
+- **Orang Tua:** Monitoring aktivitas anak, menerima notifikasi, pembayaran pendaftaran, komunikasi dengan guru
+- **User Umum:** Registrasi dan login untuk menjadi parent
+
+### Alur Kerja Utama
+1. **Registrasi & Login** → Autentikasi JWT
+2. **Pendaftaran Siswa** → Input data anak dengan NIK 16 digit
+3. **Pembayaran** → Checkout via Midtrans (status pending → active)
+4. **Penjadwalan** → Guru set template jadwal mingguan per kelas
+5. **Log Harian** → Sistem generate otomatis dari template
+6. **Dokumentasi** → Guru upload foto per aktivitas slot
+7. **Monitoring** → Orang tua lihat jadwal & dokumentasi anak
+8. **Komunikasi** → Guru kirim pesan & notifikasi realtime
 
 ### Ruang Lingkup Fitur (Ringkas tapi Jelas)
 - **Autentikasi & Otorisasi (JWT)**  
@@ -122,17 +146,171 @@ Dengan cakupan tersebut, backend ini berperan sebagai **pondasi** yang mudah dii
 
 ---
 
+## Frontend Documentation
 
-## 2 Nama Kelompok & Anggota
-- **Kelompok 9** 
-- **Anggota**:
-  1. Ammar Ali Yasir (23/520644/TK/57406)
-  2. Davana Nico Fadla (23/522338/TK/57649)
-  3. Grace Anre Marcheline (23/522372/TK/57654)
-  4. Mirsad Alganawi Azma (23/522716/TK/57737) 
-  5. Muhammad Muqtada Alhaddad (22/500341/TK/54841)
+### 1. Deskripsi Frontend
 
----
+Frontend Little Garden dibangun menggunakan **Next.js** dengan **React** dan **Tailwind CSS**. Aplikasi ini menyediakan user interface yang responsif dan user-friendly untuk semua pengguna (admin, guru, dan orang tua) dengan fitur realtime notification dan context-based state management.
+
+### 2. Struktur Folder Frontend
+
+```
+frontend/
+├─ app/
+│  ├─ layout.js                 # Root layout dengan NotificationInitializer
+│  ├─ page.js                   # Halaman Login
+│  ├─ globals.css               # Global styling
+│  ├─ admin/
+│  │  └─ page.js                # Dashboard Admin
+│  ├─ auth/
+│  │  └─ google/                # Google OAuth callback
+│  ├─ components/
+│  │  ├─ NotificationInitializer.js
+│  │  ├─ NotificationList.js
+│  │  ├─ TeacherManagement.js
+│  │  ├─ Toast.js
+│  │  └─ WeatherWidget.js
+│  ├─ contexts/
+│  │  └─ NotificationContext.js  # Global notification state
+│  ├─ ganti-password/
+│  │  └─ page.js                # Change password page
+│  ├─ hooks/
+│  │  └─ useNotification.js      # Custom hook untuk notifikasi
+│  ├─ messages/
+│  │  └─ page.js                # Messages page
+│  ├─ pendaftaran-anak/
+│  │  └─ page.js                # Student registration
+│  ├─ profil/
+│  │  └─ page.js                # User profile page
+│  ├─ register/
+│  │  └─ page.js                # Registration page
+│  ├─ riwayat-pembayaran/
+│  │  └─ page.js                # Payment history
+│  ├─ reset-password/
+│  │  └─ page.js                # Reset password page
+│  ├─ verify-email/
+│  │  └─ page.js                # Email verification
+│  └─ wali-murid/
+│     └─ page.js                # Parent dashboard
+├─ lib/
+│  └─ weather.js                # Weather API integration
+├─ utils/
+│  └─ date.js                   # Date utility functions
+├─ public/
+│  └─ images/                   # Static images
+└─ next.config.mjs              # Next.js configuration
+```
+
+### 3. Fitur Utama Frontend
+
+#### 3.1 Autentikasi & Manajemen User
+- **Login/Register** - Dengan support Google OAuth
+- **JWT Token Management** - Disimpan di localStorage
+- **Password Management** - Change password & reset password
+- **Email Verification** - Verifikasi email saat registrasi
+
+#### 3.2 Dashboard & Manajemen
+- **Admin Dashboard** - Overview sistem, manajemen user & guru
+- **Guru Dashboard** - Input aktivitas harian, upload foto
+- **Parent Dashboard** - Monitoring aktivitas anak, lihat jadwal
+
+#### 3.3 Fitur Komunikasi
+- **Messages** - Chat bidirectional antara guru dan orang tua
+- **Notifications** - Notifikasi realtime via SSE
+- **Toast Notifications** - UI feedback untuk user actions
+
+#### 3.4 Manajemen Data
+- **Student Registration** - Form pendaftaran anak dengan validasi NIK
+- **Payment History** - Riwayat pembayaran & status aktivasi
+- **User Profile** - Edit profil user
+
+#### 3.5 Integrasi Eksternal
+- **Weather Widget** - Display cuaca lokal
+- **Google OAuth** - Login dengan akun Google
+- **Midtrans Payment** - Integrasi payment gateway
+
+### 4. Teknologi Frontend
+- **Framework** : Next.js 16.0.1 (Turbopack)
+- **UI Library** : React 19
+- **Styling** : Tailwind CSS
+- **State Management** : React Context + Hooks
+- **HTTP Client** : Fetch API
+- **Realtime** : Server-Sent Events (SSE)
+- **Validation** : Client-side form validation
+
+### 5. Context & Hooks
+
+#### 5.1 NotificationContext
+```javascript
+// Menyediakan state global untuk notifikasi
+// Methods: addNotification, removeNotification, clearNotifications
+```
+
+#### 5.2 useNotification Hook
+```javascript
+// Custom hook untuk subscribe ke notifikasi realtime
+// Otomatis connect/disconnect SSE
+```
+
+### 6. Environment Variables (Frontend)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+### 7. Styling & CSS Modules
+
+Frontend menggunakan kombinasi:
+- **Tailwind CSS** - Utility-first CSS framework
+- **CSS Modules** - Scoped styling untuk komponenen tertentu
+  - `Login.module.css`
+  - `Register.module.css`
+  - `NotificationList.module.css`
+  - `Toast.module.css`
+  - `GantiPassword.module.css`
+  - `Profil.module.css`
+  - `PendaftaranAnak.module.css`
+
+### 8. Cara Menjalankan Frontend
+
+```bash
+# Navigate ke folder frontend
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build untuk production
+npm run build
+
+# Run production build
+npm start
+```
+
+Akses di: `http://localhost:3000`
+
+### 9. Flow Navigasi Aplikasi
+
+```
+Login/Register
+    ↓
+Google OAuth (opsional)
+    ↓
+Dashboard (sesuai role)
+    ├─ Admin → Manajemen, TeacherManagement
+    ├─ Guru → Upload aktivitas, pesan
+    └─ Orang Tua → Monitor anak, lihat jadwal & foto
+    ↓
+Fitur Lainnya
+    ├─ Messages
+    ├─ Notifications
+    ├─ Payment History
+    ├─ Profile
+    └─ Settings (Ganti Password, Reset Password)
+```
 
 ## 3 Struktur Folder & File
 Struktur mengikuti repo yang diberikan:
