@@ -133,6 +133,7 @@ export default function AdminDashboardNew() {
     fetchAttendance();
     fetchAllStudents();
     fetchAllFeedback();
+    fetchDashboardStats();
   }, [token]);
 
   const fetchNotifications = async () => {
@@ -251,6 +252,36 @@ export default function AdminDashboardNew() {
       setAllFeedback([]);
     } finally {
       setLoadingFeedback(false);
+    }
+  };
+
+  const fetchDashboardStats = async () => {
+    setLoadingStats(true);
+    try {
+      // Fetch all students to count total
+      const studentRes = await fetch(`${API_URL}/student`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (studentRes.ok) {
+        const studentData = await studentRes.json();
+        setTotalStudents(studentData.length || 0);
+      }
+
+      // Fetch all notifications (as activities)
+      const notifRes = await fetch(`${API_URL}/notification`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (notifRes.ok) {
+        const notifData = await notifRes.json();
+        // Keep first 4 notifications as activities
+        setNotifications(notifData.slice(0, 4));
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -706,52 +737,140 @@ export default function AdminDashboardNew() {
               gap: '20px',
               marginBottom: '32px'
             }}>
-              {statsData.map((stat) => (
-                <div key={stat.id} style={{
-                  background: '#ffffff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  position: 'relative'
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                position: 'relative'
+              }}>
+                <div style={{ 
+                  fontSize: '32px', 
+                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  opacity: '0.3'
                 }}>
-                  <div style={{ 
-                    fontSize: '32px', 
-                    marginBottom: '8px',
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    opacity: '0.3'
-                  }}>
-                    {stat.icon}
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '13px', 
-                    color: '#8fa9a9',
-                    marginBottom: '8px',
-                    fontWeight: '500'
-                  }}>
-                    {stat.label}
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '36px', 
-                    fontWeight: '700',
-                    color: '#123047',
-                    marginBottom: '4px'
-                  }}>
-                    {stat.value}
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '12px',
-                    color: stat.trendPositive ? '#4caf50' : '#f44336',
-                    fontWeight: '600'
-                  }}>
-                    {stat.trend}
-                  </div>
+                  👥
                 </div>
-              ))}
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#8fa9a9',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  Total Murid
+                </div>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '700',
+                  color: '#123047',
+                  marginBottom: '4px'
+                }}>
+                  {totalStudents || 0}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#4caf50',
+                  fontWeight: '600'
+                }}>
+                  -
+                </div>
+              </div>
+
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                position: 'relative'
+              }}>
+                <div style={{ 
+                  fontSize: '32px', 
+                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  opacity: '0.3'
+                }}>
+                  🏫
+                </div>
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#8fa9a9',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  Total Kelas Aktif
+                </div>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '700',
+                  color: '#123047',
+                  marginBottom: '4px'
+                }}>
+                  {totalClasses || 2}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#4caf50',
+                  fontWeight: '600'
+                }}>
+                  -
+                </div>
+              </div>
+
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                position: 'relative'
+              }}>
+                <div style={{ 
+                  fontSize: '32px', 
+                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  opacity: '0.3'
+                }}>
+                  👨‍🏫
+                </div>
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#8fa9a9',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  Total Guru Aktif
+                </div>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '700',
+                  color: '#123047',
+                  marginBottom: '4px'
+                }}>
+                  {totalTeachers || 5}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#4caf50',
+                  fontWeight: '600'
+                }}>
+                  -
+                </div>
+              </div>
             </div>
 
             {/* Activities Section */}
@@ -775,8 +894,8 @@ export default function AdminDashboardNew() {
                 flexDirection: 'column',
                 gap: '12px'
               }}>
-                {activitiesData.map((activity) => (
-                  <div key={activity.id} style={{
+                {notifications.length > 0 ? notifications.map((notif) => (
+                  <div key={notif._id} style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '16px',
@@ -789,14 +908,14 @@ export default function AdminDashboardNew() {
                       width: '48px',
                       height: '48px',
                       borderRadius: '12px',
-                      background: activity.bgColor,
+                      background: '#FFE5E5',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '24px',
                       flexShrink: 0
                     }}>
-                      {activity.icon}
+                      🔔
                     </div>
 
                     <div style={{ flex: 1 }}>
@@ -806,13 +925,13 @@ export default function AdminDashboardNew() {
                         color: '#123047',
                         marginBottom: '4px'
                       }}>
-                        {activity.title}
+                        {notif.title}
                       </div>
                       <div style={{ 
                         fontSize: '12px',
                         color: '#8fa9a9'
                       }}>
-                        {activity.description}
+                        {notif.body}
                       </div>
                     </div>
 
@@ -829,7 +948,16 @@ export default function AdminDashboardNew() {
                       Lihat
                     </button>
                   </div>
-                ))}
+                )) : (
+                  <div style={{
+                    padding: '16px',
+                    textAlign: 'center',
+                    color: '#8fa9a9',
+                    fontSize: '14px'
+                  }}>
+                    Tidak ada notifikasi terbaru
+                  </div>
+                )}
               </div>
             </div>
           </div>

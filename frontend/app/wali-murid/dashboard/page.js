@@ -32,12 +32,14 @@ export default function WaliMuridDashboard() {
   const [documentationData, setDocumentationData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attendancePercentage, setAttendancePercentage] = useState(97);
+  const [notifications, setNotifications] = useState([]);
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       fetchDocumentation();
       fetchAttendancePercentage();
+      fetchNotifications();
     }
   }, []);
 
@@ -120,6 +122,30 @@ export default function WaliMuridDashboard() {
       console.error('Error fetching attendance:', err);
       // Keep default percentage on error
       setAttendancePercentage(97);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setNotifications([]);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/notification/my`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Get the latest 2 notifications for display
+        setNotifications(Array.isArray(data) ? data.slice(0, 2) : []);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+      setNotifications([]);
     }
   };
 
@@ -405,10 +431,28 @@ useEffect(() => {
                 </div>
 
                 <div className="info-item announcement">
-                  <div className="announcement-title">Undangan Pertemuan Ibu Orangtua Murid</div>
-                  <small className="announcement-date">2 month yang lalu</small>
-                  <p className="announcement-text">Reminder : Pembayaran SPP Bulan November</p>
-                  <small className="announcement-date">5 hari yang lalu</small>
+                  {notifications.length > 0 ? (
+                    notifications.map((notif, idx) => (
+                      <div key={idx} style={{ marginBottom: '12px' }}>
+                        <div className="announcement-title">{notif.title}</div>
+                        <small className="announcement-date">
+                          {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString('id-ID', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : 'Baru saja'}
+                        </small>
+                        <p className="announcement-text">{notif.body}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="announcement-title">Tidak ada notifikasi</div>
+                      <small className="announcement-date">Akan tampil di sini</small>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
