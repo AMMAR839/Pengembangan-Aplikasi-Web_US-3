@@ -13,7 +13,7 @@ const statsData = [
     value: '43', 
     trend: '+14%',
     trendPositive: true,
-    icon: 'ðŸ‘¥'
+    icon: '👥'
   },
   { 
     id: 2, 
@@ -21,7 +21,7 @@ const statsData = [
     value: '5', 
     trend: '-',
     trendPositive: true,
-    icon: 'ðŸ“š'
+    icon: '🏫'
   },
   { 
     id: 3, 
@@ -29,37 +29,37 @@ const statsData = [
     value: '5', 
     trend: '-',
     trendPositive: true,
-    icon: 'ðŸ‘¨â€ðŸ«'
+    icon: '👨‍🏫'
   }
 ];
 
 const activitiesData = [
   { 
     id: 1, 
-    icon: 'ðŸ“§',
-    title: 'New Lorem arumod Aua',
-    description: 'Tegretian peraturan informasi',
+    icon: '🔔',
+    title: 'Announcement Baru Dibuat',
+    description: 'Announcement Mengenai Liburan Sekolah',
     bgColor: '#FFE5E5'
   },
   { 
     id: 2, 
-    icon: 'ðŸ’³',
+    icon: '💳',
     title: 'Payment received from edi',
-    description: 'Tegretian peraturan informasi',
+    description: 'Pembayaran',
     bgColor: '#E5F0FF'
   },
   { 
     id: 3, 
-    icon: 'ðŸ“…',
-    title: 'Attendance marked for TK A',
-    description: 'Tegretian peraturan informasi',
+    icon: '✔️',
+    title: 'Attendance marked Little Garden Kindergarten',
+    description: 'Terkait kehadiran siswa',
     bgColor: '#E5FFE5'
   },
   { 
     id: 4, 
-    icon: 'ðŸ“',
+    icon: '📄',
     title: 'New report Unit 1 is downloaded',
-    description: 'Tegretian peraturan informasi',
+    description: 'Terkait laporan bab 1',
     bgColor: '#FFF5E5'
   }
 ];
