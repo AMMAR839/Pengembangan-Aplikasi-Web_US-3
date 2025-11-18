@@ -28,7 +28,7 @@ app.set('trust proxy', true);
 // Middleware umum
 app.use(
   cors({
-    origin: true,
+    origin: true,          // nanti bisa diganti process.env.FRONTEND_URL
     credentials: true,
   })
 );
@@ -36,7 +36,6 @@ app.use(
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
-
 
 // Serve file statis untuk foto kegiatan
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
