@@ -1,4 +1,13 @@
-# NITIP
+# Little Garden
+
+## Nama Kelompok & Anggota
+- **Kelompok 9** 
+- **Anggota**:
+  1. Ammar Ali Yasir (23/520644/TK/57406)
+  2. Davana Nico Fadla (23/522338/TK/57649)
+  3. Grace Anre Marcheline (23/522372/TK/57654)
+  4. Mirsad Alganawi Azma (23/522716/TK/57737) 
+  5. Muhammad Muqtada Alhaddad (22/500341/TK/54841)
 
 
 ## 1. BACKEND 
@@ -80,7 +89,7 @@ Backend API
 
 ## 1 Deskripsi Aplikasi
 
-**NITIP** adalah platform digital terintegrasi untuk manajemen PAUD yang menghubungkan **admin/guru** dan **orang tua** dalam satu ekosistem. Sistem ini menyediakan solusi lengkap dari pendaftaran siswa, manajemen kelas, dokumentasi aktivitas harian, komunikasi realtime, hingga pembayaran biaya pendaftaran secara aman.
+**Little Garden** adalah platform digital terintegrasi untuk manajemen PAUD yang menghubungkan **admin/guru** dan **orang tua** dalam satu ekosistem. Sistem ini menyediakan solusi lengkap dari pendaftaran siswa, manajemen kelas, dokumentasi aktivitas harian, komunikasi realtime, hingga pembayaran biaya pendaftaran secara aman.
 
 ### Visi & Misi
 - **Visi:** Memodernisasi administrasi PAUD dan meningkatkan transparansi kegiatan anak kepada orang tua
@@ -141,7 +150,7 @@ Dengan cakupan tersebut, backend ini berperan sebagai **pondasi** yang mudah dii
 
 ### 1. Deskripsi Frontend
 
-Frontend NITIP dibangun menggunakan **Next.js 16** dengan **React** dan **Tailwind CSS**. Aplikasi ini menyediakan user interface yang responsif dan user-friendly untuk semua pengguna (admin, guru, dan orang tua) dengan fitur realtime notification dan context-based state management.
+Frontend Little Garden dibangun menggunakan **Next.js** dengan **React** dan **Tailwind CSS**. Aplikasi ini menyediakan user interface yang responsif dan user-friendly untuk semua pengguna (admin, guru, dan orang tua) dengan fitur realtime notification dan context-based state management.
 
 ### 2. Struktur Folder Frontend
 
@@ -302,20 +311,6 @@ Fitur Lainnya
     ├─ Profile
     └─ Settings (Ganti Password, Reset Password)
 ```
-
----
-
-
-## 2 Nama Kelompok & Anggota
-- **Kelompok 9** 
-- **Anggota**:
-  1. Ammar Ali Yasir (23/520644/TK/57406)
-  2. Davana Nico Fadla (23/522338/TK/57649)
-  3. Grace Anre Marcheline (23/522372/TK/57654)
-  4. Mirsad Alganawi Azma (23/522716/TK/57737) 
-  5. Muhammad Muqtada Alhaddad (22/500341/TK/54841)
-
----
 
 ## 3 Struktur Folder & File
 Struktur mengikuti repo yang diberikan:
