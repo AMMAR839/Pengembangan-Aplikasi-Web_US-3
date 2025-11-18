@@ -83,7 +83,11 @@ export default function LoginPage() {
     <div className="auth-bg">
       <div className="auth-card login-card">
         <div className="auth-left">
-          <img src="/login-kid.jpg" alt="Login" className="auth-image" />
+          <div className="auth-image-placeholder">
+            <div style={{fontSize: '80px', textAlign: 'center', marginTop: '40%'}}>
+              👧 👦
+            </div>
+          </div>
         </div>
 
         <div className="auth-right">

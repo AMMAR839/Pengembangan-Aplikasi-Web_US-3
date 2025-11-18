@@ -7,7 +7,7 @@ const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
 const { register, login, logout, forgotPassword, resetPassword, getMe } = require('../controllers/authController');
-const { authenticateToken } = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 // Register & login biasa
 router.post('/register', register);
@@ -15,7 +15,7 @@ router.post('/login', login);
 router.post('/logout', logout);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
-router.get('/me', authenticateToken, getMe);
+router.get('/me', auth, getMe);
 
 // Login pakai Google (user yang SUDAH terdaftar)
 router.get(
