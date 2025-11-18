@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import  "./ProfilAnak.module.css"; //
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";

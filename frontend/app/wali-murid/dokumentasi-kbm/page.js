@@ -1,23 +1,25 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
-import Image from 'next/image';
-import { NotificationList } from '@/app/components/NotificationList';
+import "./dokumentasi-kbm.css";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { NotificationList } from "@/app/components/NotificationList";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function DokumentasiKBMPage() {
   const router = useRouter();
-  const [activeNav, setActiveNav] = useState('dokumentasi');
+
+  const [activeNav, setActiveNav] = useState("dokumentasi");
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [feedback, setFeedback] = useState('');
+  const [feedback, setFeedback] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
   const [documentationData, setDocumentationData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchDocumentation();
@@ -51,65 +53,55 @@ export default function DokumentasiKBMPage() {
 
   async function fetchDocumentation() {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-      const res = await fetch(`${API_URL}/gallery`, {
-        method: 'GET',
+      const res = await fetch(`${API_URL}/api/gallery`, {
+        method: "GET",
         headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        // Map gallery data to documentation format
-        const formatted = data.map((doc) => {
-          try {
-            const dateObj = new Date(doc.postedAt || doc.createdAt);
-            const isValidDate = !isNaN(dateObj.getTime());
-            
-            return {
-              id: doc._id,
-              date: isValidDate ? dateObj.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }) : 'Tanggal tidak valid',
-              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png',
-              notes: doc.caption || ''
-            };
-          } catch (e) {
-            console.error('Error parsing date for doc:', doc, e);
-            return {
-              id: doc._id,
-              date: 'Tanggal tidak valid',
-              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png',
-              notes: doc.caption || ''
-            };
+      if (!res.ok) throw new Error("Failed to fetch documentation");
+
+      const data = await res.json();
+
+      const formatted = data.map((doc) => ({
+        id: doc._id,
+        date: new Date(doc.postedAt || doc.createdAt).toLocaleDateString(
+          "id-ID",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
           }
-        });
-        setDocumentationData(formatted);
-      } else {
-        throw new Error('Failed to fetch documentation');
-      }
+        ),
+        photo: doc.imageUrl || "/images/dokumentasidummy1.png",
+        notes: doc.caption || "",
+      }));
+
+      setDocumentationData(formatted);
+      setError("");
     } catch (err) {
-      console.error('Error fetching documentation:', err);
-      setError('Tidak dapat memuat dokumentasi');
-      // Use default data if API fails
+      console.error("Error fetching documentation:", err);
+      setError("Tidak dapat memuat dokumentasi");
+
+      // fallback dummy data
       setDocumentationData([
         {
           id: 1,
-          date: 'Senin, 28 Agustus 2025',
-          photo: 'images/dokumentasidummy1.png',
-          notes: ''
+          date: "Senin, 28 Agustus 2025",
+          photo: "/images/dokumentasidummy1.png",
+          notes: "",
         },
         {
           id: 2,
-          date: 'Rabu, 23 Agustus 2025',
-          photo: 'images/dokumentasidummy1.png',
-          notes: ''
-        }
+          date: "Rabu, 23 Agustus 2025",
+          photo: "/images/dokumentasidummy1.png",
+          notes: "",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -117,84 +109,88 @@ export default function DokumentasiKBMPage() {
   }
 
   function handleLogout() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      localStorage.removeItem('role');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      localStorage.removeItem("role");
     }
-    router.replace('/');
+    router.replace("/");
   }
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      submitFeedbackToAPI(feedback);
+      submitFeedbackToAPI(feedback.trim());
     }
   }
 
   async function submitFeedbackToAPI(feedbackText) {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
       if (!token) {
-        console.error('No token found');
+        console.error("No token found");
         setFeedbackSubmitted(false);
         return;
       }
 
-      const res = await fetch(`${API_URL}/feedback`, {
-        method: 'POST',
+      const res = await fetch(`${API_URL}/api/feedback`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ feedback: feedbackText })
+        body: JSON.stringify({ feedback: feedbackText }),
       });
 
-      if (!res.ok) throw new Error('Gagal mengirim feedback');
+      if (!res.ok) throw new Error("Gagal mengirim feedback");
 
       setFeedbackSubmitted(true);
       setTimeout(() => {
-        setFeedback('');
+        setFeedback("");
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
     } catch (err) {
-      console.error('Feedback API error:', err);
-      setFeedback('');
+      console.error("Feedback API error:", err);
+      setFeedback("");
       setShowFeedbackModal(false);
     }
   }
 
   return (
-    <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
-      {/* Notification Bell */}
+    <div className={`umum-page ${showFeedbackModal ? "blur-bg" : ""}`}>
+      {/* Notifikasi (bell) */}
       <NotificationList />
 
       {/* ========== SIDEBAR ========== */}
       <aside className="umum-nav sidebar-layout">
-        {/* LOGO */}
-          <div className="umum-logo sidebar-logo">
-            <Image
-              src="/images/logo.png"
-              alt="Little Garden Logo"
-              width={70}
-              height={40}
-              className="umum-logo-image"
-              style={{ height: "auto" }}
-            />
-          </div>
-        <div className="umum-nav-left sidebar-content">
+        {/* LOGO ATAS */}
+        <div className="umum-logo sidebar-logo">
+          <Image
+            src="/images/logo.png"
+            alt="Little Garden Logo"
+            width={70}
+            height={40}
+            className="umum-logo-image"
+            style={{ height: "auto" }}
+          />
+        </div>
 
-          {/* MENU LIST */}
+        {/* MENU ICON */}
+        <div className="umum-nav-left sidebar-content">
           <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
-              className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveNav('dashboard')}
+              className={`nav-item ${
+                activeNav === "dashboard" ? "active" : ""
+              }`}
+              onClick={() => setActiveNav("dashboard")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
                   src="/images/dashboard.png"
-                  alt="Little Garden Logo"
+                  alt="Dashboard"
                   width={20}
                   height={40}
                   className="umum-logo-image"
@@ -206,8 +202,8 @@ export default function DokumentasiKBMPage() {
 
             <a
               href="/wali-murid/jadwal"
-              className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
-              onClick={() => setActiveNav('jadwal')}
+              className={`nav-item ${activeNav === "jadwal" ? "active" : ""}`}
+              onClick={() => setActiveNav("jadwal")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
@@ -224,8 +220,10 @@ export default function DokumentasiKBMPage() {
 
             <a
               href="/wali-murid/dokumentasi-kbm"
-              className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
-              onClick={() => setActiveNav('dokumentasi')}
+              className={`nav-item ${
+                activeNav === "dokumentasi" ? "active" : ""
+              }`}
+              onClick={() => setActiveNav("dokumentasi")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
@@ -242,8 +240,8 @@ export default function DokumentasiKBMPage() {
 
             <a
               href="/wali-murid/profil-anak"
-              className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
-              onClick={() => setActiveNav('profil')}
+              className={`nav-item ${activeNav === "profil" ? "active" : ""}`}
+              onClick={() => setActiveNav("profil")}
             >
               <div className="umum-logo sidebar-logo">
                 <Image
@@ -260,7 +258,7 @@ export default function DokumentasiKBMPage() {
           </nav>
         </div>
 
-        {/* BOTTOM ICONS */}
+        {/* BOTTOM ICONS (LOGOUT) */}
         <div className="umum-nav-right sidebar-actions">
           <button
             className="umum-icon-btn"
@@ -269,30 +267,47 @@ export default function DokumentasiKBMPage() {
             title="Logout"
           >
             <div className="umum-logo sidebar-logo">
-                <Image
-                  src="/images/logout.png"
-                  alt="Logout"
-                  width={30}
-                  height={40}
-                  className="umum-logo-image"
-                  style={{ height: "auto" }}
-                />
-              </div>
+              <Image
+                src="/images/logout.png"
+                alt="Logout"
+                width={30}
+                height={40}
+                className="umum-logo-image"
+                style={{ height: "auto" }}
+              />
+            </div>
           </button>
         </div>
       </aside>
 
-      {/* ========== DOKUMENTASI KBM ========== */}
+      {/* ========== KONTEN DOKUMENTASI KBM ========== */}
       <div className="wali-sub-page">
         <div className="dokumentasi-header">
           <h1 className="wali-sub-page-title">Dokumentasi KBM</h1>
         </div>
 
-        {loading && <p style={{ textAlign: 'center', padding: '20px' }}>Memuat dokumentasi...</p>}
-        {error && <p style={{ textAlign: 'center', color: '#e74c3c', padding: '20px' }}>{error}</p>}
+        {loading && (
+          <p style={{ textAlign: "center", padding: "20px" }}>
+            Memuat dokumentasi...
+          </p>
+        )}
 
-        {!loading && documentationData.length === 0 && (
-          <p style={{ textAlign: 'center', padding: '20px' }}>Belum ada dokumentasi tersedia</p>
+        {error && (
+          <p
+            style={{
+              textAlign: "center",
+              color: "#e74c3c",
+              padding: "0 20px 20px",
+            }}
+          >
+            {error}
+          </p>
+        )}
+
+        {!loading && documentationData.length === 0 && !error && (
+          <p style={{ textAlign: "center", padding: "20px" }}>
+            Belum ada dokumentasi tersedia
+          </p>
         )}
 
         {!loading && documentationData.length > 0 && (
@@ -333,7 +348,7 @@ export default function DokumentasiKBMPage() {
                 <div className="dokumentasi-column-content">
                   {documentationData.map((item) => (
                     <div key={item.id} className="dokumentasi-notes-card">
-                      {item.notes || '-'}
+                      {item.notes || "-"}
                     </div>
                   ))}
                 </div>
@@ -342,11 +357,22 @@ export default function DokumentasiKBMPage() {
           </div>
         )}
 
+        {/* FEEDBACK BAR */}
         <div className="feedback-bar">
-          Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
-          <button 
+          Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi
+          form masukan
+          <button
             onClick={() => setShowFeedbackModal(true)}
-            style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+            style={{
+              marginLeft: "4px",
+              color: "#052826",
+              textDecoration: "underline",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              fontFamily: "inherit",
+            }}
           >
             disini
           </button>
@@ -364,7 +390,9 @@ export default function DokumentasiKBMPage() {
                 ✕
               </button>
 
-              <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
+              <h2 className="feedback-modal-title">
+                Form Pengisisan Kritik/Saran
+              </h2>
 
               <textarea
                 className="feedback-textarea"
@@ -375,12 +403,14 @@ export default function DokumentasiKBMPage() {
               />
 
               <button
-                className={`feedback-submit-btn ${feedbackSubmitted ? 'success' : ''}`}
+                className={`feedback-submit-btn ${
+                  feedbackSubmitted ? "success" : ""
+                }`}
                 onClick={handleSubmitFeedback}
                 type="button"
                 disabled={feedbackSubmitted}
               >
-                {feedbackSubmitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
+                {feedbackSubmitted ? "✓ Terkirim!" : "Kirimkan Saran!"}
               </button>
             </div>
           </div>
@@ -389,4 +419,3 @@ export default function DokumentasiKBMPage() {
     </div>
   );
 }
-
