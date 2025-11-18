@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./Profil.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProfilPage() {
   const router = useRouter();

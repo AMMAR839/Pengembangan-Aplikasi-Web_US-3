@@ -7,7 +7,7 @@ import { NotificationList } from '@/app/components/NotificationList';
 import './jadwal.css'; // CSS khusus jadwal
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  process.env.NEXT_PUBLIC_API_URL ;
 
 // Hari Senin–Jumat
 const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
