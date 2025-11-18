@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { formatTanggalSmart } from '@/utils/date';
+import { formatHari, formatHariRelatif, formatTanggalLengkap, labelRelativeDate } from '@/utils/date';
 import { NotificationList } from '@/app/components/NotificationList';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -449,7 +449,12 @@ useEffect(() => {
                   <div className="weather-forecast weather-grid">
                     {weather.data_cuaca && weather.data_cuaca.map((hari, idx) => (
                       <div key={idx} className="weather-item">
-                        <p><strong>{hari.tanggal}</strong></p>
+                        <p><strong>{formatHariRelatif(
+                            hari.tanggal.split('-').reverse().join('-') 
+                        )}</strong></p>
+                        <p>{formatTanggalLengkap(
+                            hari.tanggal.split('-').reverse().join('-') 
+                        )}</p>
                         <div className='weather-icon-wrapper'>
                           <img src={hari.icon} alt="icon cuaca" onError={(e) => e.target.textContent = '⛅'} />
                         </div>
