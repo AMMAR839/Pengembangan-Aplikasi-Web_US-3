@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { formatTanggalSmart } from '@/utils/date';
+import { formatHari, formatHariRelatif, formatTanggalLengkap, labelRelativeDate } from '@/utils/date';
 import { NotificationList } from '@/app/components/NotificationList';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -32,12 +32,16 @@ export default function WaliMuridDashboard() {
   const [documentationData, setDocumentationData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attendancePercentage, setAttendancePercentage] = useState(97);
+  const [notifications, setNotifications] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       fetchDocumentation();
       fetchAttendancePercentage();
+      fetchNotifications();
+      fetchScheduleData();
     }
   }, []);
 
@@ -60,11 +64,24 @@ export default function WaliMuridDashboard() {
       if (res.ok) {
         const data = await res.json();
         // Format the data to match expected structure
-        const formatted = data.map((doc) => ({
-          id: doc._id,
-          date: new Date(doc.createdAt).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-          photo: doc.imageUrl || 'images/dokumentasidummy1.png'
-        }));
+        const formatted = data.map((doc) => {
+          try {
+            const dateObj = new Date(doc.createdAt);
+            const isValidDate = !isNaN(dateObj.getTime());
+            return {
+              id: doc._id,
+              date: isValidDate ? dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Tanggal tidak valid',
+              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png'
+            };
+          } catch (e) {
+            console.error('Error parsing date:', e);
+            return {
+              id: doc._id,
+              date: 'Tanggal tidak valid',
+              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png'
+            };
+          }
+        });
         setDocumentationData(formatted.slice(0, 2));
       } else {
         throw new Error('Failed to fetch documentation');
@@ -107,6 +124,97 @@ export default function WaliMuridDashboard() {
       console.error('Error fetching attendance:', err);
       // Keep default percentage on error
       setAttendancePercentage(97);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setNotifications([]);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/notification/my`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Get the latest 2 notifications for display
+        setNotifications(Array.isArray(data) ? data.slice(0, 2) : []);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+      setNotifications([]);
+    }
+  };
+
+  const fetchScheduleData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const classes = ['Senin', 'Selasa', 'Rabu'];
+      const dayMap = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3 };
+      const allSlots = [];
+
+      for (const day of classes) {
+        const dayNum = dayMap[day];
+        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          signal: AbortSignal.timeout(5000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.slots && data.slots.length > 0) {
+            allSlots.push(...data.slots.map((slot, idx) => ({ 
+              ...slot, 
+              dayIndex: classes.indexOf(day)
+            })));
+          }
+        }
+      }
+
+      // Restructure data for display
+      if (allSlots.length > 0) {
+        const times = new Set();
+        allSlots.forEach(s => times.add(s.start));
+        const sortedTimes = Array.from(times).sort();
+
+        const restructured = sortedTimes.map(time => {
+          const slotsByTime = allSlots.filter(s => s.start === time);
+          return {
+            time: time.replace(':', '.') + ' - ' + (slotsByTime[0]?.end || time).replace(':', '.'),
+            senin: slotsByTime.find(s => s.dayIndex === 0)?.title || '-',
+            selasa: slotsByTime.find(s => s.dayIndex === 1)?.title || '-',
+            rabu: slotsByTime.find(s => s.dayIndex === 2)?.title || '-'
+          };
+        });
+
+        setScheduleData(restructured);
+      } else {
+        // Use default schedule if no data from API
+        setScheduleData([
+          { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
+          { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
+          { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
+          { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
+          { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
+        ]);
+      }
+    } catch (err) {
+      console.error('Error fetching schedule data:', err);
+      // Use default schedule as fallback
+      setScheduleData([
+        { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
+        { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
+        { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
+        { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
+        { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
+      ]);
     }
   };
 
@@ -392,10 +500,28 @@ useEffect(() => {
                 </div>
 
                 <div className="info-item announcement">
-                  <div className="announcement-title">Undangan Pertemuan Ibu Orangtua Murid</div>
-                  <small className="announcement-date">2 month yang lalu</small>
-                  <p className="announcement-text">Reminder : Pembayaran SPP Bulan November</p>
-                  <small className="announcement-date">5 hari yang lalu</small>
+                  {notifications.length > 0 ? (
+                    notifications.map((notif, idx) => (
+                      <div key={idx} style={{ marginBottom: '12px' }}>
+                        <div className="announcement-title">{notif.title}</div>
+                        <small className="announcement-date">
+                          {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString('id-ID', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : 'Baru saja'}
+                        </small>
+                        <p className="announcement-text">{notif.body}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="announcement-title">Tidak ada notifikasi</div>
+                      <small className="announcement-date">Akan tampil di sini</small>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -436,7 +562,12 @@ useEffect(() => {
                   <div className="weather-forecast weather-grid">
                     {weather.data_cuaca && weather.data_cuaca.map((hari, idx) => (
                       <div key={idx} className="weather-item">
-                        <p><strong>{hari.tanggal}</strong></p>
+                        <p><strong>{formatHariRelatif(
+                            hari.tanggal.split('-').reverse().join('-') 
+                        )}</strong></p>
+                        <p>{formatTanggalLengkap(
+                            hari.tanggal.split('-').reverse().join('-') 
+                        )}</p>
                         <div className='weather-icon-wrapper'>
                           <img src={hari.icon} alt="icon cuaca" onError={(e) => e.target.textContent = '⛅'} />
                         </div>

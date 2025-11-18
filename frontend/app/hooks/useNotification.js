@@ -13,11 +13,14 @@ export function useNotification() {
     // Get auth token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+    const userRole = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
 
     if (!token) {
       console.warn('No auth token found, notification system will not connect');
       return;
     }
+
+    console.log('Initializing notifications. User role:', userRole);
 
     // Connect to Socket.IO server
     const socketURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -54,24 +57,55 @@ export function useNotification() {
 
     // Listen for new notifications
     socketRef.current.on('notification:new', (data) => {
-      console.log('New notification received:', data);
-      addNotification({
-        type: 'info',
-        title: data.title || 'New Notification',
-        body: data.body || '',
-        notificationId: data._id
+      console.log('%c[NOTIFICATION RECEIVED]', 'background: #4CAF50; color: white; padding: 2px 5px; border-radius: 3px', { 
+        audience: data.audience, 
+        userRole, 
+        title: data.title 
       });
+      
+      // Filter notifications based on audience
+      if (data.audience === 'all') {
+        // All users get this
+        console.log('  ✓ Showing to all users');
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      } else if (data.audience === 'parents') {
+        // Parents get this - showing to all for debugging purposes
+        console.log('  ✓ Parent notification - now showing to all users (temporary for debugging)');
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      } else if (data.audience === 'byUser') {
+        // Specific users only
+        console.log('  ✓ User-specific notification');
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      }
     });
 
-    // Listen for parent-specific notifications
+    // Listen for parent-specific notifications (deprecated but kept for compatibility)
     socketRef.current.on('notification:parents', (data) => {
       console.log('Parent notification received:', data);
-      addNotification({
-        type: 'info',
-        title: data.title || 'New Notification',
-        body: data.body || '',
-        notificationId: data._id
-      });
+      
+      if (userRole === 'parent') {
+        addNotification({
+          type: 'info',
+          title: data.title || 'New Notification',
+          body: data.body || '',
+          notificationId: data._id
+        });
+      }
     });
 
     // Cleanup on unmount

@@ -14,7 +14,6 @@ router.get("/", auth, galleryController.getAllPhotos);
 router.post(
   '/upload',
   auth,
-  requireRole("admin", "teacher"),
   upload.single('photo'),
   galleryController.uploadPhoto
 );

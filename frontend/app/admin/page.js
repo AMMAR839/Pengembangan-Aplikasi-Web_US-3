@@ -13,7 +13,7 @@ const statsData = [
     value: '43', 
     trend: '+14%',
     trendPositive: true,
-    icon: 'ðŸ‘¥'
+    icon: '👥'
   },
   { 
     id: 2, 
@@ -21,7 +21,7 @@ const statsData = [
     value: '5', 
     trend: '-',
     trendPositive: true,
-    icon: 'ðŸ“š'
+    icon: '🏫'
   },
   { 
     id: 3, 
@@ -29,37 +29,37 @@ const statsData = [
     value: '5', 
     trend: '-',
     trendPositive: true,
-    icon: 'ðŸ‘¨â€ðŸ«'
+    icon: '👨‍🏫'
   }
 ];
 
 const activitiesData = [
   { 
     id: 1, 
-    icon: 'ðŸ“§',
-    title: 'New Lorem arumod Aua',
-    description: 'Tegretian peraturan informasi',
+    icon: '🔔',
+    title: 'Announcement Baru Dibuat',
+    description: 'Announcement Mengenai Liburan Sekolah',
     bgColor: '#FFE5E5'
   },
   { 
     id: 2, 
-    icon: 'ðŸ’³',
+    icon: '💳',
     title: 'Payment received from edi',
-    description: 'Tegretian peraturan informasi',
+    description: 'Pembayaran',
     bgColor: '#E5F0FF'
   },
   { 
     id: 3, 
-    icon: 'ðŸ“…',
-    title: 'Attendance marked for TK A',
-    description: 'Tegretian peraturan informasi',
+    icon: '✔️',
+    title: 'Attendance marked Little Garden Kindergarten',
+    description: 'Terkait kehadiran siswa',
     bgColor: '#E5FFE5'
   },
   { 
     id: 4, 
-    icon: 'ðŸ“',
+    icon: '📄',
     title: 'New report Unit 1 is downloaded',
-    description: 'Tegretian peraturan informasi',
+    description: 'Terkait laporan bab 1',
     bgColor: '#FFF5E5'
   }
 ];
@@ -84,6 +84,7 @@ export default function AdminDashboardNew() {
   // Documentation states
   const [docs, setDocs] = useState([]);
   const [docDate, setDocDate] = useState('');
+  const [docCaption, setDocCaption] = useState('');
   const [docFile, setDocFile] = useState(null);
   const [loadingDoc, setLoadingDoc] = useState(false);
   
@@ -106,6 +107,7 @@ export default function AdminDashboardNew() {
   const [scheduleDay, setScheduleDay] = useState('1');
   const [scheduleSlots, setScheduleSlots] = useState([{ start: '', end: '', title: '', note: '' }]);
   const [allSchedules, setAllSchedules] = useState([]);
+  const [schedulesByTime, setSchedulesByTime] = useState([]);
   
   // Attendance states
   const [attendances, setAttendances] = useState([]);
@@ -132,6 +134,7 @@ export default function AdminDashboardNew() {
     fetchAttendance();
     fetchAllStudents();
     fetchAllFeedback();
+    fetchDashboardStats();
   }, [token]);
 
   const fetchNotifications = async () => {
@@ -253,6 +256,36 @@ export default function AdminDashboardNew() {
     }
   };
 
+  const fetchDashboardStats = async () => {
+    setLoadingStats(true);
+    try {
+      // Fetch all students to count total
+      const studentRes = await fetch(`${API_URL}/student`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (studentRes.ok) {
+        const studentData = await studentRes.json();
+        setTotalStudents(studentData.length || 0);
+      }
+
+      // Fetch all notifications (as activities)
+      const notifRes = await fetch(`${API_URL}/notification`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (notifRes.ok) {
+        const notifData = await notifRes.json();
+        // Keep first 4 notifications as activities
+        setNotifications(notifData.slice(0, 4));
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   const handleUpdateStudentStatus = async (studentId, newStatus, newKelas) => {
     try {
       const res = await fetch(`${API_URL}/student/${studentId}/status`, {
@@ -339,14 +372,19 @@ export default function AdminDashboardNew() {
         signal: AbortSignal.timeout(10000)
       });
 
+      const responseData = await res.json();
+      console.log('Notification response:', { status: res.status, ok: res.ok, data: responseData });
+
       if (res.ok) {
         alert('Notifikasi berhasil dikirim!');
         setNotifTitle('');
         setNotifBody('');
         setNotifAudience('all');
-        fetchNotifications();
+        setTimeout(() => {
+          fetchNotifications();
+        }, 300);
       } else {
-        alert('Gagal membuat notifikasi');
+        alert('Gagal membuat notifikasi: ' + (responseData.message || res.statusText));
       }
     } catch (err) {
       console.error('Error creating notification:', err);
@@ -358,17 +396,70 @@ export default function AdminDashboardNew() {
 
   const fetchAllSchedules = async () => {
     try {
-      const res = await fetch(`${API_URL}/activities`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        signal: AbortSignal.timeout(5000)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAllSchedules(Array.isArray(data) ? data : []);
+      // Fetch schedules for each day (Senin=1, Selasa=2, Rabu=3)
+      const allSlots = [];
+      const days = [1, 2, 3];
+      const dayNames = ['Senin', 'Selasa', 'Rabu'];
+
+      for (let i = 0; i < days.length; i++) {
+        const dayNum = days[i];
+        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          signal: AbortSignal.timeout(5000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.slots && data.slots.length > 0) {
+            data.slots.forEach(slot => {
+              allSlots.push({
+                ...slot,
+                dayIndex: i,
+                dayName: dayNames[i]
+              });
+            });
+          }
+        }
       }
+
+      setAllSchedules(allSlots);
+      // Organize by time slots for display
+      organizeSchedulesByTime(allSlots);
     } catch (err) {
       console.error('Error fetching all schedules:', err);
       setAllSchedules([]);
+      setSchedulesByTime([]);
+    }
+  };
+
+  const organizeSchedulesByTime = (slotsData) => {
+    try {
+      const timeSlots = new Map();
+
+      // Group slots by time
+      slotsData.forEach(slot => {
+        const timeKey = `${slot.start} - ${slot.end}`;
+        if (!timeSlots.has(timeKey)) {
+          timeSlots.set(timeKey, {
+            time: timeKey.replace(/:/g, '.'),
+            slots: {}
+          });
+        }
+        const entry = timeSlots.get(timeKey);
+        entry.slots[slot.dayIndex + 1] = { title: slot.title, note: slot.note };
+      });
+
+      // Convert Map to sorted array
+      const sorted = Array.from(timeSlots.values()).sort((a, b) => {
+        const timeA = a.time.split(' ')[0].replace('.', ':');
+        const timeB = b.time.split(' ')[0].replace('.', ':');
+        return timeA.localeCompare(timeB);
+      });
+
+      setSchedulesByTime(sorted);
+    } catch (err) {
+      console.error('Error organizing schedules:', err);
+      setSchedulesByTime([]);
     }
   };
 
@@ -394,26 +485,34 @@ export default function AdminDashboardNew() {
 
     setLoadingSchedule(true);
     try {
+      const payload = {
+        className: 'A', // Default class A
+        dayOfWeek: parseInt(scheduleDay),
+        slots: scheduleSlots
+      };
+      console.log('Saving schedule:', payload);
+
       const res = await fetch(`${API_URL}/activities/jadwal`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          dayOfWeek: parseInt(scheduleDay),
-          slots: scheduleSlots
-        }),
+        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000)
       });
 
+      const responseData = await res.json();
+      console.log('Schedule response:', { status: res.status, ok: res.ok, data: responseData });
+
       if (res.ok) {
-        alert('Jadwal berhasil disimpan! Wali-murid akan melihat perubahan secara real-time.');
+        alert('Jadwal berhasil disimpan! Wali-murid akan melihat perubahan segera.');
         setScheduleSlots([{ start: '', end: '', title: '', note: '' }]);
-        fetchAllSchedules();
+        setTimeout(() => {
+          fetchAllSchedules();
+        }, 300);
       } else {
-        const error = await res.json();
-        alert('Gagal menyimpan jadwal: ' + error.message);
+        alert('Gagal menyimpan jadwal: ' + (responseData.message || res.statusText));
       }
     } catch (err) {
       console.error('Error saving schedule:', err);
@@ -437,8 +536,8 @@ export default function AdminDashboardNew() {
 
     setLoadingDoc(true);
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('date', docDate);
+    formData.append('photo', file);
+    formData.append('caption', docCaption || docDate);
 
     try {
       const res = await fetch(`${API_URL}/gallery/upload`, {
@@ -448,13 +547,24 @@ export default function AdminDashboardNew() {
         signal: AbortSignal.timeout(15000)
       });
 
+      const responseData = await res.json();
+      console.log('Upload response:', { status: res.status, ok: res.ok, data: responseData });
+
       if (res.ok) {
         alert('Dokumentasi berhasil diunggah!');
         setDocDate('');
+        setDocCaption('');
         setDocFile(null);
-        fetchDocumentation();
+        // Reset file input
+        const fileInput = document.querySelector('input[type="file"][accept*="image"]');
+        if (fileInput) fileInput.value = '';
+        
+        // Refresh dokumentasi setelah 500ms untuk ensure data tersimpan
+        setTimeout(() => {
+          fetchDocumentation();
+        }, 500);
       } else {
-        alert('Gagal mengunggah dokumentasi');
+        alert('Gagal mengunggah dokumentasi: ' + (responseData.message || res.statusText));
       }
     } catch (err) {
       console.error('Error uploading documentation:', err);
@@ -681,52 +791,140 @@ export default function AdminDashboardNew() {
               gap: '20px',
               marginBottom: '32px'
             }}>
-              {statsData.map((stat) => (
-                <div key={stat.id} style={{
-                  background: '#ffffff',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  position: 'relative'
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                position: 'relative'
+              }}>
+                <div style={{ 
+                  fontSize: '32px', 
+                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  opacity: '0.3'
                 }}>
-                  <div style={{ 
-                    fontSize: '32px', 
-                    marginBottom: '8px',
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    opacity: '0.3'
-                  }}>
-                    {stat.icon}
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '13px', 
-                    color: '#8fa9a9',
-                    marginBottom: '8px',
-                    fontWeight: '500'
-                  }}>
-                    {stat.label}
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '36px', 
-                    fontWeight: '700',
-                    color: '#123047',
-                    marginBottom: '4px'
-                  }}>
-                    {stat.value}
-                  </div>
-                  
-                  <div style={{ 
-                    fontSize: '12px',
-                    color: stat.trendPositive ? '#4caf50' : '#f44336',
-                    fontWeight: '600'
-                  }}>
-                    {stat.trend}
-                  </div>
+                  👥
                 </div>
-              ))}
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#8fa9a9',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  Total Murid
+                </div>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '700',
+                  color: '#123047',
+                  marginBottom: '4px'
+                }}>
+                  {totalStudents || 0}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#4caf50',
+                  fontWeight: '600'
+                }}>
+                  -
+                </div>
+              </div>
+
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                position: 'relative'
+              }}>
+                <div style={{ 
+                  fontSize: '32px', 
+                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  opacity: '0.3'
+                }}>
+                  🏫
+                </div>
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#8fa9a9',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  Total Kelas Aktif
+                </div>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '700',
+                  color: '#123047',
+                  marginBottom: '4px'
+                }}>
+                  {totalClasses || 2}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#4caf50',
+                  fontWeight: '600'
+                }}>
+                  -
+                </div>
+              </div>
+
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                position: 'relative'
+              }}>
+                <div style={{ 
+                  fontSize: '32px', 
+                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  opacity: '0.3'
+                }}>
+                  👨‍🏫
+                </div>
+                
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#8fa9a9',
+                  marginBottom: '8px',
+                  fontWeight: '500'
+                }}>
+                  Total Guru Aktif
+                </div>
+                
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: '700',
+                  color: '#123047',
+                  marginBottom: '4px'
+                }}>
+                  {totalTeachers || 5}
+                </div>
+                
+                <div style={{ 
+                  fontSize: '12px',
+                  color: '#4caf50',
+                  fontWeight: '600'
+                }}>
+                  -
+                </div>
+              </div>
             </div>
 
             {/* Activities Section */}
@@ -750,8 +948,8 @@ export default function AdminDashboardNew() {
                 flexDirection: 'column',
                 gap: '12px'
               }}>
-                {activitiesData.map((activity) => (
-                  <div key={activity.id} style={{
+                {notifications.length > 0 ? notifications.map((notif) => (
+                  <div key={notif._id} style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '16px',
@@ -764,14 +962,14 @@ export default function AdminDashboardNew() {
                       width: '48px',
                       height: '48px',
                       borderRadius: '12px',
-                      background: activity.bgColor,
+                      background: '#FFE5E5',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '24px',
                       flexShrink: 0
                     }}>
-                      {activity.icon}
+                      🔔
                     </div>
 
                     <div style={{ flex: 1 }}>
@@ -781,13 +979,13 @@ export default function AdminDashboardNew() {
                         color: '#123047',
                         marginBottom: '4px'
                       }}>
-                        {activity.title}
+                        {notif.title}
                       </div>
                       <div style={{ 
                         fontSize: '12px',
                         color: '#8fa9a9'
                       }}>
-                        {activity.description}
+                        {notif.body}
                       </div>
                     </div>
 
@@ -804,7 +1002,128 @@ export default function AdminDashboardNew() {
                       Lihat
                     </button>
                   </div>
-                ))}
+                )) : (
+                  <div style={{
+                    padding: '16px',
+                    textAlign: 'center',
+                    color: '#8fa9a9',
+                    fontSize: '14px'
+                  }}>
+                    Tidak ada notifikasi terbaru
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Jadwal Harian Section */}
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              padding: '28px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+              marginTop: '24px'
+            }}>
+              <h2 style={{ 
+                fontSize: '18px', 
+                fontWeight: '700',
+                color: '#123047',
+                marginBottom: '20px'
+              }}>
+                Jadwal Harian
+              </h2>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  minWidth: '600px'
+                }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047',
+                        minWidth: '100px'
+                      }}>
+                        Jam
+                      </th>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047'
+                      }}>
+                        Senin
+                      </th>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047'
+                      }}>
+                        Selasa
+                      </th>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047'
+                      }}>
+                        Rabu
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {schedulesByTime && schedulesByTime.length > 0 ? (
+                      schedulesByTime.map((timeSlot, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <td style={{
+                            padding: '12px',
+                            fontSize: '13px',
+                            color: '#123047',
+                            fontWeight: '500'
+                          }}>
+                            {timeSlot.time}
+                          </td>
+                          {[1, 2, 3].map((day) => {
+                            const slotForDay = timeSlot.slots[day] || {};
+                            return (
+                              <td key={day} style={{
+                                padding: '12px',
+                                fontSize: '13px',
+                                color: '#123047'
+                              }}>
+                                <div>{slotForDay.title || '-'}</div>
+                                {slotForDay.note && (
+                                  <div style={{ fontSize: '11px', color: '#8fa9a9', marginTop: '4px' }}>
+                                    {slotForDay.note}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" style={{
+                          padding: '16px',
+                          textAlign: 'center',
+                          color: '#8fa9a9',
+                          fontSize: '14px'
+                        }}>
+                          Tidak ada jadwal harian
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -1204,6 +1523,27 @@ export default function AdminDashboardNew() {
                   }}
                 />
               </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
+                  Catatan / Deskripsi Kegiatan
+                </label>
+                <textarea
+                  value={docCaption}
+                  onChange={(e) => setDocCaption(e.target.value)}
+                  placeholder="Masukkan catatan tentang kegiatan KBM (opsional)"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                    minHeight: '80px',
+                    fontFamily: 'inherit',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
                   File Gambar
@@ -1328,7 +1668,16 @@ export default function AdminDashboardNew() {
                         />
                       )}
                       <div style={{ fontSize: '12px', color: '#666' }}>
-                        {new Date(doc.createdAt).toLocaleDateString('id-ID')}
+                        {(() => {
+                          try {
+                            const dateObj = new Date(doc.createdAt);
+                            return !isNaN(dateObj.getTime()) 
+                              ? dateObj.toLocaleDateString('id-ID')
+                              : 'Tanggal tidak valid';
+                          } catch (e) {
+                            return 'Tanggal tidak valid';
+                          }
+                        })()}
                       </div>
                     </div>
                   ))}
@@ -1381,29 +1730,30 @@ export default function AdminDashboardNew() {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
                   gap: '12px'
                 }}>
-                  {studentsList.map((student) => (
-                    <label key={student.id} style={{
+                  {(allStudents && allStudents.length > 0 ? allStudents : studentsList).map((student) => (
+                    <label key={student._id || student.id} style={{
                       display: 'flex',
                       alignItems: 'center',
                       padding: '12px',
                       border: '1px solid #ddd',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      background: attendanceRecords.includes(student.id) ? '#e8f5e9' : '#fff'
+                      background: attendanceRecords.includes(student._id || student.id) ? '#e8f5e9' : '#fff'
                     }}>
                       <input
                         type="checkbox"
-                        checked={attendanceRecords.includes(student.id)}
+                        checked={attendanceRecords.includes(student._id || student.id)}
                         onChange={(e) => {
+                          const studentId = student._id || student.id;
                           if (e.target.checked) {
-                            setAttendanceRecords([...attendanceRecords, student.id]);
+                            setAttendanceRecords([...attendanceRecords, studentId]);
                           } else {
-                            setAttendanceRecords(attendanceRecords.filter(id => id !== student.id));
+                            setAttendanceRecords(attendanceRecords.filter(id => id !== studentId));
                           }
                         }}
                         style={{ marginRight: '8px', width: '16px', height: '16px' }}
                       />
-                      <span style={{ fontSize: '14px' }}>{student.name}</span>
+                      <span style={{ fontSize: '14px' }}>{student.nama || student.name}</span>
                     </label>
                   ))}
                 </div>
