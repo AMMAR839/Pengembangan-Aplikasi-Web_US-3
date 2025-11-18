@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ProfilAnakPage() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function ProfilAnakPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Ambil data anak dari backend
+  // Ambil data anak milik wali murid yang login
   useEffect(() => {
     async function fetchChildren() {
       try {
@@ -44,14 +44,14 @@ export default function ProfilAnakPage() {
           return;
         }
 
-        // Optional: batasi hanya parent/admin
+        // Batasi hanya parent / admin
         if (role !== "parent" && role !== "admin") {
           setError("Halaman ini hanya untuk wali murid / admin.");
           setLoading(false);
           return;
         }
 
-        const res = await fetch(`${API_URL}/student/my?showNik=1`, {
+        const res = await fetch(`${API_URL}/api/student/my?showNik=1`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -87,48 +87,52 @@ export default function ProfilAnakPage() {
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      submitFeedbackToAPI(feedback);
+      submitFeedbackToAPI(feedback.trim());
     }
   }
 
   async function submitFeedbackToAPI(feedbackText) {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token")
+          : null;
+
       if (!token) {
-        console.error('No token found');
+        console.error("No token found");
         setFeedbackSubmitted(false);
         return;
       }
 
-      const res = await fetch(`${API_URL}/feedback`, {
-        method: 'POST',
+      const res = await fetch(`${API_URL}/api/feedback`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ feedback: feedbackText })
+        body: JSON.stringify({ feedback: feedbackText }),
       });
 
-      if (!res.ok) throw new Error('Gagal mengirim feedback');
+      if (!res.ok) throw new Error("Gagal mengirim feedback");
 
       setFeedbackSubmitted(true);
       setTimeout(() => {
-        setFeedback('');
+        setFeedback("");
         setFeedbackSubmitted(false);
         setShowFeedbackModal(false);
       }, 2000);
     } catch (err) {
-      console.error('Feedback API error:', err);
-      setFeedback('');
+      console.error("Feedback API error:", err);
+      setFeedback("");
       setShowFeedbackModal(false);
     }
   }
 
   return (
     <div className={`umum-page ${showFeedbackModal ? "blur-bg" : ""}`}>
-      {/* ========== SIDEBAR ========== */}
+      {/* ========== SIDEBAR (PAKAI KELAS GLOBAL) ========== */}
       <aside className="umum-nav sidebar-layout">
-        {/* LOGO */}
+        {/* LOGO ATAS */}
         <div className="umum-logo sidebar-logo">
           <Image
             src="/images/logo.png"
@@ -140,6 +144,7 @@ export default function ProfilAnakPage() {
           />
         </div>
 
+        {/* MENU ICON */}
         <div className="umum-nav-left sidebar-content">
           <nav className="umum-nav-links sidebar-links">
             <a
@@ -224,10 +229,8 @@ export default function ProfilAnakPage() {
           </nav>
         </div>
 
-        {/* BOTTOM ICONS */}
+        {/* BOTTOM ICONS (LOGOUT) */}
         <div className="umum-nav-right sidebar-actions">
-          
-
           <button
             className="umum-icon-btn"
             type="button"
@@ -237,7 +240,7 @@ export default function ProfilAnakPage() {
             <div className="umum-logo sidebar-logo">
               <Image
                 src="/images/profil.png"
-                alt="Profil"
+                alt="Profil / Logout"
                 width={30}
                 height={40}
                 className="umum-logo-image"
@@ -254,9 +257,8 @@ export default function ProfilAnakPage() {
           <h1 className="wali-sub-page-title">Profil Anak</h1>
         </div>
 
-        {loading && (
-          <p style={{ textAlign: "center" }}>Memuat data anak...</p>
-        )}
+        {loading && <p style={{ textAlign: "center" }}>Memuat data anak...</p>}
+
         {error && (
           <p
             style={{
@@ -279,7 +281,7 @@ export default function ProfilAnakPage() {
               ) : (
                 children.map((child) => (
                   <div key={child._id} className="profil-card">
-                    {/* Photo */}
+                    {/* FOTO ANAK */}
                     <div className="profil-photo-section">
                       <img
                         src={
@@ -291,7 +293,7 @@ export default function ProfilAnakPage() {
                       />
                     </div>
 
-                    {/* Data */}
+                    {/* DATA ANAK */}
                     <div className="profil-data-section">
                       <div className="profil-field">
                         <label className="profil-label">Nama</label>
@@ -380,6 +382,7 @@ export default function ProfilAnakPage() {
           </>
         )}
 
+        {/* FEEDBACK BAR */}
         <div className="feedback-bar">
           Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi
           form masukan

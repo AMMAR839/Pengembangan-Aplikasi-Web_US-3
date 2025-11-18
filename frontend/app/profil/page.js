@@ -216,7 +216,7 @@ export default function ProfilPage() {
                       router.push("/"); // ke halaman login
                     }}
                   >
-                    <span className={styles.profileItemIcon}>🔑</span>
+                    <span className={styles.profileItemIcon}></span>
                     <span>Login</span>
                   </button>
                 )}
