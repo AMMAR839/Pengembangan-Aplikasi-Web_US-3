@@ -78,15 +78,15 @@ export default function LoginPage() {
   }
 
   return (
-  <div className={styles.loginBg}>
-    <div className={styles.loginCard}>
-      <div className={styles.loginLeft}>
-        <img
-          src="/loginleft.jpg"
-          alt="Login"
-          className={styles.loginImage}
-        />
-      </div>
+    <div className={styles.loginBg}>
+      <div className={styles.loginCard}>
+        <div className={styles.loginLeft}>
+          <img
+            src="/loginleft.jpg"
+            alt="Login"
+            className={styles.loginImage}
+          />
+        </div>
 
       <div className={styles.loginRight}>
         <img src="/leaf.svg" alt="Logo" className={styles.bgIcon}/>
@@ -128,7 +128,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className={styles.link}
-                onClick={() => alert("Lupa password belum dibuat")}
+                onClick={() => window.location.href = "/reset-password"}
               >
                 Lupa Password
               </button>

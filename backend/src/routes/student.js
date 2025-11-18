@@ -6,6 +6,7 @@ const {
   registerStudent,
   listMyStudents,
   updateStudentById,
+  searchStudents,
   listAllStudents,
   updateStudentStatus
 } = require('../controllers/studentController');
@@ -25,6 +26,9 @@ router.get('/', auth, requireRole('admin'), listAllStudents);
 
 // lihat anak saya: khusus parent/admin (setelah bayar jadi parent)
 router.get('/my', auth, requireRole('parent','admin'), listMyStudents);
+
+// search students: admin only
+router.get('/search', auth, requireRole('admin'), searchStudents);
 
 // update biodata anak by _id: khusus parent/admin
 router.patch('/:id', auth, requireRole('parent','admin'), updateStudentById);
