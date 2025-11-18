@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import  "./ProfilAnak.module.css"; //
+import "./ProfilAnak.module.css";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -315,6 +315,14 @@ export default function ProfilAnakPage() {
                                 year: "numeric",
                               })
                             : "-"}
+                        </div>
+                      </div>
+
+                      {/* ➕ FIELD KELAS */}
+                      <div className="profil-field">
+                        <label className="profil-label">Kelas</label>
+                        <div className="profil-value">
+                          {child.kelas ? `Kelas ${child.kelas}` : "-"}
                         </div>
                       </div>
 

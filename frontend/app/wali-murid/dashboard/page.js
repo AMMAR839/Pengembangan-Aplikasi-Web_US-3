@@ -2,222 +2,379 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { formatHari, formatHariRelatif, formatTanggalLengkap, labelRelativeDate } from '@/utils/date';
 import { NotificationList } from '@/app/components/NotificationList';
+import './dashboard-wali.css';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-const scheduleData = [
-  { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
-  { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
-  { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
-  { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
-  { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
-];
+const previewDays = ['Senin', 'Selasa', 'Rabu'];
+const dayMap = { Senin: 1, Selasa: 2, Rabu: 3, Kamis: 4, Jumat: 5 };
 
+// Guru boleh dummy dulu
 const teachersData = [
-  { id: 1, name: 'Dr. Bimo Sunarfri Hantono, S.T., M.Eng.', photo: '/images/teacher-1.jpg' },
-  { id: 2, name: 'Benaya Imanuela', photo: '/images/teacher-2.jpg' },
-  { id: 3, name: 'Petrus Aria Chevalier Rambing', photo: '/images/teacher-3.jpg' }
+  {
+    id: 1,
+    name: 'Dr. Bimo Sunarfri Hantono, S.T., M.Eng.',
+    photo: '/images/teacher-1.jpg',
+  },
+  {
+    id: 2,
+    name: 'Benaya Imanuela',
+    photo: '/images/teacher-2.jpg',
+  },
+  {
+    id: 3,
+    name: 'Petrus Aria Chevalier Rambing',
+    photo: '/images/teacher-3.jpg',
+  },
 ];
 
 export default function WaliMuridDashboard() {
   const router = useRouter();
+
   const [activeNav, setActiveNav] = useState('dashboard');
+
+  const [parentName, setParentName] = useState('');
+  const [children, setChildren] = useState([]);
+  const [primaryChild, setPrimaryChild] = useState(null);
+  const [selectedClass, setSelectedClass] = useState('');
+
+  const [shortSchedule, setShortSchedule] = useState([]);
+  const [loadingSchedule, setLoadingSchedule] = useState(true);
+  const [scheduleError, setScheduleError] = useState('');
+
+  const [attendancePercentage, setAttendancePercentage] = useState(null);
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
+
+  const [weather, setWeather] = useState(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+  const [errorWeather, setErrorWeather] = useState('');
+
+  const [documentationData, setDocumentationData] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+
+  const [pageError, setPageError] = useState('');
+
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [documentationData, setDocumentationData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [attendancePercentage, setAttendancePercentage] = useState(97);
-  const [notifications, setNotifications] = useState([]);
-  const [scheduleData, setScheduleData] = useState([]);
-  const childName = 'Nama Orangtua Murid'; // This should come from auth context
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      fetchDocumentation();
-      fetchAttendancePercentage();
-      fetchNotifications();
-      fetchScheduleData();
-    }
-  }, []);
-
-  const fetchDocumentation = async () => {
+  // ====== JADWAL SINGKAT (Senin–Rabu) dari MongoDB ======
+  async function fetchShortSchedule(kelas, token) {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setDocumentationData([
-          { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
-          { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
-        ]);
-        setLoading(false);
+      setLoadingSchedule(true);
+      setScheduleError('');
+      setShortSchedule([]);
+
+      if (!kelas) {
+        setScheduleError('Jadwal belum tersedia untuk kelas -.');
         return;
       }
 
-      const res = await fetch(`${API_URL}/gallery`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Format the data to match expected structure
-        const formatted = data.map((doc) => {
-          try {
-            const dateObj = new Date(doc.createdAt);
-            const isValidDate = !isNaN(dateObj.getTime());
-            return {
-              id: doc._id,
-              date: isValidDate ? dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Tanggal tidak valid',
-              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png'
-            };
-          } catch (e) {
-            console.error('Error parsing date:', e);
-            return {
-              id: doc._id,
-              date: 'Tanggal tidak valid',
-              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png'
-            };
-          }
-        });
-        setDocumentationData(formatted.slice(0, 2));
-      } else {
-        throw new Error('Failed to fetch documentation');
-      }
-    } catch (err) {
-      console.error('Error fetching documentation:', err);
-      // Use default data if API fails
-      setDocumentationData([
-        { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
-        { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAttendancePercentage = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        // Use default if no token
-        setAttendancePercentage(97);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/attendance/my`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` },
-        signal: AbortSignal.timeout(5000)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Calculate percentage from attendance data
-        if (data.totalDays && data.presentDays) {
-          const percentage = Math.round((data.presentDays / data.totalDays) * 100);
-          setAttendancePercentage(percentage);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching attendance:', err);
-      // Keep default percentage on error
-      setAttendancePercentage(97);
-    }
-  };
-
-  const fetchNotifications = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setNotifications([]);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/notification/my`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` },
-        signal: AbortSignal.timeout(5000)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Get the latest 2 notifications for display
-        setNotifications(Array.isArray(data) ? data.slice(0, 2) : []);
-      }
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
-      setNotifications([]);
-    }
-  };
-
-  const fetchScheduleData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const classes = ['Senin', 'Selasa', 'Rabu'];
-      const dayMap = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3 };
       const allSlots = [];
 
-      for (const day of classes) {
-        const dayNum = dayMap[day];
-        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
-          headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-          },
-          signal: AbortSignal.timeout(5000)
-        });
+      for (const dayName of previewDays) {
+        const dayNum = dayMap[dayName];
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data.slots && data.slots.length > 0) {
-            allSlots.push(...data.slots.map((slot, idx) => ({ 
-              ...slot, 
-              dayIndex: classes.indexOf(day)
-            })));
+        const res = await fetch(
+          `${API_URL}/api/activities/jadwal?class=${encodeURIComponent(
+            kelas
+          )}&day=${dayNum}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
+        );
+
+        if (!res.ok) {
+          console.warn(
+            'Gagal mengambil jadwal untuk hari',
+            dayName,
+            res.status
+          );
+          continue;
+        }
+
+        const data = await res.json();
+        if (Array.isArray(data.slots)) {
+          const dayIndex = previewDays.indexOf(dayName);
+          data.slots.forEach((slot) => {
+            allSlots.push({ ...slot, dayIndex });
+          });
         }
       }
 
-      // Restructure data for display
-      if (allSlots.length > 0) {
-        const times = new Set();
-        allSlots.forEach(s => times.add(s.start));
-        const sortedTimes = Array.from(times).sort();
+      if (allSlots.length === 0) {
+        setScheduleError(`Jadwal belum tersedia untuk kelas ${kelas}.`);
+        return;
+      }
 
-        const restructured = sortedTimes.map(time => {
-          const slotsByTime = allSlots.filter(s => s.start === time);
-          return {
-            time: time.replace(':', '.') + ' - ' + (slotsByTime[0]?.end || time).replace(':', '.'),
-            senin: slotsByTime.find(s => s.dayIndex === 0)?.title || '-',
-            selasa: slotsByTime.find(s => s.dayIndex === 1)?.title || '-',
-            rabu: slotsByTime.find(s => s.dayIndex === 2)?.title || '-'
+      // group by jam start-end
+      const grouped = {};
+      allSlots.forEach((slot) => {
+        const key = `${slot.start}-${slot.end}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            start: slot.start,
+            end: slot.end,
+            activities: Array(previewDays.length).fill(''),
           };
-        });
+        }
+        grouped[key].activities[slot.dayIndex] = slot.title || '';
+      });
 
-        setScheduleData(restructured);
+      const rows = Object.values(grouped).sort((a, b) => {
+        const [ah, am] = (a.start || '00:00').split(':').map(Number);
+        const [bh, bm] = (b.start || '00:00').split(':').map(Number);
+        return ah * 60 + am - (bh * 60 + bm);
+      });
+
+      const finalRows = rows.map((row) => ({
+        time: `${(row.start || '').slice(0, 5).replace(
+          ':',
+          '.'
+        )} - ${(row.end || '').slice(0, 5).replace(':', '.')}`,
+        activities: row.activities.map((t) => t || ''),
+      }));
+
+      setShortSchedule(finalRows);
+    } catch (err) {
+      console.error('fetchShortSchedule error:', err);
+      setScheduleError('Tidak dapat memuat jadwal dari server.');
+    } finally {
+      setLoadingSchedule(false);
+    }
+  }
+
+  // ====== PRESENSI dari backend ======
+  async function fetchAttendance(token) {
+    try {
+      setLoadingAttendance(true);
+      setAttendancePercentage(null);
+
+      const res = await fetch(`${API_URL}/api/attendance/my`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.warn('Attendance endpoint error:', res.status);
+        setAttendancePercentage(0);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.totalDays && data.presentDays) {
+        const percentage = Math.round(
+          (data.presentDays / data.totalDays) * 100
+        );
+        setAttendancePercentage(percentage);
+      } else if (typeof data.percentage === 'number') {
+        setAttendancePercentage(Math.round(data.percentage));
       } else {
-        // Use default schedule if no data from API
-        setScheduleData([
-          { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
-          { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
-          { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
-          { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
-          { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
-        ]);
+        setAttendancePercentage(0);
       }
     } catch (err) {
-      console.error('Error fetching schedule data:', err);
-      // Use default schedule as fallback
-      setScheduleData([
-        { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
-        { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
-        { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
-        { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
-        { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
-      ]);
+      console.error('fetchAttendance error:', err);
+      setAttendancePercentage(0);
+    } finally {
+      setLoadingAttendance(false);
     }
-  };
+  }
 
+  // ====== CUACA ======
+  async function fetchWeather() {
+    try {
+      setLoadingWeather(true);
+      setErrorWeather('');
+      setWeather(null);
+
+      const res = await fetch(`${API_URL}/api/weather`);
+
+      if (!res.ok) {
+        throw new Error('Gagal mengambil data cuaca');
+      }
+
+      const data = await res.json();
+      setWeather(data);
+    } catch (err) {
+      console.error('Weather fetch error:', err);
+      setErrorWeather(
+        err?.message || 'Gagal mengambil data cuaca, gunakan perkiraan umum.'
+      );
+
+      const today = new Date();
+      const formatDate = (offset) => {
+        const d = new Date(today.getTime() + offset * 86400000);
+        return d.toISOString().split('T')[0];
+      };
+
+      // fallback
+      setWeather({
+        lokasi: 'Yogyakarta',
+        data_cuaca: [
+          {
+            tanggal: formatDate(0),
+            kota: 'Yogyakarta',
+            suhu_max: '32°C',
+            suhu_min: '24°C',
+            kondisi: 'Berawan',
+            icon:
+              'https://cdn.weatherapi.com/weather/128x128/day/119.png',
+            persentase_hujan: '20%',
+          },
+          {
+            tanggal: formatDate(1),
+            kota: 'Yogyakarta',
+            suhu_max: '31°C',
+            suhu_min: '23°C',
+            kondisi: 'Cerah',
+            icon:
+              'https://cdn.weatherapi.com/weather/128x128/day/113.png',
+            persentase_hujan: '0%',
+          },
+        ],
+      });
+    } finally {
+      setLoadingWeather(false);
+    }
+  }
+
+  // ====== DOKUMENTASI KBM (preview dari /api/activities/daily-by-student) ======
+  async function fetchDocumentation(studentId, token) {
+    try {
+      setLoadingDocs(true);
+      setDocumentationData([]);
+
+      if (!studentId) return;
+
+      const res = await fetch(
+        `${API_URL}/api/activities/daily-by-student?studentId=${studentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        console.warn(
+          'Dashboard: daily-by-student tidak OK',
+          res.status
+        );
+        return;
+      }
+
+      const data = await res.json();
+
+      const rawDate = data.date ? new Date(data.date) : null;
+      let dateLabel = 'Tanggal tidak diketahui';
+      if (rawDate && !isNaN(rawDate.getTime())) {
+        dateLabel = rawDate.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+      }
+
+      const slots = Array.isArray(data.slots) ? data.slots : [];
+      const items = [];
+
+      for (const slot of slots) {
+        if (Array.isArray(slot.photos) && slot.photos.length > 0) {
+          items.push({
+            id: slot._id,
+            date: dateLabel,
+            photo: slot.photos[0].url,
+          });
+        }
+        if (items.length >= 2) break; // cukup 2 foto preview
+      }
+
+      setDocumentationData(items);
+    } catch (err) {
+      console.error('Error fetchDocumentation (dashboard):', err);
+      setDocumentationData([]);
+    } finally {
+      setLoadingDocs(false);
+    }
+  }
+
+  // ====== INIT DASHBOARD ======
+  useEffect(() => {
+    async function init() {
+      try {
+        if (typeof window === 'undefined') return;
+
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+
+        if (!token) {
+          localStorage.setItem(
+            'redirectAfterLogin',
+            '/wali-murid/dashboard'
+          );
+          router.replace('/');
+          return;
+        }
+
+        setParentName(username || '');
+
+        if (role !== 'parent' && role !== 'admin') {
+          setPageError('Halaman ini hanya untuk wali murid / admin.');
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/api/student/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setPageError(data.message || 'Gagal memuat data anak.');
+          return;
+        }
+
+        const list = Array.isArray(data) ? data : [];
+        setChildren(list);
+
+        if (list.length === 0) {
+          setPageError('Belum ada data anak terdaftar.');
+          return;
+        }
+
+        const first = list[0];
+        setPrimaryChild(first);
+        const kelas = first.kelas || 'A';
+        setSelectedClass(kelas);
+
+        await Promise.all([
+          fetchShortSchedule(kelas, token),
+          fetchAttendance(token),
+          fetchWeather(),
+          fetchDocumentation(first._id, token),
+        ]);
+      } catch (err) {
+        console.error('Init dashboard error:', err);
+        setPageError('Terjadi kesalahan saat memuat dashboard.');
+      }
+    }
+
+    init();
+  }, [router]);
+
+  // ====== Logout ======
   function handleLogout() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
@@ -227,29 +384,33 @@ export default function WaliMuridDashboard() {
     router.replace('/');
   }
 
+  // ====== Feedback ======
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      // Submit feedback to API
-      submitFeedbackToAPI(feedback);
+      submitFeedbackToAPI(feedback.trim());
     }
   }
 
   async function submitFeedbackToAPI(feedbackText) {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('token')
+          : null;
+
       if (!token) {
         console.error('No token found');
         setFeedbackSubmitted(false);
         return;
       }
 
-      const res = await fetch(`${API_URL}/feedback`, {
+      const res = await fetch(`${API_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ feedback: feedbackText })
+        body: JSON.stringify({ feedback: feedbackText }),
       });
 
       if (!res.ok) throw new Error('Gagal mengirim feedback');
@@ -267,95 +428,33 @@ export default function WaliMuridDashboard() {
     }
   }
 
-const [weather, setWeather] = useState(null);
-const [loadingWeather, setLoadingWeather] = useState(true);
-const [errorWeather, setErrorWeather] = useState(null);
-
-
-useEffect(() => {
-  if (typeof window === 'undefined') return;
-
-  async function fetchWeather() {
-    try {
-      const res = await fetch(`${API_URL}/weather`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000) // 5 second timeout
-      });
-      if (!res.ok) throw new Error("Gagal mengambil data cuaca");
-
-      const data = await res.json();
-      setWeather(data);
-      setErrorWeather(null);
-    } catch (err) {
-      console.error('Weather fetch error:', err);
-      setErrorWeather(err.message);
-      // Use default weather data if API fails
-      setWeather({
-        lokasi: 'Yogyakarta',
-        data_cuaca: [
-          {
-            tanggal: new Date().toISOString().split('T')[0],
-            kota: 'Yogyakarta',
-            suhu_max: '32°C',
-            suhu_min: '24°C',
-            kondisi: 'Berawan',
-            icon: 'https://cdn.weatherapi.com/weather/128x128/day/119.png',
-            persentase_hujan: '20%'
-          },
-          {
-            tanggal: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-            kota: 'Yogyakarta',
-            suhu_max: '31°C',
-            suhu_min: '23°C',
-            kondisi: 'Cerah',
-            icon: 'https://cdn.weatherapi.com/weather/128x128/day/113.png',
-            persentase_hujan: '0%'
-          },
-          {
-            tanggal: new Date(Date.now() + 172800000).toISOString().split('T')[0],
-            kota: 'Yogyakarta',
-            suhu_max: '33°C',
-            suhu_min: '25°C',
-            kondisi: 'Hujan',
-            icon: 'https://cdn.weatherapi.com/weather/128x128/day/302.png',
-            persentase_hujan: '80%'
-          }
-        ]
-      });
-    } finally {
-      setLoadingWeather(false);
-    }
-  }
-
-  fetchWeather();
-}, []);
-
-
   return (
     <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
-      {/* Notification Bell */}
+      {/* Notification bell */}
       <NotificationList />
 
       {/* ========== SIDEBAR ========== */}
       <aside className="umum-nav sidebar-layout">
         {/* LOGO */}
-          <div className="umum-logo sidebar-logo">
-            <Image
-              src="/images/logo.png"
-              alt="Little Garden Logo"
-              width={70}
-              height={40}
-              className="umum-logo-image"
-              style={{ height: "auto" }}
-            />
-          </div>
-        <div className="umum-nav-left sidebar-content">
+        <div className="umum-logo sidebar-logo">
+          <Image
+            src="/images/logo.png"
+            alt="Little Garden Logo"
+            width={70}
+            height={40}
+            className="umum-logo-image"
+            style={{ height: 'auto' }}
+          />
+        </div>
 
-          {/* MENU LIST */}
+        {/* MENU LIST */}
+        <div className="umum-nav-left sidebar-content">
           <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
-              className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
+              className={`nav-item ${
+                activeNav === 'dashboard' ? 'active' : ''
+              }`}
               onClick={() => setActiveNav('dashboard')}
             >
               <div className="umum-logo sidebar-logo">
@@ -365,15 +464,17 @@ useEffect(() => {
                   width={20}
                   height={40}
                   className="umum-logo-image"
-                  data-alt="Dashboard"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Dashboard</span>
             </a>
+
             <a
               href="/wali-murid/jadwal"
-              className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
+              className={`nav-item ${
+                activeNav === 'jadwal' ? 'active' : ''
+              }`}
               onClick={() => setActiveNav('jadwal')}
             >
               <div className="umum-logo sidebar-logo">
@@ -383,7 +484,7 @@ useEffect(() => {
                   width={20}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Jadwal</span>
@@ -391,7 +492,9 @@ useEffect(() => {
 
             <a
               href="/wali-murid/dokumentasi-kbm"
-              className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
+              className={`nav-item ${
+                activeNav === 'dokumentasi' ? 'active' : ''
+              }`}
               onClick={() => setActiveNav('dokumentasi')}
             >
               <div className="umum-logo sidebar-logo">
@@ -401,7 +504,7 @@ useEffect(() => {
                   width={20}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Dokumentasi KBM</span>
@@ -409,7 +512,9 @@ useEffect(() => {
 
             <a
               href="/wali-murid/profil-anak"
-              className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
+              className={`nav-item ${
+                activeNav === 'profil' ? 'active' : ''
+              }`}
               onClick={() => setActiveNav('profil')}
             >
               <div className="umum-logo sidebar-logo">
@@ -419,7 +524,7 @@ useEffect(() => {
                   width={25}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Profil Anak</span>
@@ -427,7 +532,7 @@ useEffect(() => {
           </nav>
         </div>
 
-        {/* BOTTOM ICONS */}
+        {/* LOGOUT */}
         <div className="umum-nav-right sidebar-actions">
           <button
             className="umum-icon-btn"
@@ -436,169 +541,303 @@ useEffect(() => {
             title="Logout"
           >
             <div className="umum-logo sidebar-logo">
-                <Image
-                  src="/images/logout.png"
-                  alt="Logout"
-                  width={30}
-                  height={40}
-                  className="umum-logo-image"
-                  style={{ height: "auto" }}
-                />
-              </div>
+              <Image
+                src="/images/logout.png"
+                alt="Logout"
+                width={30}
+                height={40}
+                className="umum-logo-image"
+                style={{ height: 'auto' }}
+              />
+            </div>
           </button>
         </div>
       </aside>
 
       {/* ========== DASHBOARD CONTENT ========== */}
       <div className="dashboard-wali-page">
-        {/* Greeting */}
         <div className="dashboard-greeting">
-          <h1>Selamat Datang, Bapak/Ibu <span className="greeting-highlight">{childName}!</span></h1>
+          <p className="dashboard-subtitle">Dashboard Wali Murid</p>
+          <h1>
+            Selamat Datang, Bapak/Ibu{' '}
+            <span className="greeting-highlight">
+              {parentName || 'Orangtua Murid'}
+            </span>
+          </h1>
+          {primaryChild && (
+            <p className="dashboard-child-label">
+              Memantau perkembangan{' '}
+              <strong>{primaryChild.nama}</strong>
+              {primaryChild.kelas && (
+                <>
+                  {' '}
+                  • Kelas <strong>{primaryChild.kelas}</strong>
+                </>
+              )}
+            </p>
+          )}
+          {pageError && (
+            <p className="dashboard-error-text">{pageError}</p>
+          )}
         </div>
 
-        <div className="dashboard-grid">
-          {/* Left Column */}
-          <div className="dashboard-left">
-            {/* Jadwal Harian Card */}
-            <div className="dashboard-card jadwal-card">
-              <h2 className="card-title">Jadwal Harian</h2>
-              <div className="mini-schedule">
-                <div className="schedule-table">
-                  <div className="schedule-row header">
-                    <div className="schedule-col">Jam</div>
-                    <div className="schedule-col">Senin</div>
-                    <div className="schedule-col">Selasa</div>
-                    <div className="schedule-col">Rabu</div>
-                  </div>
-                  {scheduleData.map((item, idx) => (
-                    <div key={idx} className="schedule-row">
-                      <div className="schedule-col">{item.time}</div>
-                      <div className="schedule-col">{item.senin}</div>
-                      <div className="schedule-col">{item.selasa}</div>
-                      <div className="schedule-col">{item.rabu}</div>
-                    </div>
-                  ))}
+        {!pageError && (
+          <div className="dashboard-grid">
+            {/* LEFT COLUMN */}
+            <div className="dashboard-left">
+              {/* Jadwal Harian Singkat */}
+              <div className="dashboard-card jadwal-card">
+                <div className="dashboard-card-header">
+                  <h2 className="card-title">Jadwal Harian Singkat</h2>
+                  {selectedClass && (
+                    <span className="card-chip">
+                      Kelas {selectedClass}
+                    </span>
+                  )}
                 </div>
-              </div>
-                <div className="jadwal-more-link" style={{ textAlign: 'right', marginTop: '8px' }}>
+
+                {loadingSchedule ? (
+                  <p className="card-muted-text">Memuat jadwal...</p>
+                ) : shortSchedule.length === 0 ? (
+                  <p className="card-muted-text">
+                    {scheduleError ||
+                      `Jadwal belum tersedia untuk kelas ${
+                        selectedClass || '-'
+                      }.`}
+                  </p>
+                ) : (
+                  <div className="mini-schedule">
+                    <div className="schedule-table">
+                      <div className="schedule-row header">
+                        <div className="schedule-col">Jam</div>
+                        {previewDays.map((day) => (
+                          <div
+                            key={day}
+                            className="schedule-col"
+                          >
+                            {day}
+                          </div>
+                        ))}
+                      </div>
+                      {shortSchedule.map((row, idx) => (
+                        <div key={idx} className="schedule-row">
+                          <div className="schedule-col">
+                            {row.time}
+                          </div>
+                          {row.activities.map((act, i) => (
+                            <div
+                              key={i}
+                              className="schedule-col"
+                            >
+                              {act || '-'}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="jadwal-more-link">
                   <Link
                     href="/wali-murid/jadwal"
                     className="jadwal-more"
                     onClick={() => setActiveNav('jadwal')}
                   >
-                    Selengkapnya →
+                    Lihat jadwal lengkap →
                   </Link>
                 </div>
-            </div>
-
-            {/* Attendance & Announcements Card */}
-            <div className="dashboard-card info-card">
-              <div className="info-section">
-                <div className="info-item attendance">
-                  <p className="attendance-label">Presentase Kehadiran</p>
-                  <div className="attendance-percentage">{attendancePercentage}%</div>
-                </div>
-
-                <div className="info-item announcement">
-                  {notifications.length > 0 ? (
-                    notifications.map((notif, idx) => (
-                      <div key={idx} style={{ marginBottom: '12px' }}>
-                        <div className="announcement-title">{notif.title}</div>
-                        <small className="announcement-date">
-                          {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString('id-ID', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) : 'Baru saja'}
-                        </small>
-                        <p className="announcement-text">{notif.body}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="announcement-title">Tidak ada notifikasi</div>
-                      <small className="announcement-date">Akan tampil di sini</small>
-                    </>
-                  )}
-                </div>
               </div>
-            </div>
 
-            {/* Teachers Card */}
-            <div className="dashboard-card teachers-card">
-              <h2 className="card-title">Guru Kami</h2>
-              <div className="teachers-grid">
-                {teachersData.map((teacher) => (
-                  <div key={teacher.id} className="teacher-item">
-                    <img src={teacher.photo} alt={teacher.name} className="teacher-photo" />
-                    <p className="teacher-name">{teacher.name}</p>
+              {/* Kehadiran & Informasi */}
+              <div className="dashboard-card info-card">
+                <h2 className="card-title">
+                  Kehadiran & Informasi Penting
+                </h2>
+                <div className="info-section">
+                  <div className="info-item attendance">
+                    <p className="attendance-label">
+                      Persentase Kehadiran
+                    </p>
+                    <div className="attendance-percentage">
+                      {loadingAttendance ||
+                      attendancePercentage === null
+                        ? '–'
+                        : `${attendancePercentage}%`}
+                    </div>
+                    {!loadingAttendance && (
+                      <p className="card-muted-text">
+                        Data diambil dari riwayat absensi anak
+                        Anda.
+                      </p>
+                    )}
                   </div>
-                ))}
+
+                  <div className="info-item announcement">
+                    <div className="announcement-title">
+                      Informasi Penting
+                    </div>
+                    <small className="announcement-date">
+                      (silakan tarik dari data backend jika sudah
+                      ada endpoint pengumuman)
+                    </small>
+                    <p className="announcement-text">
+                      Reminder: Cek jadwal harian dan dokumentasi
+                      KBM secara berkala untuk memantau
+                      perkembangan anak.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Feedback Bar */}
-            <div className="feedback-bar">
-              Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
-              <button 
-                onClick={() => setShowFeedbackModal(true)}
-                style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
-              >
-                disini
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="dashboard-right">
-            {/* Attendance Chart Card */}
-            <div className="chart-card dashboard-card">
-                <h2 className="card-title">Perkiraan Cuaca Terdekat</h2>
-                {loadingWeather && <p>Mengambil data...</p>}
-
-                {weather && (
-                  <div className="weather-forecast weather-grid">
-                    {weather.data_cuaca && weather.data_cuaca.map((hari, idx) => (
-                      <div key={idx} className="weather-item">
-                        <p><strong>{formatHariRelatif(
-                            hari.tanggal.split('-').reverse().join('-') 
-                        )}</strong></p>
-                        <p>{formatTanggalLengkap(
-                            hari.tanggal.split('-').reverse().join('-') 
-                        )}</p>
-                        <div className='weather-icon-wrapper'>
-                          <img src={hari.icon} alt="icon cuaca" onError={(e) => e.target.textContent = '⛅'} />
-                        </div>
-                        <p>{hari.kota}</p>
-                        <p>{hari.kondisi}</p>
-                        <p>{hari.suhu_min} - {hari.suhu_max}</p>
+              {/* Guru Kelas */}
+              <div className="dashboard-card teachers-card">
+                <h2 className="card-title">Guru Kelas</h2>
+                {teachersData.length === 0 ? (
+                  <p className="card-muted-text">
+                    Data guru belum tersedia untuk kelas{' '}
+                    {selectedClass || '-'}.
+                  </p>
+                ) : (
+                  <div className="teachers-grid">
+                    {teachersData.map((teacher) => (
+                      <div
+                        key={teacher.id}
+                        className="teacher-item"
+                      >
+                        <img
+                          src={teacher.photo}
+                          alt={teacher.name}
+                          className="teacher-photo"
+                        />
+                        <p className="teacher-name">
+                          {teacher.name}
+                        </p>
                       </div>
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Feedback Bar */}
+              <div className="feedback-bar">
+                Punya masukan, kritik terkait sekolah, program,
+                atau guru kami? Isi form masukan
+                <button
+                  onClick={() => setShowFeedbackModal(true)}
+                  style={{
+                    marginLeft: '4px',
+                    color: '#052826',
+                    textDecoration: 'underline',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  disini
+                </button>
+              </div>
             </div>
 
-            {/* Documentation Card */}
-            <div className="dashboard-card documentation-card">
-              <h2 className="card-title">Dokumentasi KBM</h2>
-              <div className="documentation-gallery">
-                {documentationData.map((doc) => (
-                  <div key={doc.id} className="doc-item">
-                    <img src={doc.photo} alt={doc.date} className="doc-photo" />
-                    <p className="doc-date">{doc.date}</p>
+            {/* RIGHT COLUMN */}
+            <div className="dashboard-right">
+              {/* Cuaca */}
+              <div className="dashboard-card chart-card">
+                <h2 className="card-title">
+                  Perkiraan Cuaca Terdekat
+                </h2>
+                {loadingWeather && (
+                  <p className="card-muted-text">
+                    Mengambil data cuaca...
+                  </p>
+                )}
+                {!loadingWeather && errorWeather && (
+                  <p className="card-muted-text">
+                    {errorWeather}
+                  </p>
+                )}
+                {weather && weather.data_cuaca && (
+                  <div className="weather-grid">
+                    {weather.data_cuaca.map((hari, idx) => (
+                      <div key={idx} className="weather-item">
+                        <p>
+                          <strong>{hari.tanggal}</strong>
+                        </p>
+                        <div className="weather-icon-wrapper">
+                          <img
+                            src={hari.icon}
+                            alt="Ikon cuaca"
+                          />
+                        </div>
+                        <p>{hari.kota}</p>
+                        <p>{hari.kondisi}</p>
+                        <p>
+                          {hari.suhu_min} - {hari.suhu_max}
+                        </p>
+                        {hari.persentase_hujan && (
+                          <p>
+                            Peluang hujan:{' '}
+                            {hari.persentase_hujan}
+                          </p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-              <div className="documentation-link" style={{ color: '#193745', textDecoration: 'underline', fontWeight: '700'}}>
-                <a href="/wali-murid/dokumentasi-kbm">
-                  Lihat selengkapnya →
-                </a>
+
+              {/* Dokumentasi KBM */}
+              <div className="dashboard-card documentation-card">
+                <div className="dashboard-card-header">
+                  <h2 className="card-title">Dokumentasi KBM</h2>
+                  {primaryChild && (
+                    <span className="card-chip">
+                      {primaryChild.nama}{' '}
+                      {primaryChild.kelas
+                        ? `• Kelas ${primaryChild.kelas}`
+                        : ''}
+                    </span>
+                  )}
+                </div>
+
+                {loadingDocs ? (
+                  <p className="card-muted-text">
+                    Memuat dokumentasi hari ini...
+                  </p>
+                ) : documentationData.length === 0 ? (
+                  <p className="card-muted-text">
+                    Dokumentasi belum tersedia untuk hari ini.
+                  </p>
+                ) : (
+                  <div className="documentation-gallery">
+                    {documentationData.map((doc) => (
+                      <div key={doc.id} className="doc-item">
+                        <div className="doc-photo-wrapper">
+                          <img
+                            src={doc.photo}
+                            alt={doc.date}
+                            className="doc-photo"
+                          />
+                        </div>
+                        <p className="doc-date">
+                          {doc.date}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="documentation-link">
+                  <a href="/wali-murid/dokumentasi-kbm">
+                    Lihat dokumentasi lengkap →
+                  </a>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* FEEDBACK MODAL */}
         {showFeedbackModal && (
@@ -612,7 +851,9 @@ useEffect(() => {
                 ✕
               </button>
 
-              <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
+              <h2 className="feedback-modal-title">
+                Form Pengisisan Kritik/Saran
+              </h2>
 
               <textarea
                 className="feedback-textarea"
@@ -623,16 +864,21 @@ useEffect(() => {
               />
 
               <button
-                className={`feedback-submit-btn ${feedbackSubmitted ? 'success' : ''}`}
+                className={`feedback-submit-btn ${
+                  feedbackSubmitted ? 'success' : ''
+                }`}
                 onClick={handleSubmitFeedback}
                 type="button"
                 disabled={feedbackSubmitted}
               >
-                {feedbackSubmitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
+                {feedbackSubmitted
+                  ? '✓ Terkirim!'
+                  : 'Kirimkan Saran!'}
               </button>
             </div>
           </div>
         )}
       </div>
     </div>
-  );}
+  );
+}

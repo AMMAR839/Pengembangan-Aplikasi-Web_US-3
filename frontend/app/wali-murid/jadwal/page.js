@@ -1,129 +1,212 @@
 'use client';
 
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { NotificationList } from '@/app/components/NotificationList';
+import './jadwal.css'; // CSS khusus jadwal
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-const classes = ['Senin', 'Selasa', 'Rabu'];
-const dayMap = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5 };
+// Hari Senin–Jumat
+const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+const dayMap = { Senin: 1, Selasa: 2, Rabu: 3, Kamis: 4, Jumat: 5 };
 
 export default function JadwalPage() {
   const router = useRouter();
+
   const [activeNav, setActiveNav] = useState('jadwal');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [scheduleData, setScheduleData] = useState([]);
+
+  // ==== STATE ANAK ====
+  const [children, setChildren] = useState([]); // daftar anak
+  const [selectedChildId, setSelectedChildId] = useState(''); // anak yg dipilih
+  const [selectedClass, setSelectedClass] = useState(''); // kelas A/B dari anak
+
+  // ==== STATE JADWAL ====
+  const [scheduleData, setScheduleData] = useState([]); // [{ time, activities: [{title, subtitle}] }]
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchScheduleData();
-  }, []);
+  const selectedChild = useMemo(
+    () => children.find((c) => String(c._id) === String(selectedChildId)),
+    [children, selectedChildId]
+  );
 
-  async function fetchScheduleData() {
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      
-      // Fetch schedule for each day - default to class A
-      const allSlots = [];
-      for (const day of classes) {
-        const dayNum = dayMap[day];
-        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
-          headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  // ==== AMBIL LIST ANAK ====
+  useEffect(() => {
+    async function fetchChildren() {
+      try {
+        setLoading(true);
+        setError('');
+
+        const token =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('token')
+            : null;
+        const role =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('role')
+            : null;
+
+        // Belum login → lempar ke login
+        if (!token) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('redirectAfterLogin', '/wali-murid/jadwal');
           }
+          router.replace('/');
+          return;
+        }
+
+        // Hanya parent / admin
+        if (role !== 'parent' && role !== 'admin') {
+          setError('Halaman ini hanya untuk wali murid / admin.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/api/student/my?showNik=1`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          // Store slots by day
-          if (data.slots && data.slots.length > 0) {
-            allSlots.push(...data.slots.map((slot, idx) => ({ ...slot, dayIndex: classes.indexOf(day), timeSlot: idx })));
-          }
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.message || 'Gagal memuat data anak.');
+          setChildren([]);
+          setLoading(false);
+          return;
+        }
+
+        const list = Array.isArray(data) ? data : [];
+        setChildren(list);
+
+        if (list.length === 0) {
+          setError('Belum ada data anak terdaftar.');
+          setLoading(false);
+          return;
+        }
+
+        // default: anak pertama
+        const first = list[0];
+        setSelectedChildId(first._id);
+        const kelas = first.kelas || 'A';
+        setSelectedClass(kelas);
+
+        await fetchScheduleData(kelas);
+      } catch (err) {
+        console.error(err);
+        setError('Terjadi kesalahan saat memuat data anak.');
+        setLoading(false);
+      }
+    }
+
+    fetchChildren();
+  }, [router]);
+
+  // ==== AMBIL JADWAL KELAS (A/B) DARI MONGODB UNTUK SENIN–JUMAT ====
+  async function fetchScheduleData(className) {
+    try {
+      setLoading(true);
+      setError('');
+      setScheduleData([]);
+
+      const token =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('token')
+          : null;
+
+      const allSlots = [];
+
+      // loop hari Senin–Jumat
+      for (const day of days) {
+        const dayNum = dayMap[day];
+
+        const url = `${API_URL}/api/activities/jadwal?class=${className}&day=${dayNum}`;
+        const res = await fetch(url, {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!res.ok) {
+          console.warn('Gagal fetch jadwal untuk hari', day, res.status);
+          continue;
+        }
+
+        const data = await res.json();
+
+        if (Array.isArray(data.slots) && data.slots.length > 0) {
+          allSlots.push(
+            ...data.slots.map((slot) => ({
+              ...slot,
+              dayIndex: days.indexOf(day),
+            }))
+          );
         }
       }
 
-      // If we got data, restructure it; otherwise use default structure
-      if (allSlots.length > 0) {
-        // Restructure to match UI expectations
-        const times = new Set();
-        allSlots.forEach(s => times.add(s.start));
-        const sortedTimes = Array.from(times).sort();
-
-        const restructured = sortedTimes.map(time => {
-          const slotsByTime = allSlots.filter(s => s.start === time);
-          return {
-            time: time.replace(':', '.') + ' - ' + (slotsByTime[0]?.end || time).replace(':', '.'),
-            activities: classes.map(day => {
-              const slot = slotsByTime.find(s => s.dayIndex === classes.indexOf(day));
-              return {
-                title: slot?.title || day,
-                subtitle: slot?.note || ''
-              };
-            })
-          };
-        });
-
-        setScheduleData(restructured.length > 0 ? restructured : getDefaultSchedule());
-      } else {
-        setScheduleData(getDefaultSchedule());
+      if (allSlots.length === 0) {
+        setError(`Belum ada jadwal di database untuk kelas ${className}.`);
+        setScheduleData([]);
+        return;
       }
+
+      // Group slot berdasarkan start-end
+      const groupedByTime = {};
+      allSlots.forEach((slot) => {
+        const key = `${slot.start}-${slot.end}`;
+        if (!groupedByTime[key]) {
+          groupedByTime[key] = {
+            start: slot.start,
+            end: slot.end,
+            activities: Array(days.length).fill(null),
+          };
+        }
+        groupedByTime[key].activities[slot.dayIndex] = {
+          title: slot.title,
+          subtitle: slot.note || '',
+        };
+      });
+
+      // urutkan waktu mulai
+      const rows = Object.values(groupedByTime).sort((a, b) => {
+        const [aH, aM] = a.start.split(':').map(Number);
+        const [bH, bM] = b.start.split(':').map(Number);
+        return aH * 60 + aM - (bH * 60 + bM);
+      });
+
+      const restructured = rows.map((row) => ({
+        time: `${row.start.replace(':', '.')} - ${row.end.replace(':', '.')}`,
+        activities: row.activities.map((act) => act || { title: '', subtitle: '' }),
+      }));
+
+      setScheduleData(restructured);
     } catch (err) {
       console.error('Error fetching schedule:', err);
-      setError('Tidak dapat memuat jadwal, menampilkan jadwal default');
-      setScheduleData(getDefaultSchedule());
+      setError('Tidak dapat memuat jadwal dari server.');
+      setScheduleData([]);
     } finally {
       setLoading(false);
     }
   }
 
-  function getDefaultSchedule() {
-    return [
-      {
-        time: '09.00 - 09.30',
-        activities: [
-          { title: 'Senam Pagi', subtitle: 'Senam Anak Sehat' },
-          { title: 'Senam Pagi', subtitle: 'Senam SKJ' },
-          { title: 'Senam Pagi', subtitle: 'Senam Anak Sehat' }
-        ]
-      },
-      {
-        time: '09.30 - 10.30',
-        activities: [
-          { title: 'Bermain Aktif', subtitle: 'Lempar & Tangkap Bola' },
-          { title: 'Bermain Aktif', subtitle: 'Patung & Lilin' },
-          { title: 'Bermain Aktif', subtitle: 'Tikus & Kucing' }
-        ]
-      },
-      {
-        time: '10.30 - 11.30',
-        activities: [
-          { title: 'Waktu Cerita', subtitle: 'Kancil & Timun' },
-          { title: 'Waktu Cerita', subtitle: 'Malin Kundang' },
-          { title: 'Waktu Cerita', subtitle: 'Malin Kundang' }
-        ]
-      },
-      {
-        time: '11.30 - 12.00',
-        activities: [
-          { title: 'Makan Siang', subtitle: '' },
-          { title: 'Makan Siang', subtitle: '' },
-          { title: 'Makan Siang', subtitle: '' }
-        ]
-      },
-      {
-        time: '12.00',
-        activities: [
-          { title: 'Jam Pulang', subtitle: '' },
-          { title: 'Jam Pulang', subtitle: '' },
-          { title: 'Jam Pulang', subtitle: '' }
-        ]
-      }
-    ];
+  // ==== GANTI ANAK DI DROPDOWN ====
+  function handleChildChange(e) {
+    const id = e.target.value;
+    setSelectedChildId(id);
+
+    const child = children.find((c) => String(c._id) === String(id));
+    if (child) {
+      const kelas = child.kelas || 'A';
+      setSelectedClass(kelas);
+      fetchScheduleData(kelas);
+    }
   }
 
   function handleLogout() {
@@ -137,26 +220,30 @@ export default function JadwalPage() {
 
   function handleSubmitFeedback() {
     if (feedback.trim()) {
-      submitFeedbackToAPI(feedback);
+      submitFeedbackToAPI(feedback.trim());
     }
   }
 
   async function submitFeedbackToAPI(feedbackText) {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const token =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('token')
+          : null;
+
       if (!token) {
         console.error('No token found');
         setFeedbackSubmitted(false);
         return;
       }
 
-      const res = await fetch(`${API_URL}/feedback`, {
+      const res = await fetch(`${API_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ feedback: feedbackText })
+        body: JSON.stringify({ feedback: feedbackText }),
       });
 
       if (!res.ok) throw new Error('Gagal mengirim feedback');
@@ -181,20 +268,20 @@ export default function JadwalPage() {
 
       {/* ========== SIDEBAR ========== */}
       <aside className="umum-nav sidebar-layout">
-        {/* LOGO */}
-          <div className="umum-logo sidebar-logo">
-            <Image
-              src="/images/logo.png"
-              alt="Little Garden Logo"
-              width={70}
-              height={40}
-              className="umum-logo-image"
-              style={{ height: "auto" }}
-            />
-          </div>
-        <div className="umum-nav-left sidebar-content">
+        {/* LOGO ATAS */}
+        <div className="umum-logo sidebar-logo">
+          <Image
+            src="/images/logo.png"
+            alt="Little Garden Logo"
+            width={70}
+            height={40}
+            className="umum-logo-image"
+            style={{ height: 'auto' }}
+          />
+        </div>
 
-          {/* MENU LIST */}
+        {/* MENU ICON */}
+        <div className="umum-nav-left sidebar-content">
           <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
@@ -208,7 +295,7 @@ export default function JadwalPage() {
                   width={20}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Dashboard</span>
@@ -226,7 +313,7 @@ export default function JadwalPage() {
                   width={20}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Jadwal</span>
@@ -234,7 +321,9 @@ export default function JadwalPage() {
 
             <a
               href="/wali-murid/dokumentasi-kbm"
-              className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
+              className={`nav-item ${
+                activeNav === 'dokumentasi' ? 'active' : ''
+              }`}
               onClick={() => setActiveNav('dokumentasi')}
             >
               <div className="umum-logo sidebar-logo">
@@ -244,7 +333,7 @@ export default function JadwalPage() {
                   width={20}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Dokumentasi KBM</span>
@@ -262,7 +351,7 @@ export default function JadwalPage() {
                   width={25}
                   height={40}
                   className="umum-logo-image"
-                  style={{ height: "auto" }}
+                  style={{ height: 'auto' }}
                 />
               </div>
               <span className="nav-label">Profil Anak</span>
@@ -270,7 +359,7 @@ export default function JadwalPage() {
           </nav>
         </div>
 
-        {/* BOTTOM ICONS */}
+        {/* BOTTOM ICONS (LOGOUT) */}
         <div className="umum-nav-right sidebar-actions">
           <button
             className="umum-icon-btn"
@@ -279,72 +368,142 @@ export default function JadwalPage() {
             title="Logout"
           >
             <div className="umum-logo sidebar-logo">
-                <Image
-                  src="/images/logout.png"
-                  alt="Logout"
-                  width={30}
-                  height={40}
-                  className="umum-logo-image"
-                  style={{ height: "auto" }}
-                />
-              </div>
+              <Image
+                src="/images/logout.png"
+                alt="Logout"
+                width={30}
+                height={40}
+                className="umum-logo-image"
+                style={{ height: 'auto' }}
+              />
+            </div>
           </button>
         </div>
       </aside>
 
-      {/* ========== JADWAL HARIAN ========== */}
-      <div className="wali-sub-page">
+      {/* ========== KONTEN JADWAL ========== */}
+      <div className="wali-sub-page wali-jadwal-page">
         <div className="jadwal-header">
-          <h1 className="wali-sub-page-title">Jadwal Harian</h1>
+          <div className="jadwal-header-left">
+            <h1 className="wali-sub-page-title">
+              {selectedChild
+                ? `Jadwal Harian ${selectedChild.nama}`
+                : 'Jadwal Harian'}
+            </h1>
+            {selectedClass && (
+              <p className="jadwal-class-label">Kelas {selectedClass}</p>
+            )}
+          </div>
+
+          {children.length > 0 && (
+            <div className="jadwal-student-select">
+              <label htmlFor="child-select">Pilih Anak</label>
+              <select
+                id="child-select"
+                value={selectedChildId}
+                onChange={handleChildChange}
+              >
+                {children.map((child) => (
+                  <option key={child._id} value={child._id}>
+                    {child.nama} {child.kelas ? `(Kelas ${child.kelas})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
-        {loading && <p style={{ textAlign: 'center', padding: '20px' }}>Memuat jadwal...</p>}
-        {error && <p style={{ textAlign: 'center', color: '#e74c3c', padding: '20px' }}>{error}</p>}
+        {loading && (
+          <p className="state-text">Memuat data...</p>
+        )}
 
-        {!loading && (
+        {error && !loading && (
+          <p className="state-text error">{error}</p>
+        )}
+
+        {!loading && !error && children.length === 0 && (
+          <p className="state-text muted">
+            Belum ada data anak terdaftar.
+          </p>
+        )}
+
+        {/* TABEL JADWAL – GRID MATRIX (baris & kolom pasti rapi) */}
+        {!loading && !error && scheduleData.length > 0 && (
           <div className="schedule-container">
             <div className="schedule-grid">
-              {/* Kolom pertama: Jam */}
-              <div className="schedule-day">
-                <div className="day-header">Jam</div>
-                {scheduleData.map((slot, idx) => (
-                  <div key={`time-${idx}`} className="time-cell">
-                    {slot.time}
-                  </div>
-                ))}
-              </div>
-
-              {/* Kolom untuk setiap kelas */}
-              {classes.map((className, classIdx) => (
-                <div key={className} className="schedule-day">
-                  <div className="day-header">{className}</div>
-                  {scheduleData.map((slot, idx) => (
-                    <div key={`${className}-${idx}`} className="activity-cell">
-                      {slot.activities[classIdx]?.title && (
-                        <>
-                          <div className="activity-title">
-                            {slot.activities[classIdx].title}
-                          </div>
-                          {slot.activities[classIdx].subtitle && (
-                            <div className="activity-sub">
-                              {slot.activities[classIdx].subtitle}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ))}
+              {/* Header row */}
+              <div className="schedule-cell header">Jam</div>
+              {days.map((dayName) => (
+                <div
+                  key={`header-${dayName}`}
+                  className="schedule-cell header"
+                >
+                  {dayName}
                 </div>
+              ))}
+
+              {/* Data rows */}
+              {scheduleData.map((slot, rowIdx) => (
+                <React.Fragment key={`row-${rowIdx}`}>
+                  {/* Kolom Jam */}
+                  <div className="schedule-cell time">{slot.time}</div>
+
+                  {/* Kolom Senin–Jumat */}
+                  {days.map((dayName, dayIdx) => {
+                    const act = slot.activities[dayIdx];
+                    const hasContent = act && act.title;
+                    return (
+                      <div
+                        key={`${dayName}-${rowIdx}`}
+                        className={
+                          'schedule-cell activity' +
+                          (hasContent ? ' filled' : ' empty')
+                        }
+                      >
+                        {hasContent && (
+                          <>
+                            <div className="activity-title">{act.title}</div>
+                            {act.subtitle && (
+                              <div className="activity-sub">
+                                {act.subtitle}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
               ))}
             </div>
           </div>
         )}
 
+        {!loading &&
+          !error &&
+          children.length > 0 &&
+          scheduleData.length === 0 && (
+            <p className="state-text muted">
+              Tidak ada jadwal yang tersedia untuk kelas {selectedClass}.
+            </p>
+          )}
+
+        {/* FEEDBACK BAR */}
         <div className="feedback-bar">
-          Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
-          <button 
+          Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi
+          form masukan
+          <button
             onClick={() => setShowFeedbackModal(true)}
-            style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+            style={{
+              marginLeft: '4px',
+              color: '#052826',
+              textDecoration: 'underline',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              fontFamily: 'inherit',
+            }}
           >
             disini
           </button>
@@ -362,7 +521,9 @@ export default function JadwalPage() {
                 ✕
               </button>
 
-              <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
+              <h2 className="feedback-modal-title">
+                Form Pengisisan Kritik/Saran
+              </h2>
 
               <textarea
                 className="feedback-textarea"
@@ -373,7 +534,9 @@ export default function JadwalPage() {
               />
 
               <button
-                className={`feedback-submit-btn ${feedbackSubmitted ? 'success' : ''}`}
+                className={`feedback-submit-btn ${
+                  feedbackSubmitted ? 'success' : ''
+                }`}
                 onClick={handleSubmitFeedback}
                 type="button"
                 disabled={feedbackSubmitted}
