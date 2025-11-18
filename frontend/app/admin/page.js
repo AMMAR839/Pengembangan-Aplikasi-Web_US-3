@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL_2 || 'http://localhost:5000/api';
+const API_URL ='http://localhost:5000/api';
 const DAY_NAMES = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
 export default function AdminDashboardNew() {
