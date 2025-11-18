@@ -7,63 +7,64 @@
   display: flex;
 }
 
-/* ===== SIDEBAR ===== */
-.sidebar {
+.pageBlur {
+  filter: blur(2px);
+}
+
+.sidebar-layout {
   display: flex;
   flex-direction: column;
   width: 130px;
   height: 100vh;
   padding: 20px;
-  background: #0a231a;
+  background: #0A231A; /* sesuaikan jika perlu */
+  border-right: 1px solid #e5e5e5;
   position: fixed;
   left: 0;
   top: 0;
 }
 
-.logo {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.sidebarContent {
+/* BAGIAN ATAS (LOGO + MENU) */
+.sidebar-content {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  margin-top: 200px;
+  margin-top: 20px;
 }
 
-.sidebarLinks {
+/* LOGO */
+.sidebar-logo {
+  display: flex;
+  justify-content: center;
+}
+
+/* MENU */
+.sidebar-links {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.navItem {
-  display: flex;
-  justify-content: center;
+.sidebar-links .nav-item {
+  display: block;
   padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.1s ease;
+  border-radius: 6px;
 }
 
-.navItem:hover {
+/* ACTIVE MENU */
+.sidebar-links .nav-item.active {
   background: #123047;
-  transform: translateY(-1px);
+  color: white;
 }
 
-.navItemActive {
-  background: #123047;
-}
-
-.sidebarActions {
+/* BAGIAN BAWAH (NOTIF + LOGOUT) */
+.sidebar-actions {
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
 
 .iconBtn {
   border: none;
@@ -96,6 +97,17 @@
   font-weight: 700;
   color: #123047;
   box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Helper text */
+.centerText {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.errorText {
+  color: #b91c1c;
 }
 
 /* ===== PROFIL ANAK CARD ===== */

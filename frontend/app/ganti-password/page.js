@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./GantiPassword.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function GantiPasswordPage() {
   const router = useRouter();
@@ -106,7 +106,7 @@ export default function GantiPasswordPage() {
           ? localStorage.getItem("token")
           : null;
 
-      const res = await fetch(`${API_URL}/auth/change-password`, {
+      const res = await fetch(`${API_URL}/api/auth/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
