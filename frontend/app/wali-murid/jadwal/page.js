@@ -95,7 +95,7 @@ export default function JadwalPage() {
         // default: anak pertama
         const first = list[0];
         setSelectedChildId(first._id);
-        const kelas = first.kelas || 'A';
+        const kelas = first.kelas ;
         setSelectedClass(kelas);
 
         await fetchScheduleData(kelas);
@@ -152,7 +152,7 @@ export default function JadwalPage() {
       }
 
       if (allSlots.length === 0) {
-        setError(`Belum ada jadwal di database untuk kelas ${className}.`);
+        setError(`Belum ada kelas.`);
         setScheduleData([]);
         return;
       }
@@ -203,7 +203,7 @@ export default function JadwalPage() {
 
     const child = children.find((c) => String(c._id) === String(id));
     if (child) {
-      const kelas = child.kelas || 'A';
+      const kelas = child.kelas ;
       setSelectedClass(kelas);
       fetchScheduleData(kelas);
     }
