@@ -678,8 +678,6 @@ export default function WaliMuridDashboard() {
                       Informasi Penting
                     </div>
                     <small className="announcement-date">
-                      (silakan tarik dari data backend jika sudah
-                      ada endpoint pengumuman)
                     </small>
                     <p className="announcement-text">
                       Reminder: Cek jadwal harian dan dokumentasi
