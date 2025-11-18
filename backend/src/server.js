@@ -60,6 +60,7 @@ app.use('/api/feedback',     require('./routes/feedback'));
 app.use('/api/gallery',      require('./routes/gallery'));
 app.use('/api/admin',        require('./routes/admin'));
 app.use('/api/telegram',     require('./routes/telegram'));
+app.use('/api/telegram',     require('./routes/telegram-polling'));
 
 // Healthcheck sederhana
 app.get('/healthz', (req, res) => res.send('OK'));
@@ -88,7 +89,65 @@ io.on('connection', (socket) => {
 });
 
 // Start server
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  
+  // Auto-start Telegram polling for localhost development
+  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN_HERE') {
+    const axios = require('axios');
+    
+    let lastUpdateId = 0;
+    
+    const pollTelegram = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getUpdates`,
+          {
+            params: { offset: lastUpdateId + 1, timeout: 5 }
+          }
+        );
+
+        const updates = response.data.result || [];
+        const User = require('./models/User');
+        const telegramService = require('./services/telegramService');
+
+        for (const update of updates) {
+          if (update.update_id > lastUpdateId) {
+            lastUpdateId = update.update_id;
+          }
+
+          if (update.message && update.message.text) {
+            const text = update.message.text;
+            const chatId = update.message.chat.id;
+            const username = update.message.from.username;
+
+            if (text.startsWith('/start ')) {
+              const userId = text.split(' ')[1];
+              const user = await User.findById(userId);
+
+              if (user) {
+                user.telegramChatId = chatId.toString();
+                user.telegramUsername = username ? `@${username}` : null;
+                await user.save();
+
+                const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Islamic School.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Islamic School</i>`;
+                
+                await telegramService.sendMessage(chatId, welcomeMessage);
+                console.log(`✅ [AUTO-POLLING] Telegram connected: ${user.username} (${chatId})`);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        // Silent fail for polling errors
+      }
+    };
+
+    // Poll every 3 seconds
+    setInterval(pollTelegram, 3000);
+    console.log('✅ Telegram auto-polling started (every 3 seconds)');
+  }
+});
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not Found' }));

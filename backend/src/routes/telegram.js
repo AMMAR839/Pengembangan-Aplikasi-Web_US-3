@@ -12,10 +12,79 @@ router.post('/connect', auth, async (req, res) => {
   try {
     const { telegramChatId, telegramUsername } = req.body;
 
+    // If only username provided, try to find chat ID from recent bot messages
+    if (!telegramChatId && telegramUsername) {
+      try {
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const axios = require('axios');
+        
+        // Get recent updates to find user by username
+        const response = await axios.get(
+          `https://api.telegram.org/bot${botToken}/getUpdates`,
+          { params: { limit: 100 } }
+        );
+
+        const updates = response.data.result || [];
+        let foundChatId = null;
+        
+        // Clean username (remove @ if present)
+        const cleanUsername = telegramUsername.replace('@', '').toLowerCase();
+
+        // Search for matching username in recent messages
+        for (const update of updates.reverse()) {
+          if (update.message && update.message.from) {
+            const msgUsername = (update.message.from.username || '').toLowerCase();
+            if (msgUsername === cleanUsername) {
+              foundChatId = update.message.chat.id.toString();
+              break;
+            }
+          }
+        }
+
+        if (!foundChatId) {
+          return res.status(404).json({
+            success: false,
+            message: 'Username tidak ditemukan. Pastikan Anda sudah mengirim pesan ke bot terlebih dahulu.'
+          });
+        }
+
+        // Update user with found chat ID
+        const user = await User.findByIdAndUpdate(
+          req.user.id,
+          {
+            telegramChatId: foundChatId,
+            telegramUsername: `@${cleanUsername}`
+          },
+          { new: true }
+        );
+
+        // Send welcome message
+        const telegramService = require('../services/telegramService');
+        const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Islamic School.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Islamic School</i>`;
+        
+        await telegramService.sendMessage(foundChatId, welcomeMessage);
+
+        return res.json({
+          success: true,
+          message: 'Telegram account connected successfully via username',
+          data: {
+            telegramChatId: foundChatId,
+            telegramUsername: `@${cleanUsername}`
+          }
+        });
+      } catch (error) {
+        console.error('Error finding username:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Gagal mencari username. Pastikan Anda sudah mengirim pesan ke bot.'
+        });
+      }
+    }
+
     if (!telegramChatId) {
       return res.status(400).json({
         success: false,
-        message: 'Telegram Chat ID is required'
+        message: 'Telegram Chat ID atau Username is required'
       });
     }
 

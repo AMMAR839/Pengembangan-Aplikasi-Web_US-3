@@ -789,9 +789,6 @@ export default function WaliMuridDashboard() {
                 )}
               </div>
 
-              {/* Telegram Connect */}
-              <TelegramConnect />
-
               {/* Dokumentasi KBM */}
               <div className="dashboard-card documentation-card">
                 <div className="dashboard-card-header">
@@ -839,6 +836,9 @@ export default function WaliMuridDashboard() {
                   </a>
                 </div>
               </div>
+
+              {/* Telegram Connect - Moved to bottom */}
+              <TelegramConnect />
             </div>
           </div>
         )}
