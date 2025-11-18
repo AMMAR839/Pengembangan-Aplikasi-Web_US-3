@@ -111,7 +111,7 @@ class TelegramService {
    * @param {string} body - Notification body
    */
   formatNotification(title, body) {
-    return `<b>🔔 ${title}</b>\n\n${body}\n\n<i>Little Garden Islamic School</i>`;
+    return `<b>🔔 ${title}</b>\n\n${body}\n\n<i>Little Garden Pre-school</i>`;
   }
 
   /**

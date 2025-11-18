@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { NotificationList } from '@/app/components/NotificationList';
-import TelegramConnect from '@/app/components/TelegramConnect';
 import './dashboard-wali.css';
 
 const API_URL =
@@ -834,9 +833,6 @@ export default function WaliMuridDashboard() {
                   </a>
                 </div>
               </div>
-
-              {/* Telegram Connect - Moved to bottom */}
-              <TelegramConnect />
             </div>
           </div>
         )}

@@ -130,7 +130,7 @@ server.listen(PORT, () => {
                 user.telegramUsername = username ? `@${username}` : null;
                 await user.save();
 
-                const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Islamic School.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Islamic School</i>`;
+                const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Pre-school.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Pre-school</i>`;
                 
                 await telegramService.sendMessage(chatId, welcomeMessage);
                 console.log(`✅ [AUTO-POLLING] Telegram connected: ${user.username} (${chatId})`);

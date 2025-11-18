@@ -60,7 +60,7 @@ router.post('/connect', auth, async (req, res) => {
 
         // Send welcome message
         const telegramService = require('../services/telegramService');
-        const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Islamic School.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Islamic School</i>`;
+        const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Pre-school.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Pre-school</i>`;
         
         await telegramService.sendMessage(foundChatId, welcomeMessage);
 
@@ -106,7 +106,7 @@ router.post('/connect', auth, async (req, res) => {
     }
 
     // Send welcome message
-    const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Islamic School.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Islamic School</i>`;
+    const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Pre-school.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Pre-school</i>`;
     
     await telegramService.sendMessage(telegramChatId, welcomeMessage);
 
@@ -224,7 +224,7 @@ router.post('/webhook', async (req, res) => {
           user.telegramUsername = username ? `@${username}` : null;
           await user.save();
 
-          const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Islamic School.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Islamic School</i>`;
+          const welcomeMessage = `✅ <b>Akun Terhubung!</b>\n\nHalo ${user.fullName || user.username}!\n\nTelegram Anda berhasil terhubung dengan Little Garden Pre-school.\n\nAnda akan menerima notifikasi tentang:\n• Kehadiran anak\n• Kegiatan sekolah\n• Pembayaran\n• Pengumuman penting\n\n<i>Little Garden Pre-school</i>`;
           
           await telegramService.sendMessage(chatId, welcomeMessage);
         } else {
@@ -262,7 +262,7 @@ router.post('/test', auth, requireRole(['admin']), async (req, res) => {
       });
     }
 
-    const testMessage = `🧪 <b>Test Notification</b>\n\nThis is a test notification from Little Garden Islamic School.\n\nYour Telegram is connected successfully! ✅\n\n<i>Sent at ${new Date().toLocaleString('id-ID')}</i>`;
+    const testMessage = `🧪 <b>Test Notification</b>\n\nThis is a test notification from Little Garden Pre-school.\n\nYour Telegram is connected successfully! ✅\n\n<i>Sent at ${new Date().toLocaleString('id-ID')}</i>`;
 
     const result = await telegramService.sendMessage(user.telegramChatId, testMessage);
 
