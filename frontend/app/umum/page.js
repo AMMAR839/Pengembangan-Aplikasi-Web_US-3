@@ -1,11 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import styles from "./UmumDashboard.module.css";
 
 export default function UmumDashboard() {
   const router = useRouter();
-  const [activeNav, setActiveNav] = useState("beranda"); // menu aktif di navbar
+  const [activeNav, setActiveNav] = useState("beranda");
+  const [openProfile, setOpenProfile] = useState(false);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+
+  // cek login waktu pertama kali render
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("token");
+    const storedUsername = localStorage.getItem("username") || "";
+    setIsLoggedIn(!!token);
+    setUsername(storedUsername);
+  }, []);
 
   function handleLogout() {
     if (typeof window !== "undefined") {
@@ -13,7 +27,22 @@ export default function UmumDashboard() {
       localStorage.removeItem("username");
       localStorage.removeItem("role");
     }
+    setIsLoggedIn(false);
+    setUsername("");
+    setOpenProfile(false);
     router.replace("/");
+  }
+
+  function handleProfil() {
+    // ganti "/profil" kalau rute profil kamu beda
+    setOpenProfile(false);
+    router.push("/profil");
+  }
+
+  function handleGantiPassword() {
+    // ganti "/ganti-password" kalau rutenya beda
+    setOpenProfile(false);
+    router.push("/ganti-password");
   }
 
   // kalau mau daftar anak → cek login dulu
@@ -22,30 +51,31 @@ export default function UmumDashboard() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      // belum login → simpan tujuan, lalu ke halaman login
       localStorage.setItem("redirectAfterLogin", "/pendaftaran-anak");
       router.push("/");
     } else {
-      // sudah login → langsung ke form pendaftaran
       router.push("/pendaftaran-anak");
     }
   }
 
   return (
-    <div className="umum-page">
+    <div className={styles.page}>
       {/* ========== NAVBAR ========== */}
-      <header className="umum-nav">
-        <div className="umum-nav-left">
-          <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
+      <header className={styles.nav}>
+        <div className={styles.navLeft}>
+          <div className={styles.logo}>
+            <img
+              src="/logo-bw.png"
+              alt="Little Garden"
+              className={styles.logoImage}
+            />
           </div>
 
-          <nav className="umum-nav-links">
+          <nav className={styles.navLinks}>
             <a
               href="#beranda"
-              className={`nav-item ${
-                activeNav === "beranda" ? "active" : ""
+              className={`${styles.navItem} ${
+                activeNav === "beranda" ? styles.navItemActive : ""
               }`}
               onClick={() => setActiveNav("beranda")}
             >
@@ -54,8 +84,8 @@ export default function UmumDashboard() {
 
             <a
               href="#tentang-kami"
-              className={`nav-item ${
-                activeNav === "tentang" ? "active" : ""
+              className={`${styles.navItem} ${
+                activeNav === "tentang" ? styles.navItemActive : ""
               }`}
               onClick={() => setActiveNav("tentang")}
             >
@@ -64,8 +94,8 @@ export default function UmumDashboard() {
 
             <a
               href="#kurikulum"
-              className={`nav-item ${
-                activeNav === "kurikulum" ? "active" : ""
+              className={`${styles.navItem} ${
+                activeNav === "kurikulum" ? styles.navItemActive : ""
               }`}
               onClick={() => setActiveNav("kurikulum")}
             >
@@ -74,8 +104,8 @@ export default function UmumDashboard() {
 
             <button
               type="button"
-              className={`nav-item ${
-                activeNav === "pendaftaran" ? "active" : ""
+              className={`${styles.navItem} ${
+                activeNav === "pendaftaran" ? styles.navItemActive : ""
               }`}
               onClick={() => {
                 setActiveNav("pendaftaran");
@@ -87,26 +117,76 @@ export default function UmumDashboard() {
           </nav>
         </div>
 
-        <div className="umum-nav-right">
-          <button className="umum-icon-btn" type="button">
-            🔔
-          </button>
-          <button
-            className="umum-icon-btn"
-            type="button"
-            onClick={handleLogout}
-            title="Logout"
-          >
-            ⏻
-          </button>
+        <div className={styles.navRight}>
+
+          {/* PROFIL / LOGIN DROPDOWN */}
+          <div className={styles.profileWrapper}>
+            <button
+              type="button"
+              className={styles.profileBtn}
+              onClick={() => setOpenProfile((prev) => !prev)}
+            >
+              <span className={styles.profileAvatar}>👤</span>
+              <span className={styles.profileLabel}>
+                {isLoggedIn ? username || "Profil" : "Login"}
+              </span>
+            </button>
+
+            {openProfile && (
+              <div className={styles.profileMenu}>
+                {isLoggedIn ? (
+                  <>
+                    <button
+                      type="button"
+                      className={styles.profileItem}
+                      onClick={handleProfil}
+                    >
+                     
+                      <span>Profil Saya</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={styles.profileItem}
+                      onClick={handleGantiPassword}
+                    >
+                      <span>Ganti Password</span>
+                    </button>
+
+                    <hr className={styles.profileDivider} />
+
+                    <button
+                      type="button"
+                      className={`${styles.profileItem} ${styles.profileItemDanger}`}
+                      onClick={handleLogout}
+                    >
+                      <span className={styles.profileItemIcon}>⏻</span>
+                      <span>Log Out</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.profileItem}
+                    onClick={() => {
+                      setOpenProfile(false);
+                      router.push("/"); // halaman login
+                    }}
+                  >
+                    <span>Login</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       {/* ========== HERO / BERANDA ========== */}
-      <section className="umum-hero" id="beranda">
-        <section className="umum-hero-left">
-          <p className="umum-eyebrow">Di Little Garden Kindergarten</p>
-          <h1 className="umum-hero-title">
+      <section className={styles.hero} id="beranda">
+        <section className={styles.heroLeft}>
+          <p className={styles.eyebrow}>Di Little Garden Kindergarten</p>
+          <h1 className={styles.heroTitle}>
             Growing Bright Futures,
             <br />
             One Seed at a Time
@@ -114,14 +194,14 @@ export default function UmumDashboard() {
             in Little Garden Kindergarten
           </h1>
 
-          <p className="umum-hero-subtitle">
+          <p className={styles.heroSubtitle}>
             Di Little Garden Kindergarten, kami percaya bahwa masa depan yang
             cerah tidak tumbuh begitu saja; ia ditanam, dirawat, dan disinari
             dengan kasih.
           </p>
 
           <button
-            className="umum-cta-btn"
+            className={styles.ctaBtn}
             type="button"
             onClick={() => {
               setActiveNav("pendaftaran");
@@ -132,33 +212,32 @@ export default function UmumDashboard() {
           </button>
         </section>
 
-        <section className="umum-hero-right">
-          <div className="umum-hero-bg-shape" />
+        <section className={styles.heroRight}>
+          <div className={styles.heroBgShape} />
           <img
-            src="/umum-kid.jpg"
+            src="images/kids-having-fun-jungle-themed-party.jpg"
             alt="Anak ceria di Little Garden"
-            className="umum-hero-image"
+            className={styles.heroImage}
           />
         </section>
       </section>
 
-      {/* ========== KURIKULUM KAMI ========== */}
-      <section className="kurikulum-section" id="kurikulum">
-        <div className="kurikulum-inner">
-          <div className="kurikulum-image-wrap">
-            <div className="kurikulum-bg-shape" />
-            {/* ganti nama file kalau beda */}
+     
+      <section className={styles.kurikulumSection} id="kurikulum">
+        <div className={styles.kurikulumInner}>
+          <div className={styles.kurikulumImageWrap}>
+            <div className={styles.kurikulumBgShape} />
             <img
-              src="/kurikulum-kids.jpg"
+              src="images/group-children-lying-reading-grass-field.jpg"
               alt="Anak-anak Little Garden"
-              className="kurikulum-image"
+              className={styles.kurikulumImage}
             />
           </div>
 
-          <div className="kurikulum-text">
-            <h2 className="kurikulum-title">Kurikulum Kami</h2>
+          <div className={styles.kurikulumText}>
+            <h2 className={styles.kurikulumTitle}>Kurikulum Kami</h2>
 
-            <p className="kurikulum-paragraph">
+            <p className={styles.kurikulumParagraph}>
               Dalam memelihara rasa ingin tahu dan kreativitas anak Anda, kami
               menggunakan kurikulum berbasis bermain, yaitu IEYC. Dengan
               kurikulum ini, kami percaya dapat memberdayakan anak-anak untuk
@@ -166,7 +245,7 @@ export default function UmumDashboard() {
               dunia.
             </p>
 
-            <p className="kurikulum-paragraph">
+            <p className={styles.kurikulumParagraph}>
               IEYC adalah kurikulum yang dirancang untuk pendidikan anak usia
               dini (TK dan prasekolah). Kurikulum ini komprehensif dan
               berdasarkan penelitian. IEYC berfokus pada pengalaman belajar
@@ -175,30 +254,20 @@ export default function UmumDashboard() {
               pentingnya pembelajaran dan perkembangan yang berfokus pada anak.
             </p>
 
-            <button
-              className="umum-cta-btn kurikulum-cta"
-              type="button"
-              onClick={() => {
-                setActiveNav("pendaftaran");
-                handleDaftarAnak();
-              }}
-            >
-              Daftar Sekarang →
-            </button>
           </div>
         </div>
       </section>
 
-      {/* ========== TENTANG KAMI + VISI MISI ========== */}
-      <section className="about-section" id="tentang-kami">
-        <div className="about-inner">
-          <h2 className="about-title">
+      {/* ========== TENTANG KAMI ========== */}
+      <section className={styles.aboutSection} id="tentang-kami">
+        <div className={styles.aboutInner}>
+          <h2 className={styles.aboutTitle}>
             Sekilas Mengenai
             <br />
             Little Garden Kindergarten
           </h2>
 
-          <p className="about-lead">
+          <p className={styles.aboutLead}>
             Di Little Garden Kindergarten, kami memandang setiap anak sebagai
             benih kehidupan yang unik, lembut, dan penuh potensi. Kami percaya
             bahwa masa depan yang cerah tidak lahir begitu saja, tetapi ditanam
@@ -206,10 +275,10 @@ export default function UmumDashboard() {
             yang penuh kehangatan.
           </p>
 
-          <div className="about-cards">
-            <div className="about-card">
-              <h3 className="about-card-title">Visi Kami</h3>
-              <p className="about-card-text">
+          <div className={styles.aboutCards}>
+            <div className={styles.aboutCard}>
+              <h3 className={styles.aboutCardTitle}>Visi Kami</h3>
+              <p className={styles.aboutCardText}>
                 Little Garden Kindergarten menjadi tempat di mana setiap anak
                 didorong dan diberi ruang untuk bertumbuh sesuai ritme dan
                 keunikannya sendiri — belajar dengan bahagia, bermain dengan
@@ -217,9 +286,9 @@ export default function UmumDashboard() {
               </p>
             </div>
 
-            <div className="about-card">
-              <h3 className="about-card-title">Misi Kami</h3>
-              <p className="about-card-text">
+            <div className={styles.aboutCard}>
+              <h3 className={styles.aboutCardTitle}>Misi Kami</h3>
+              <p className={styles.aboutCardText}>
                 Little Garden Kindergarten mendorong belajar dengan gembira dan
                 rasa ingin tahu, membentuk anak yang mandiri dan penuh kasih,
                 menciptakan lingkungan yang aman dan hangat, serta berkolaborasi

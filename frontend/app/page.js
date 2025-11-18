@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import styles from "./Login.module.css";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -13,15 +14,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ke dashboard sesuai role
   function goToDashboard(role) {
-    let path = "Dashboard/umum"; // default user biasa
-    if (role === "admin") path = "Dashboard/admin";
-    else if (role === "parent" || role === "wali-murid") path = "Dashboard/wali-murid";
+    let path = "/umum"; // default user biasa
+    if (role === "admin") path = "/admin";
+    else if (role === "parent" ) path = "/wali-murid/dashboard";
     router.replace(path);
   }
 
-  // dipakai setelah login sukses
   function goAfterLogin(role) {
     if (typeof window !== "undefined") {
       const redirect = localStorage.getItem("redirectAfterLogin");
@@ -34,7 +33,6 @@ export default function LoginPage() {
     goToDashboard(role);
   }
 
-  // kalau sudah login dan buka "/" manual → lempar ke dashboard
   useEffect(() => {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
@@ -80,39 +78,45 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-bg">
-      <div className="auth-card login-card">
-        <div className="auth-left">
-          <div className="auth-image-placeholder">
-            <div style={{fontSize: '80px', textAlign: 'center', marginTop: '40%'}}>
-              👧 👦
-            </div>
-          </div>
+    <div className={styles.loginBg}>
+      <div className={styles.loginCard}>
+        <div className={styles.loginLeft}>
+          <img
+            src="/loginleft.jpg"
+            alt="Login"
+            className={styles.loginImage}
+          />
         </div>
 
-        <div className="auth-right">
-          <div className="auth-logo">
-            <span className="auth-flower">🌼</span>
-            <span className="auth-logo-text">Little Garden</span>
+      <div className={styles.loginRight}>
+        <img src="/leaf.svg" alt="Logo" className={styles.bgIcon}/>
+          <div className={styles.logo}>
+            <img
+              src="/logo-bw.png"
+              alt="Little Garden"
+              className={styles.logoImage}
+            />
           </div>
 
-          <h1 className="auth-title">Selamat Datang</h1>
+        
+        <div className={styles.rightInner}>
+          <h1 className={styles.title}>Selamat Datang</h1>
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <label className="auth-label">
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <label className={styles.fieldLabel}>
               username
               <input
-                className="auth-input"
+                className={styles.inputUnderline}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </label>
 
-            <label className="auth-label">
+            <label className={styles.fieldLabel}>
               password
               <input
-                className="auth-input"
+                className={styles.inputUnderline}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -120,20 +124,20 @@ export default function LoginPage() {
               />
             </label>
 
-            <div className="auth-forgot">
+            <div className={styles.forgot}>
               <button
                 type="button"
-                className="auth-link"
+                className={styles.link}
                 onClick={() => window.location.href = "/reset-password"}
               >
                 Lupa Password
               </button>
             </div>
 
-            {error && <p className="auth-error">{error}</p>}
+            {error && <p className={styles.error}>{error}</p>}
 
             <button
-              className="auth-button primary"
+              className={`${styles.button} ${styles.primaryButton}`}
               type="submit"
               disabled={loading}
             >
@@ -141,19 +145,26 @@ export default function LoginPage() {
             </button>
 
             <button
-              className="auth-button secondary"
+              className={`${styles.button} ${styles.secondaryButton}`}
               type="button"
               onClick={handleGoogleLogin}
             >
-              <span className="auth-google-icon">G</span>
+              <span className={styles.googleIcon}>
+                <img
+                  src="/google-icon.svg"
+                  alt=""
+                  className={styles.googleImg}
+                />
+              </span>
               <span>Login With Google</span>
             </button>
 
-            <p className="auth-bottom-text">
+
+            <p className={styles.bottomText}>
               Belum punya akun?{" "}
               <button
                 type="button"
-                className="auth-link"
+                className={styles.link}
                 onClick={() => router.push("/register")}
               >
                 Register di sini
@@ -163,5 +174,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

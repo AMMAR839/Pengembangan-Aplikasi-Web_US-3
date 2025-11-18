@@ -1,9 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 html {
   scroll-behavior: smooth;
+}
+
+/* small reset so pages go edge-to-edge */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 0; }
+
+.blur-bg {
+  /* Previously applied a blur and disabled interactions while modal was open.
+     Restored to a no-op so pages behave as before. The modal overlay
+     itself already prevents interaction when visible. */
+  filter: none;
+  pointer-events: auto;
 }
 
 /* ===== GLOBAL BACKGROUND UNTUK HALAMAN AUTH ===== */
@@ -20,6 +30,8 @@ html {
 
 /* ===== CARD UTAMA (LOGIN & REGISTER) ===== */
 .auth-card {
+  height: 92px;
+  box-sizing: border-box;
   width: 100%;
   max-width: 1100px;
   display: flex;
@@ -40,10 +52,12 @@ html {
 /* ===== KIRI: GAMBAR ===== */
 .auth-left {
   flex: 1;
-  min-height: 420px;
+    height: 92px;
+    box-sizing: border-box;
 }
 
 .auth-image {
+    overflow: hidden;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -55,6 +69,10 @@ html {
   flex: 1;
   padding: 40px 48px;
   color: #f7f7f7;
+    /* Prevent long subtitles from increasing row height */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   position: relative;
 }
 
@@ -254,6 +272,43 @@ html {
   font-size: 20px;
 }
 
+/* Logo image styling */
+.umum-logo-img {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
+/* Logo/icon image for sidebar */
+.umum-logo-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.nav-item .umum-logo-image {
+  max-width: 30px;
+  max-height: 30px;
+}
+
+.nav-label {
+  font-size: 14px;
+  color: #f7f7f7;
+  margin-left: 8px;
+  display: none;
+  position: absolute;
+  right: -120px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: rgba(4, 41, 30, 0.95);
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: opacity 0.2s ease;
+}
+
 .umum-nav-links {
   display: flex;
   align-items: center;
@@ -270,6 +325,36 @@ html {
   font-size: 15px;
   cursor: pointer;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.umum-nav-links .nav-item:hover .nav-label {
+  display: block;
+}
+
+/* item aktif - keep label visible */
+/* Removed: do not show tooltip solely because an item is "active".
+   Tooltips are now shown only on hover so they disappear when the cursor
+   leaves the icon even if the item remains active/pressed. */
+
+.umum-nav-links .nav-item::before {
+  content: attr(data-alt);
+  position: absolute;
+  bottom: -40px; /* jarak tooltip */
+  left: 50%;
+  transform: translateX(-50%);
+  
+  background: rgba(255,255,255,0.9);
+  color: black;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
 }
 
 .umum-nav-links .nav-item::after {
@@ -677,12 +762,71 @@ html {
   }
 }
 
+/* ========== NAVBAR ADMIN DAN WALI-MURID ========= */
+/* ===== SIDEBAR LAYOUT ===== */
+.sidebar-layout {
+  display: flex;
+  flex-direction: column;
+  width: 130px;
+  height: 100vh;
+  padding: 20px;
+  background: #0A231A; /* sesuaikan jika perlu */
+  border-right: 1px solid #e5e5e5;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+/* BAGIAN ATAS (LOGO + MENU) */
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+/* LOGO */
+.sidebar-logo {
+  display: flex;
+  justify-content: center;
+}
+
+/* MENU */
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-links .nav-item {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 6px;
+}
+
+/* ACTIVE MENU */
+.sidebar-links .nav-item.active {
+  background: #123047;
+  color: white;
+}
+
+/* BAGIAN BAWAH (NOTIF + LOGOUT) */
+.sidebar-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* ========== WALI-MURID DASHBOARD (JADWAL HARIAN) ========= */
 .wali-page {
-  padding: 32px 72px 72px;
-  background: #e6f0f0;
+  padding: 32px 24px 72px;
+  background: #E8F0F3;
   min-height: 100vh;
   color: #123047;
+  width: 100%;
+  font-family:  sans-serif;
+  margin-left:130px;
 }
 
 .jadwal-header {
@@ -692,18 +836,21 @@ html {
 }
 
 .jadwal-title {
-  background: #7a9696;
-  padding: 12px 36px;
+  background: #D2DCDA;
+  padding: 12px 40px;
+  border: 1px solid #123047;
   border-radius: 999px;
   font-size: 24px;
   font-weight: 700;
   color: #123047;
-  box-shadow: inset 0 -6px 0 rgba(0,0,0,0.04);
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .schedule-container {
   max-width: 1100px;
   margin: 0 auto 28px;
+  padding: 0 12px;
+  width: calc(100% - 24px);
 }
 
 .schedule-grid {
@@ -734,21 +881,30 @@ html {
   border-radius: 8px;
   border: 1px solid #d7e0e0;
   text-align: left;
-  min-height: 64px;
+  min-height: 92px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .activity-cell {
-  background: #eef6f6;
+  background: #ffffff;
   padding: 14px 12px;
   border-radius: 8px;
   border: 1px solid #d2e6e6;
   text-align: center;
-  min-height: 64px;
+  min-height: 92px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Ensure every cell inside a schedule column has consistent sizing and centering */
+.schedule-day > * {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
@@ -760,22 +916,85 @@ html {
 .activity-sub {
   font-size: 13px;
   color: #274b4b;
+  line-height: 1.2;
 }
 
 .feedback-bar {
   max-width: 1100px;
-  margin: 36px auto 0;
+  margin: 12px auto 0;
   background: #9fbdb9;
   color: #052826;
   padding: 14px 18px;
   border-radius: 999px;
   text-align: center;
+  font-size: 13px;
 }
 
 @media (max-width: 900px) {
   .wali-page { padding: 20px; }
   .schedule-grid { grid-template-columns: 1fr; }
+  .weather-grid { grid-template-columns: 1fr; }
 }
+
+.weather-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: center;
+  justify-items: center;
+  padding: 20px 0;
+}
+
+.weather-card{
+  background: #C9D1D2;
+  border: px solid #d7e6e6;
+  padding: 15px;
+}
+
+.weather-item {
+  padding: 24px 20px;
+  border-radius: 12px;
+  background: #fffffc;
+  text-align: center;
+  font-size: 14px;
+  width: 160px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.weather-item p {
+  margin: 6px 0;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.weather-item p strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #123047;
+  margin-bottom: 2px;
+}
+
+.weather-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+  height: 70px;
+  width: 70px;
+}
+
+.weather-icon-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 
 /* ========== FEEDBACK MODAL ========= */
 .feedback-modal-overlay {
@@ -895,27 +1114,10 @@ html {
 }
 
 /* ========== DOKUMENTASI KBM PAGE ========= */
-.dokumentasi-page {
-  padding: 32px 72px 72px;
-  background: #e6f0f0;
-  min-height: 100vh;
-  color: #123047;
-}
-
 .dokumentasi-header {
   display: flex;
   justify-content: center;
   margin-bottom: 32px;
-}
-
-.dokumentasi-title {
-  background: #8fa9a9;
-  padding: 12px 40px;
-  border-radius: 999px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #123047;
-  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.04);
 }
 
 .dokumentasi-container {
@@ -925,7 +1127,7 @@ html {
 
 .dokumentasi-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns : repeat(3, 1fr);
   gap: 24px;
   align-items: start;
 }
@@ -952,14 +1154,20 @@ html {
   gap: 12px;
 }
 
+.dokumentasi-row-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .dokumentasi-date-card {
-  background: #e8f0f0;
+  background: #ffffff;
   padding: 20px 16px;
   border-radius: 12px;
   border: 1px solid #d7e0e0;
   text-align: center;
   font-weight: 500;
-  min-height: 80px;
+  min-height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -983,7 +1191,7 @@ html {
 }
 
 .dokumentasi-notes-card {
-  background: #e8f0f0;
+  background: #ffffff;
   padding: 20px 16px;
   border-radius: 12px;
   border: 1px solid #d7e0e0;
@@ -1011,49 +1219,28 @@ html {
   }
 
   .dokumentasi-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 16px;
-  }
-}
-
-@media (max-width: 600px) {
-  .dokumentasi-page {
-    padding: 20px;
-  }
-
-  .dokumentasi-grid {
-    grid-template-columns: 1fr;
   }
 
   .dokumentasi-title {
     font-size: 20px;
     padding: 10px 24px;
   }
+  .dokumentasi-column {
+    gap: 20px;
+  }
 }
+
+
 
 /* ========== PROFIL ANAK PAGE ========= */
-.profil-page {
-  padding: 32px 72px 72px;
-  background: #e6f0f0;
-  min-height: 100vh;
-  color: #123047;
-}
-
 .profil-header {
   display: flex;
   justify-content: center;
   margin-bottom: 32px;
 }
 
-.profil-title {
-  background: #8fa9a9;
-  padding: 12px 40px;
-  border-radius: 999px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #123047;
-  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.04);
-}
 
 .profil-container {
   max-width: 1000px;
@@ -1121,14 +1308,12 @@ html {
 }
 
 .profil-change-note {
-  max-width: 1000px;
   margin: 0 auto 20px;
-  background: #f0f5f5;
   color: #123047;
-  padding: 12px 16px;
-  border-radius: 8px;
   text-align: center;
   font-size: 13px;
+  background: transparent;
+  padding: 0;
 }
 
 @media (max-width: 900px) {
@@ -1177,6 +1362,8 @@ html {
   background: #e6f0f0;
   min-height: 100vh;
   color: #123047;
+  margin-left:130px;
+  gap: 40px;
 }
 
 .dashboard-greeting {
@@ -1184,7 +1371,7 @@ html {
 }
 
 .dashboard-greeting h1 {
-  font-size: 24px;
+  font-size: 35px;
   font-weight: 600;
   color: #123047;
 }
@@ -1200,10 +1387,11 @@ html {
 }
 
 .dashboard-card {
-  background: #ffffff;
+  background: #FFFFFC;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  gap: 50px;
 }
 
 .card-title {
@@ -1214,41 +1402,65 @@ html {
   text-align: center;
 }
 
+/*Wali Sub Page*/
+.wali-sub-page {
+  padding: 32px 72px 72px;
+  background: #e6f0f0;
+  min-height: 100vh;
+  color: #123047;
+  margin-left: 130px;
+}
+
+.wali-sub-page-title {
+  background: #D2DCDA;
+  padding: 12px 40px;
+  border: 1px solid #123047;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #123047;
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.4);
+}
+
 /* Jadwal Card */
 .jadwal-card {
-  background: #f5f9f9;
-  border: 2px solid #d7e6e6;
-  border-radius: 12px;
+  background: #C9D1D2;
+  border: solid #d7e6e6;
 }
 
 .schedule-table {
-  display: flex;
+  display: table;
   flex-direction: column;
   gap: 8px;
-  background: #ffffff;
+  background: #C9D1D2;
   border-radius: 8px;
   overflow: hidden;
+  width: 100%;
+  border-spacing: 4px;
 }
 
 .schedule-row {
-  display: grid;
+  display: table-row;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 8px;
+  gap: 12px;
+  padding: 12px;
 }
 
 .schedule-row.header {
   background: #e8f0f0;
   font-weight: 700;
   color: #123047;
+
 }
 
 .schedule-col {
-  padding: 8px;
+  padding: 12px;
   text-align: center;
-  font-size: 12px;
-  border-radius: 4px;
+  font-size: 13px;
+  border-radius: 8px;
   background: #f8fafa;
+  display: table-cell;
+  column-gap: px;
 }
 
 .schedule-row.header .schedule-col {
@@ -1258,20 +1470,21 @@ html {
 
 /* Info Card */
 .info-card {
-  background: #f5f9f9;
-  border: 2px solid #d7e6e6;
+  background: #C9D1D2;
+
 }
 
 .info-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  
 }
 
 .info-item {
   padding: 16px;
   border-radius: 12px;
-  background: #ffffff;
+  background: #fffffc;
 }
 
 .info-item.attendance {
@@ -1293,7 +1506,7 @@ html {
 }
 
 .info-item.announcement {
-  background: #f5f9f9;
+  background: #ffffff;
   border-left: 3px solid #8fa9a9;
 }
 
@@ -1317,9 +1530,14 @@ html {
 
 /* Chart Card */
 .chart-card {
-  background: #f5f9f9;
-  border: 2px solid #d7e6e6;
-  padding: 16px;
+  background: #C9D1D2;
+  border: px solid #d7e6e6;
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
 }
 
 .card-header-with-label {
@@ -1365,7 +1583,7 @@ html {
 
 /* Teachers Card */
 .teachers-card {
-  background: #f5f9f9;
+  background: #C9D1D2;
   border: 2px solid #d7e6e6;
 }
 
@@ -1401,7 +1619,7 @@ html {
 
 /* Documentation Card */
 .documentation-card {
-  background: #f5f9f9;
+  background: #C9D1D2;
   border: 2px solid #d7e6e6;
 }
 
@@ -1445,13 +1663,29 @@ html {
   background: #f8fafa;
 }
 
+/* Match Jadwal 'Selengkapnya' link to Dokumentasi KBM styles */
+.jadwal-more-link { text-align: right; }
+.jadwal-more {
+  display: inline-block;
+  font-size: 12px;
+  color: #8fa9a9;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f8fafa;
+  text-decoration: none;
+}
+.jadwal-more:hover { background: #eef6f6; color: #6f9f9f; }
+
 @media (max-width: 1200px) {
   .dashboard-wali-page {
     padding: 24px 32px 40px;
+    gap: 40px;
   }
 
   .dashboard-grid {
-    gap: 20px;
+    gap: px;
+    margin-bottom: px;
   }
 
   .teachers-grid {
@@ -1461,7 +1695,8 @@ html {
 
 @media (max-width: 900px) {
   .dashboard-wali-page {
-    padding: 20px;
+    padding: 0px 10px;
+    gap: 32px;
   }
 
   .dashboard-grid {
@@ -1480,5 +1715,6 @@ html {
 
   .dashboard-greeting h1 {
     font-size: 20px;
+    font-weight: 800;
   }
 }

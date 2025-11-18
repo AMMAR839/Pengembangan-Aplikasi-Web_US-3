@@ -18,3 +18,13 @@ exports.auth = async (req, res, next) => {
     res.status(401).json({ message: 'Token tidak valid' });
   }
 };
+
+
+exports.requireRole = (...allowed) => (req, res, next) => {
+  if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+  if (!allowed.includes(req.user.role)) {
+    return res.status(403).json({ message: 'Tidak diizinkan' });
+  }
+  next();
+};
+

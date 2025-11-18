@@ -2,30 +2,40 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "./Register.module.css";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function RegisterPage() {
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // kirim data ke backend -> /api/auth/register
+  // ⬇⬇ DI SINI tempat pakai fetch + router.push
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
-    setLoading(true);
 
+    if (password !== confirm) {
+      setError("Password dan konfirmasi password tidak sama.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, username, password }),
       });
 
       const data = await res.json();
@@ -35,11 +45,14 @@ export default function RegisterPage() {
         return;
       }
 
-      // kalau sukses, kasih pesan lalu arahkan ke login
-      setSuccess("Akun berhasil dibuat, silakan login");
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
+      setSuccess(
+        data.message || "Register berhasil. Silakan cek email untuk verifikasi."
+      );
+
+      // setelah register sukses, pindah ke halaman "menunggu verifikasi"
+      router.push(
+        `/verify-email?status=pending&email=${encodeURIComponent(email)}`
+      );
     } catch (err) {
       console.error(err);
       setError("Terjadi kesalahan server");
@@ -48,45 +61,48 @@ export default function RegisterPage() {
     }
   }
 
-  function handleGoogleRegister() {
-    // bedakan dari login → pakai /google/register
-    window.location.href = `${API_URL}/api/auth/google/register`;
-  }
-
   return (
-    <div className="auth-bg">
-      <div className="auth-card register-card">
-        <div className="auth-left">
+    <div className={styles.registerBg}>
+      <div className={styles.registerCard}>
+        {/* kiri: gambar */}
+        <div className={styles.registerLeft}>
           <img
-            src="/register-kid.jpg"
-            alt="Register"
-            className="auth-image"
+            src="fotoreg.png"
+            alt="Create account Little Garden"
+            className={styles.registerImage}
           />
         </div>
 
-        <div className="auth-right">
-          <div className="auth-logo">
-            <span className="auth-flower">🌼</span>
-            <span className="auth-logo-text">Little Garden</span>
-          </div>
+        {/* kanan: form */}
+        <div className={styles.registerRight}>
+          <h1 className={styles.title}>Create An Account</h1>
 
-          <h1 className="auth-title">Buat Akun Baru</h1>
-
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <label className="auth-label">
-              username
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <label className={styles.label}>
+              Email
               <input
-                className="auth-input"
+                className={styles.input}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+
+            <label className={styles.label}>
+              Username
+              <input
+                className={styles.input}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </label>
 
-            <label className="auth-label">
-              password
+            <label className={styles.label}>
+              Password
               <input
-                className="auth-input"
+                className={styles.input}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -94,34 +110,36 @@ export default function RegisterPage() {
               />
             </label>
 
-            {error && <p className="auth-error">{error}</p>}
-            {success && <p className="daftar-success">{success}</p>}
+            <label className={styles.label}>
+              Confirm Password
+              <input
+                className={styles.input}
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
+            </label>
+
+            {error && <p className={styles.error}>{error}</p>}
+            {success && <p className={styles.success}>{success}</p>}
 
             <button
-              className="auth-button primary dark"
+              className={styles.button}
               type="submit"
               disabled={loading}
             >
-              {loading ? "Memproses..." : "Buat Akun"}
+              {loading ? "Memproses..." : "Create Account"}
             </button>
 
-            <button
-              className="auth-button secondary"
-              type="button"
-              onClick={handleGoogleRegister}
-            >
-              <span className="auth-google-icon">G</span>
-              <span>Register With Google</span>
-            </button>
-
-            <p className="auth-bottom-text">
-              Sudah punya akun?{" "}
+            <p className={styles.bottomText}>
+              Already have an account?{" "}
               <button
                 type="button"
-                className="auth-link"
+                className={styles.link}
                 onClick={() => router.push("/")}
               >
-                Login di sini
+                sign in here
               </button>
             </p>
           </form>

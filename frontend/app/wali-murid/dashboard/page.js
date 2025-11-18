@@ -1,7 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { formatTanggalSmart } from '@/utils/date';
+import { NotificationList } from '@/app/components/NotificationList';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const scheduleData = [
   { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
@@ -12,20 +18,97 @@ const scheduleData = [
 ];
 
 const teachersData = [
-  { id: 1, name: 'Ibu Cantika S.Pd.', photo: '/teacher-1.jpg' },
-  { id: 2, name: 'Ibu Cantika S.Pd.', photo: '/teacher-2.jpg' },
-  { id: 3, name: 'Ibu Cantika S.Pd.', photo: '/teacher-3.jpg' }
-];
-
-const documentationData = [
-  { id: 1, date: 'Senin, 28 Agustus 2025', photo: '/kbm-photo-1.jpg' },
-  { id: 2, date: 'Jumat, 27 Agustus 2025', photo: '/kbm-photo-2.jpg' }
+  { id: 1, name: 'Dr. Bimo Sunarfri Hantono, S.T., M.Eng.', photo: '/images/teacher-1.jpg' },
+  { id: 2, name: 'Benaya Imanuela', photo: '/images/teacher-2.jpg' },
+  { id: 3, name: 'Petrus Aria Chevalier Rambing', photo: '/images/teacher-3.jpg' }
 ];
 
 export default function WaliMuridDashboard() {
   const router = useRouter();
   const [activeNav, setActiveNav] = useState('dashboard');
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [documentationData, setDocumentationData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [attendancePercentage, setAttendancePercentage] = useState(97);
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      fetchDocumentation();
+      fetchAttendancePercentage();
+    }
+  }, []);
+
+  const fetchDocumentation = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setDocumentationData([
+          { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
+          { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/gallery`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Format the data to match expected structure
+        const formatted = data.map((doc) => ({
+          id: doc._id,
+          date: new Date(doc.createdAt).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+          photo: doc.imageUrl || 'images/dokumentasidummy1.png'
+        }));
+        setDocumentationData(formatted.slice(0, 2));
+      } else {
+        throw new Error('Failed to fetch documentation');
+      }
+    } catch (err) {
+      console.error('Error fetching documentation:', err);
+      // Use default data if API fails
+      setDocumentationData([
+        { id: 1, date: 'Senin, 28 Agustus 2025', photo: 'images/dokumentasidummy1.png' },
+        { id: 2, date: 'Jumat, 27 Agustus 2025', photo: 'images/dokumentasidummy1.png' }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAttendancePercentage = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // Use default if no token
+        setAttendancePercentage(97);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/attendance/my`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Calculate percentage from attendance data
+        if (data.totalDays && data.presentDays) {
+          const percentage = Math.round((data.presentDays / data.totalDays) * 100);
+          setAttendancePercentage(percentage);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching attendance:', err);
+      // Keep default percentage on error
+      setAttendancePercentage(97);
+    }
+  };
 
   function handleLogout() {
     if (typeof window !== 'undefined') {
@@ -36,31 +119,166 @@ export default function WaliMuridDashboard() {
     router.replace('/');
   }
 
-  return (
-    <div className="umum-page">
-      {/* ========== NAVBAR ========== */}
-      <header className="umum-nav">
-        <div className="umum-nav-left">
-          <div className="umum-logo">
-            <span className="umum-logo-flower">🌼</span>
-            <span className="umum-logo-text">Little Garden</span>
-          </div>
+  function handleSubmitFeedback() {
+    if (feedback.trim()) {
+      // Submit feedback to API
+      submitFeedbackToAPI(feedback);
+    }
+  }
 
-          <nav className="umum-nav-links">
+  async function submitFeedbackToAPI(feedbackText) {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        console.error('No token found');
+        setFeedbackSubmitted(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ feedback: feedbackText })
+      });
+
+      if (!res.ok) throw new Error('Gagal mengirim feedback');
+
+      setFeedbackSubmitted(true);
+      setTimeout(() => {
+        setFeedback('');
+        setFeedbackSubmitted(false);
+        setShowFeedbackModal(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Feedback API error:', err);
+      setFeedback('');
+      setShowFeedbackModal(false);
+    }
+  }
+
+const [weather, setWeather] = useState(null);
+const [loadingWeather, setLoadingWeather] = useState(true);
+const [errorWeather, setErrorWeather] = useState(null);
+
+
+useEffect(() => {
+  if (typeof window === 'undefined') return;
+
+  async function fetchWeather() {
+    try {
+      const res = await fetch(`${API_URL}/weather`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      });
+      if (!res.ok) throw new Error("Gagal mengambil data cuaca");
+
+      const data = await res.json();
+      setWeather(data);
+      setErrorWeather(null);
+    } catch (err) {
+      console.error('Weather fetch error:', err);
+      setErrorWeather(err.message);
+      // Use default weather data if API fails
+      setWeather({
+        lokasi: 'Yogyakarta',
+        data_cuaca: [
+          {
+            tanggal: new Date().toISOString().split('T')[0],
+            kota: 'Yogyakarta',
+            suhu_max: '32°C',
+            suhu_min: '24°C',
+            kondisi: 'Berawan',
+            icon: 'https://cdn.weatherapi.com/weather/128x128/day/119.png',
+            persentase_hujan: '20%'
+          },
+          {
+            tanggal: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            kota: 'Yogyakarta',
+            suhu_max: '31°C',
+            suhu_min: '23°C',
+            kondisi: 'Cerah',
+            icon: 'https://cdn.weatherapi.com/weather/128x128/day/113.png',
+            persentase_hujan: '0%'
+          },
+          {
+            tanggal: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+            kota: 'Yogyakarta',
+            suhu_max: '33°C',
+            suhu_min: '25°C',
+            kondisi: 'Hujan',
+            icon: 'https://cdn.weatherapi.com/weather/128x128/day/302.png',
+            persentase_hujan: '80%'
+          }
+        ]
+      });
+    } finally {
+      setLoadingWeather(false);
+    }
+  }
+
+  fetchWeather();
+}, []);
+
+
+  return (
+    <div className={`umum-page ${showFeedbackModal ? 'blur-bg' : ''}`}>
+      {/* Notification Bell */}
+      <NotificationList />
+
+      {/* ========== SIDEBAR ========== */}
+      <aside className="umum-nav sidebar-layout">
+        {/* LOGO */}
+          <div className="umum-logo sidebar-logo">
+            <Image
+              src="/images/logo.png"
+              alt="Little Garden Logo"
+              width={70}
+              height={40}
+              className="umum-logo-image"
+              style={{ height: "auto" }}
+            />
+          </div>
+        <div className="umum-nav-left sidebar-content">
+
+          {/* MENU LIST */}
+          <nav className="umum-nav-links sidebar-links">
             <a
               href="/wali-murid/dashboard"
               className={`nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveNav('dashboard')}
             >
-              Dashboard
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dashboard.png"
+                  alt="Dashboard"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  data-alt="Dashboard"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Dashboard</span>
             </a>
-
             <a
               href="/wali-murid/jadwal"
               className={`nav-item ${activeNav === 'jadwal' ? 'active' : ''}`}
               onClick={() => setActiveNav('jadwal')}
             >
-              Jadwal
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/jadwal.png"
+                  alt="Jadwal"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Jadwal</span>
             </a>
 
             <a
@@ -68,7 +286,17 @@ export default function WaliMuridDashboard() {
               className={`nav-item ${activeNav === 'dokumentasi' ? 'active' : ''}`}
               onClick={() => setActiveNav('dokumentasi')}
             >
-              Dokumentasi KBM
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/dokumentasikbm.png"
+                  alt="Dokumentasi KBM"
+                  width={20}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Dokumentasi KBM</span>
             </a>
 
             <a
@@ -76,25 +304,42 @@ export default function WaliMuridDashboard() {
               className={`nav-item ${activeNav === 'profil' ? 'active' : ''}`}
               onClick={() => setActiveNav('profil')}
             >
-              Profil Anak
+              <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/profilanak.png"
+                  alt="Profil Anak"
+                  width={25}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
+              <span className="nav-label">Profil Anak</span>
             </a>
           </nav>
         </div>
 
-        <div className="umum-nav-right">
-          <button className="umum-icon-btn" type="button">
-            🔔
-          </button>
+        {/* BOTTOM ICONS */}
+        <div className="umum-nav-right sidebar-actions">
           <button
             className="umum-icon-btn"
             type="button"
             onClick={handleLogout}
             title="Logout"
           >
-            ⏻
+            <div className="umum-logo sidebar-logo">
+                <Image
+                  src="/images/logout.png"
+                  alt="Logout"
+                  width={30}
+                  height={40}
+                  className="umum-logo-image"
+                  style={{ height: "auto" }}
+                />
+              </div>
           </button>
         </div>
-      </header>
+      </aside>
 
       {/* ========== DASHBOARD CONTENT ========== */}
       <div className="dashboard-wali-page">
@@ -127,15 +372,23 @@ export default function WaliMuridDashboard() {
                   ))}
                 </div>
               </div>
+                <div className="jadwal-more-link" style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <Link
+                    href="/wali-murid/jadwal"
+                    className="jadwal-more"
+                    onClick={() => setActiveNav('jadwal')}
+                  >
+                    Selengkapnya →
+                  </Link>
+                </div>
             </div>
 
             {/* Attendance & Announcements Card */}
             <div className="dashboard-card info-card">
               <div className="info-section">
                 <div className="info-item attendance">
-                  <div className="attendance-percentage">97%</div>
                   <p className="attendance-label">Presentase Kehadiran</p>
-                  <small>Hari selengkapnya...</small>
+                  <div className="attendance-percentage">{attendancePercentage}%</div>
                 </div>
 
                 <div className="info-item announcement">
@@ -144,30 +397,6 @@ export default function WaliMuridDashboard() {
                   <p className="announcement-text">Reminder : Pembayaran SPP Bulan November</p>
                   <small className="announcement-date">5 hari yang lalu</small>
                 </div>
-              </div>
-            </div>
-
-            {/* Feedback Bar */}
-            <div className="feedback-bar">
-              Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
-              <a href="/wali-murid/feedback" style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline' }}>
-                disini
-              </a>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="dashboard-right">
-            {/* Attendance Chart Card */}
-            <div className="dashboard-card chart-card">
-              <div className="card-header-with-label">
-                <h2 className="card-title">Cuaca Hari Ini</h2>
-              </div>
-              <div className="chart-placeholder">
-                <img src="/weather-chart.jpg" alt="Weather Chart" className="chart-image" />
-              </div>
-              <div className="chart-info">
-                <img src="/attendance-chart.jpg" alt="Attendance Chart" className="attendance-image" />
               </div>
             </div>
 
@@ -184,6 +413,42 @@ export default function WaliMuridDashboard() {
               </div>
             </div>
 
+            {/* Feedback Bar */}
+            <div className="feedback-bar">
+              Punya masukan, kritik terkait sekolah, program, atau guru kami? Isi form masukan
+              <button 
+                onClick={() => setShowFeedbackModal(true)}
+                style={{ marginLeft: '4px', color: '#052826', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+              >
+                disini
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="dashboard-right">
+            {/* Attendance Chart Card */}
+            <div className="chart-card dashboard-card">
+                <h2 className="card-title">Perkiraan Cuaca Terdekat</h2>
+                {loadingWeather && <p>Mengambil data...</p>}
+
+                {weather && (
+                  <div className="weather-forecast weather-grid">
+                    {weather.data_cuaca && weather.data_cuaca.map((hari, idx) => (
+                      <div key={idx} className="weather-item">
+                        <p><strong>{hari.tanggal}</strong></p>
+                        <div className='weather-icon-wrapper'>
+                          <img src={hari.icon} alt="icon cuaca" onError={(e) => e.target.textContent = '⛅'} />
+                        </div>
+                        <p>{hari.kota}</p>
+                        <p>{hari.kondisi}</p>
+                        <p>{hari.suhu_min} - {hari.suhu_max}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+
             {/* Documentation Card */}
             <div className="dashboard-card documentation-card">
               <h2 className="card-title">Dokumentasi KBM</h2>
@@ -195,15 +460,48 @@ export default function WaliMuridDashboard() {
                   </div>
                 ))}
               </div>
-              <div className="documentation-link">
-                <a href="/wali-murid/dokumentasi-kbm" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <div className="documentation-link" style={{ color: '#193745', textDecoration: 'underline', fontWeight: '700'}}>
+                <a href="/wali-murid/dokumentasi-kbm">
                   Lihat selengkapnya →
                 </a>
               </div>
             </div>
           </div>
         </div>
+
+        {/* FEEDBACK MODAL */}
+        {showFeedbackModal && (
+          <div className="feedback-modal-overlay">
+            <div className="feedback-modal">
+              <button
+                className="feedback-modal-close"
+                onClick={() => setShowFeedbackModal(false)}
+                type="button"
+              >
+                ✕
+              </button>
+
+              <h2 className="feedback-modal-title">Form Pengisisan Kritik/Saran</h2>
+
+              <textarea
+                className="feedback-textarea"
+                placeholder="Ketikkan saran anda disini...."
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                disabled={feedbackSubmitted}
+              />
+
+              <button
+                className={`feedback-submit-btn ${feedbackSubmitted ? 'success' : ''}`}
+                onClick={handleSubmitFeedback}
+                type="button"
+                disabled={feedbackSubmitted}
+              >
+                {feedbackSubmitted ? '✓ Terkirim!' : 'Kirimkan Saran!'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  );
-}
+  );}

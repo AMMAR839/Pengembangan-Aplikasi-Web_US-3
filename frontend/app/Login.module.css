@@ -1,0 +1,230 @@
+.loginBg {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+
+  /*  foto + gradient overlay */
+  background-image:
+    linear-gradient(
+      to bottom right,
+      rgba(3, 52, 4, 0.7),  
+      rgba(0, 0, 0, 0.5)    
+    ),
+    url("/login-bg.jpg");     
+  background-size: cover;     /* foto full layar */
+  background-position: center;
+  background-repeat: no-repeat;
+
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+
+    .loginCard {
+    width: 100%;
+    max-width: 850px;
+    height:auto;
+    display: flex;
+    background: #02251b;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    }
+
+   /* gambar kiri */
+    .loginLeft {
+    flex: 1;
+    min-height: 420px;
+    }
+
+    .loginImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    }
+
+    /* ===== KANAN: FORM ===== */
+    .loginRight {
+    flex: 1;
+    padding: 20px 48px ;
+    color: #f7f7f7;
+    position: relative;
+    overflow: hidden;
+
+    }
+    .bgIcon {
+    position: absolute;
+    right: -80px;            /* geser ke kanan, boleh minus biar "keluar" */
+    top: 50%;                /* posisi vertikal */
+    width: 300px;            /* besar kecilnya icon */
+    height: parent;
+    opacity: 0.15;           /* transparan supaya nggak ganggu tulisan */
+    transform: rotate(-25deg);/* muter 25 derajat */
+    z-index: 0;              /* di belakang */
+    pointer-events: none;    /* nggak bisa diklik */
+    }
+
+    /* Logo Little Garden */
+    .logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 0px;
+    }
+
+    .logoImage {
+    width: 150;        
+    height: auto;
+    object-fit: contain;
+     
+    }
+
+    /* Judul besar */
+    .title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    }
+
+/* ===== FORM ===== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* Label + teks kecil di atas garis */
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: capitalize;
+  color: #cdd7d3;
+}
+
+/* INPUT GARIS BAWAH */
+.inputUnderline {
+  margin-top: 4px;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid rgba(205, 215, 211, 0.6);
+  background: transparent;
+  color: #f7f7f7;
+  outline: none;
+  font-size: 18px;
+  width: 380px;
+}
+
+
+
+.inputUnderline::placeholder {
+  color: rgba(230, 230, 230, 0.6);
+}
+
+/* efek saat fokus (klik) → garis biru */
+.inputUnderline:focus {
+  border-bottom-color: #4da2ff;
+}
+
+/* Lupa password */
+.forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+/* Link kecil biru */
+.link {
+  border: none;
+  background: none;
+  color: #4da2ff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Error message */
+.error {
+  font-size: 13px;
+  color: #ff6b6b;
+}
+
+/* ===== BUTTONS ===== */
+.button {
+  margin-top: 4px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 380px;
+    transition: background 0.3s, color 0.3s;
+
+}
+
+/* Button utama (Login) */
+.primaryButton {
+  background: #e6e6e6;
+  color: #111;
+}
+
+/* Button Google */
+.secondaryButton {
+  background: #f4f4f4;
+  color: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.googleIcon {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Teks bawah */
+.bottomText {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #cdd7d3;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .loginCard {
+    flex-direction: column;
+    max-width: 520px;
+  }
+
+  .loginLeft {
+    min-height: 260px;
+  }
+
+  .loginRight {
+    padding: 24px 24px 32px;
+  }
+}
+
+.googleIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.googleImg {
+  width: 18px;    /* atur ukuran icon */
+  height: 18px;
+  display: block;
+}
+
