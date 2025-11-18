@@ -255,10 +255,11 @@
 }
 
 .weather-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
+  display: flex;
+  gap: 12px;
   margin-top: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .weather-item {
@@ -272,6 +273,8 @@
   flex-direction: column;
   gap: 4px;
   align-items: center;
+  min-width: 150px;
+  flex-shrink: 0;
 }
 
 .weather-item p {
