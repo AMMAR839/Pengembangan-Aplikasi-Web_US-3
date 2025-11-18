@@ -369,7 +369,7 @@ exports.addDailySlotPhotos = async (req, res) => {
       }
 
       const { data: publicData } = supabase.storage
-        .from("Foto_Activity")
+        .from("Foto_kegiatan")
         .getPublicUrl(uploadData.path || fileName);
 
       const publicUrl = publicData.publicUrl;
