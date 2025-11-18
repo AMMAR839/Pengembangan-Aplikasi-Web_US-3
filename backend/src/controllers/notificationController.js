@@ -1,0 +1,273 @@
+const Notification = require('../models/Notification');
+const emitter = require('../events/notifications'); 
+const User = require('../models/User');
+const Student = require('../models/Student');
+const telegramService = require('../services/telegramService');
+
+
+exports.createNotification = async (req, res) => {
+  try {
+    console.log('[NOTIFICATION] Creating notification request:', {
+      userId: req.user._id,
+      username: req.user.username,
+      role: req.user.role,
+      body: req.body
+    });
+
+    let {
+      title,
+      body,
+      audience = 'all',
+      recipients = [],
+      recipientUsernames = [],
+      studentId
+    } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ message: 'title dan body wajib diisi' });
+    }
+    if (!['all','parents','byUser'].includes(audience)) {
+      return res.status(400).json({ message: 'audience tidak valid' });
+    }
+
+    // Kumpulkan semua target userId di sini
+    let resolvedIds = [];
+
+    // Jika ada username, resolve ke _id
+    if (Array.isArray(recipientUsernames) && recipientUsernames.length) {
+      const users = await User.find({ username: { $in: recipientUsernames } })
+        .select('_id username')
+        .lean();
+
+      const foundUsernames = new Set(users.map(u => u.username));
+      const notFound = recipientUsernames.filter(u => !foundUsernames.has(u));
+      if (notFound.length) {
+        return res.status(404).json({ message: 'Sebagian username tidak ditemukan', notFound });
+      }
+
+      resolvedIds.push(...users.map(u => u._id));
+      // Kalau kirim username, audience otomatis byUser
+      audience = 'byUser';
+    }
+
+    // Jika ada studentId, kirim ke parentUserId siswa tsb
+    if (studentId) {
+      const stu = await Student.findById(studentId).select('parentUserId').lean();
+      if (!stu || !stu.parentUserId) {
+        return res.status(404).json({ message: 'Parent user tidak ditemukan untuk studentId tersebut' });
+      }
+      resolvedIds.push(stu.parentUserId);
+      audience = 'byUser';
+    }
+
+    // Tambahkan recipients dari body (userId langsung)
+    if (Array.isArray(recipients) && recipients.length) {
+      resolvedIds.push(...recipients);
+      audience = 'byUser';
+    }
+
+    // Deduplicate
+    resolvedIds = [...new Set(resolvedIds.map(String))];
+
+    // Validasi kalau audience byUser tapi daftar kosong
+    if (audience === 'byUser' && resolvedIds.length === 0) {
+      return res.status(400).json({ message: 'recipients wajib diisi jika audience=byUser (atau pakai recipientUsernames / studentId)' });
+    }
+
+    const notif = await Notification.create({
+      title,
+      body,
+      audience,
+      recipients: audience === 'byUser' ? resolvedIds : [],
+      createdBy: req.user._id
+    });
+
+    // Kirim event untuk client SSE
+    emitter.emit('notification:new', {
+      _id: notif._id,
+      title: notif.title,
+      body: notif.body,
+      audience: notif.audience,
+      recipients: notif.recipients,
+      createdAt: notif.createdAt
+    });
+
+    // Emit real-time notification via Socket.IO
+    const io = req.app.locals.io;
+    if (io) {
+      const notifData = {
+        _id: notif._id,
+        title: notif.title,
+        body: notif.body,
+        audience: notif.audience,
+        createdAt: notif.createdAt
+      };
+
+      console.log(`[NOTIFICATION] Emitting notification with audience: ${audience}`, {
+        title: notif.title,
+        audience: notif.audience,
+        connectedClients: io.engine.clientsCount
+      });
+
+      if (audience === 'all') {
+        // Broadcast to all connected users
+        console.log('[NOTIFICATION] Broadcasting to ALL users');
+        io.emit('notification:new', notifData);
+      } else if (audience === 'parents') {
+        // Emit to all connected clients - they will handle based on their role
+        // Frontend should check if user role is 'parent'
+        console.log('[NOTIFICATION] Broadcasting to ALL (will filter on client side for parents)');
+        io.emit('notification:new', notifData);
+      } else if (audience === 'byUser') {
+        // Emit to specific users
+        console.log(`[NOTIFICATION] Emitting to ${resolvedIds.length} specific users`);
+        resolvedIds.forEach(userId => {
+          io.to(`user_${userId}`).emit('notification:new', notifData);
+        });
+      }
+    }
+
+    // Send Telegram notifications to users with connected accounts
+    try {
+      let telegramQuery;
+      
+      if (audience === 'all') {
+        // Send to all users with Telegram connected
+        telegramQuery = { 
+          telegramChatId: { $exists: true, $ne: null } 
+        };
+      } else if (audience === 'parents') {
+        // Send to parents with Telegram connected
+        telegramQuery = { 
+          role: 'parent', 
+          telegramChatId: { $exists: true, $ne: null } 
+        };
+      } else if (audience === 'byUser') {
+        // Send to specific users with Telegram connected
+        telegramQuery = { 
+          _id: { $in: resolvedIds }, 
+          telegramChatId: { $exists: true, $ne: null } 
+        };
+      }
+
+      if (telegramQuery) {
+        const telegramUsers = await User.find(telegramQuery)
+          .select('telegramChatId telegramUsername fullName')
+          .lean();
+
+        if (telegramUsers.length > 0) {
+          console.log(`[TELEGRAM] Sending notifications to ${telegramUsers.length} users`);
+          const telegramResult = await telegramService.sendBulkNotification(
+            telegramUsers,
+            title,
+            body
+          );
+          console.log(`[TELEGRAM] Sent: ${telegramResult.sent}, Failed: ${telegramResult.failed}`);
+        } else {
+          console.log('[TELEGRAM] No users with Telegram connected for this audience');
+        }
+      }
+    } catch (telegramError) {
+      // Don't fail the whole request if Telegram fails
+      console.error('[TELEGRAM] Error sending notifications:', telegramError.message);
+    }
+
+    res.status(201).json({ message: 'Notifikasi dibuat', data: notif });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// User/Parent melihat notifikasi yang relevan
+exports.listMyNotifications = async (req, res) => {
+  try {
+    const orConditions = [
+      { audience: 'all' },
+      { audience: 'byUser', recipients: req.user._id }
+    ];
+    if (req.user.role === 'parent') {
+      orConditions.push({ audience: 'parents' });
+    }
+
+    const items = await Notification.find({ $or: orConditions })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const myId = String(req.user._id);
+    const mapped = items.map(n => ({
+      _id: n._id,
+      title: n.title,
+      body: n.body,
+      audience: n.audience,
+      createdAt: n.createdAt,
+      isRead: Array.isArray(n.readBy) ? n.readBy.some(id => String(id) === myId) : false
+    }));
+
+    res.json(mapped);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Tandai 1 notifikasi sebagai dibaca
+exports.markAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await Notification.findByIdAndUpdate(
+      id,
+      { $addToSet: { readBy: req.user._id } }, // idempotent
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Notifikasi tidak ditemukan' });
+    res.json({ message: 'Ditandai sebagai sudah dibaca' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Admin lihat semua notifikasi
+exports.listAllNotifications = async (req, res) => {
+  try {
+    const items = await Notification.find()
+      .populate('createdBy', 'username')
+      .populate('recipients', 'username')
+      .sort({ createdAt: -1 });
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Stream realtime (SSE) 
+exports.stream = (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  const userId = String(req.user._id);
+  const userRole = req.user.role;
+
+  const onNew = (notif) => {
+    const allowed =
+      notif.audience === 'all' ||
+      (notif.audience === 'parents' && userRole === 'parent') ||
+      (notif.audience === 'byUser' && Array.isArray(notif.recipients) && notif.recipients.some(id => String(id) === userId));
+
+    if (allowed) {
+      res.write(`data: ${JSON.stringify({ type: 'notification:new', data: notif })}\n\n`);
+    }
+  };
+
+  emitter.on('notification:new', onNew);
+
+  const keepAlive = setInterval(() => {
+    res.write('event: ping\ndata: {}\n\n');
+  }, 25000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+    emitter.off('notification:new', onNew);
+    res.end();
+  });
+};

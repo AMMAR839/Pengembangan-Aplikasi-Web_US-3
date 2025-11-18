@@ -1,0 +1,303 @@
+/* === HEADER HALAMAN === */
+.dokumentasi-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+/* === TOOLBAR PILIH ANAK === */
+
+.dokumentasi-toolbar {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  background: #dfe8ea;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.toolbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #556b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.toolbar-select {
+  min-width: 220px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #c4d2d4;
+  background: #ffffff;
+  font-size: 14px;
+  color: #123047;
+  outline: none;
+}
+
+.toolbar-select:focus {
+  border-color: #123047;
+  box-shadow: 0 0 0 2px rgba(18, 48, 71, 0.15);
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.today-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #123047;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.class-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #9fbdb9;
+  color: #052826;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* === PANEL "SEKARANG LAGI APA" === */
+
+.kbm-now-card {
+  max-width: 1200px;
+  margin: 0 auto 18px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #d7e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.kbm-now-title {
+  font-weight: 700;
+  color: #123047;
+}
+
+.kbm-now-message {
+  color: #8f3b3b;
+}
+
+.kbm-now-text {
+  color: #354b4b;
+}
+
+/* === WRAPPER TABEL KBM === */
+
+.kbm-wrapper {
+  max-width: 1200px;
+  margin: 0 auto 28px;
+}
+
+/* Tabel = kumpulan row */
+.kbm-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Header & Row pakai Grid 3 kolom -> tinggi tiap baris seragam */
+.kbm-header-row,
+.kbm-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr) minmax(0, 1.05fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Header cell */
+
+.kbm-header-cell {
+  background: #c9d9d9;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: #123047;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Semua cell di baris */
+
+.kbm-cell {
+  background: #ffffff;
+  padding: 16px 14px;
+  border-radius: 12px;
+  border: 1px solid #d7e0e0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  /* min-height sama -> baris rapi */
+  min-height: 260px;
+}
+
+/* Jadwal: text rata kiri */
+.kbm-cell-schedule {
+  align-items: flex-start;
+}
+
+/* Foto: center */
+.kbm-cell-photo {
+  align-items: center;
+}
+
+/* Catatan: text tengah dikit */
+.kbm-cell-notes {
+  align-items: center;
+}
+
+/* === ISI JADWAL === */
+
+.kbm-slot-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: #123047;
+}
+
+.kbm-slot-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.kbm-slot-note-small {
+  font-size: 13px;
+  color: #556b6b;
+  margin-top: 4px;
+}
+
+/* === FOTO KEGIATAN === */
+
+.kbm-slot-photos {
+  padding: 10px;
+}
+
+/* Container foto besar */
+.kbm-photo-wrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    #d7ebe9 0%,
+    #f5faf9 45%,
+    #f0f5f7 100%
+  );
+  width: 100%;
+}
+
+/* ➜ bikin container tinggi tapi masih elegan */
+.kbm-photo-wrapper-large {
+  height: 280px;
+  max-height: 320px;
+}
+
+/* Foto isi container penuh */
+.kbm-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* isi full container */
+  display: block;
+}
+
+/* Info jika ada foto tambahan */
+.kbm-photo-extra-info {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6c8585;
+}
+
+/* Kalau belum ada foto */
+.kbm-photo-empty {
+  font-size: 13px;
+  color: #8fa9a9;
+  text-align: center;
+  padding: 14px 8px;
+  width: 100%;
+}
+
+/* === CATATAN === */
+
+.kbm-note-text {
+  font-size: 14px;
+  color: #556b6b;
+  text-align: center;
+  word-wrap: break-word;
+  padding: 8px 4px;
+}
+
+/* === FEEDBACK BAR (ikuti style global, tapi boleh override dikit) === */
+
+.feedback-bar {
+  max-width: 1100px;
+  margin: 12px auto 0;
+  background: #9fbdb9;
+  color: #052826;
+  padding: 14px 18px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* FEEDBACK MODAL pakai dari global.css, tidak diubah di sini */
+
+/* === RESPONSIVE === */
+
+@media (max-width: 1100px) {
+  .dokumentasi-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .toolbar-right {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 900px) {
+  .kbm-header-row,
+  .kbm-row {
+    grid-template-columns: 1fr;
+  }
+
+  .kbm-cell {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dokumentasi-toolbar {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .toolbar-select {
+    width: 100%;
+  }
+
+  .kbm-photo-wrapper-large {
+    height: 230px;
+  }
+}

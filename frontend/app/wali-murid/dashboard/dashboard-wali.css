@@ -1,0 +1,509 @@
+/* ========= DASHBOARD WALI – LOKAL CSS ========= */
+
+/* wrapper konten utama (di kanan sidebar) */
+.dashboard-wali-page {
+  margin-left: 130px;               /* ruang untuk sidebar */
+  padding: 32px 72px 56px;
+  min-height: 100vh;
+  background: #e6f0f0;
+  color: #123047;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  box-sizing: border-box;
+}
+
+/* ====== GREETING / HEADER ATAS ====== */
+
+.dashboard-greeting {
+  margin-bottom: 28px;
+}
+
+.dashboard-greeting h1 {
+  margin: 0 0 6px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #123047;
+}
+
+.dashboard-greeting-sub {
+  margin: 0;
+  font-size: 14px;
+  color: #5b6b7a;
+}
+
+.greeting-highlight {
+  color: #0f766e;
+  font-weight: 700;
+}
+
+/* ====== GRID 2 KOLOM ====== */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px;
+}
+
+/* supaya isi kiri & kanan bisa diatur sendiri */
+.dashboard-left,
+.dashboard-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ====== KARTU UMUM ====== */
+
+.dashboard-card {
+  background: #fffffc;
+  border-radius: 18px;
+  padding: 18px 20px 20px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  border: 1px solid #d7e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-title {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  color: #123047;
+}
+
+/* ====== MINI JADWAL ====== */
+
+.jadwal-card {
+  background: linear-gradient(135deg, #cfd9d9 0%, #dde7e7 40%, #f5f8f8 100%);
+}
+
+.mini-schedule {
+  margin-top: 6px;
+}
+
+/* "tabel" jadwal 3 hari */
+.schedule-table {
+  display: table;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #f4f8f8;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.schedule-row {
+  display: table-row;
+}
+
+.schedule-row.header {
+  background: #dde7e7;
+}
+
+.schedule-col {
+  display: table-cell;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-align: center;
+  border-bottom: 1px solid #d2e0e0;
+  border-right: 1px solid #d2e0e0;
+  vertical-align: middle;
+}
+
+.schedule-row.header .schedule-col {
+  font-weight: 700;
+  color: #123047;
+}
+
+.schedule-row:last-child .schedule-col {
+  border-bottom: none;
+}
+
+.schedule-col:last-child {
+  border-right: none;
+}
+
+.jadwal-more-link {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.jadwal-more {
+  display: inline-block;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f8fafa;
+  color: #0f766e;
+  text-decoration: none;
+  border: 1px solid #d2e6e6;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.jadwal-more:hover {
+  background: #0f766e;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ====== INFO KEHADIRAN & PENGUMUMAN ====== */
+
+.info-card {
+  background: linear-gradient(145deg, #cfd9d9 0%, #e1ecec 40%, #f9fbfb 100%);
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.info-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fffffc;
+  border: 1px solid #dbe5e5;
+}
+
+/* Kehadiran */
+.info-item.attendance {
+  text-align: center;
+}
+
+.attendance-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b6b7a;
+  margin-bottom: 6px;
+}
+
+.attendance-percentage {
+  font-size: 32px;
+  font-weight: 700;
+  color: #14532d;
+}
+
+/* Pengumuman */
+.info-item.announcement {
+  border-left: 4px solid #0f766e;
+}
+
+.announcement-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #123047;
+  margin-bottom: 4px;
+}
+
+.announcement-date {
+  display: block;
+  font-size: 11px;
+  color: #8fa9a9;
+}
+
+.announcement-text {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #4b5c5c;
+}
+
+/* ====== GURU KELAS ====== */
+
+.teachers-card {
+  background: linear-gradient(145deg, #cfd9d9 0%, #e2ecec 45%, #f9fbfb 100%);
+}
+
+.teachers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.teacher-item {
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #dbe5e5;
+}
+
+.teacher-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 3px solid #d2e6e6;
+  margin-bottom: 6px;
+}
+
+.teacher-name {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5c5c;
+  word-wrap: break-word;
+}
+
+/* ====== KARTU CUACA (CHART CARD) ====== */
+
+.chart-card {
+  background: linear-gradient(145deg, #cfd9d9 0%, #e3eeee 45%, #f9fbfb 100%);
+  min-height: 0; /* biar tinggi ikut konten */
+}
+
+.weather-grid {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.weather-item {
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: #fffffc;
+  border: 1px solid #dbe5e5;
+  text-align: center;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.weather-item p {
+  margin: 0;
+}
+
+.weather-item p strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #123047;
+}
+
+.weather-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  margin: 4px 0;
+}
+
+.weather-icon-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ====== DOKUMENTASI KBM ====== */
+
+.documentation-card {
+  background: linear-gradient(145deg, #cfd9d9 0%, #e2ecec 45%, #f9fbfb 100%);
+}
+
+.documentation-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #dbe5e5;
+}
+
+.doc-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.doc-date {
+  margin: 0;
+  font-size: 13px;
+  color: #4b5c5c;
+}
+
+.documentation-link {
+  margin-top: 6px;
+  text-align: center;
+}
+
+.documentation-link a {
+  font-size: 13px;
+  color: #0f766e;
+  text-decoration: underline;
+}
+
+/* ====== FEEDBACK BAR (di bawah kolom kiri) ====== */
+
+.feedback-bar {
+  margin-top: 4px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #9fbdb9;
+  color: #052826;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ====== MODAL FEEDBACK (boleh sama dengan halaman lain) ====== */
+
+.feedback-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.feedback-modal {
+  position: relative;
+  background: #e6f0f0;
+  border-radius: 20px;
+  padding: 32px 36px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.feedback-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  color: #123047;
+  cursor: pointer;
+}
+
+.feedback-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #123047;
+  text-align: center;
+}
+
+.feedback-textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 2px solid #9fbdb9;
+  font-family: inherit;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.feedback-textarea::placeholder {
+  color: #8da0a0;
+}
+
+.feedback-textarea:focus {
+  border-color: #04291e;
+  box-shadow: 0 0 0 3px rgba(4, 41, 30, 0.12);
+}
+
+.feedback-submit-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 2px solid #04291e;
+  background: #ffffff;
+  color: #04291e;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.feedback-submit-btn:hover:not(:disabled) {
+  background: #04291e;
+  color: #ffffff;
+}
+
+.feedback-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feedback-submit-btn.success {
+  background: #04291e;
+  color: #ffffff;
+}
+
+/* ====== RESPONSIVE ====== */
+
+@media (max-width: 1100px) {
+  .dashboard-wali-page {
+    padding: 24px 32px 40px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-wali-page {
+    margin-left: 130px; /* sidebar tetap */
+    padding: 20px 20px 32px;
+  }
+
+  .dashboard-greeting h1 {
+    font-size: 22px;
+  }
+
+  .card-title {
+    text-align: center;
+  }
+
+  .teachers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-wali-page {
+    margin-left: 130px;
+    padding: 16px 16px 28px;
+  }
+
+  .dashboard-greeting h1 {
+    font-size: 20px;
+  }
+
+  .dashboard-card {
+    padding: 16px;
+  }
+
+  .schedule-col {
+    font-size: 12px;
+    padding: 8px 6px;
+  }
+
+  .weather-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}

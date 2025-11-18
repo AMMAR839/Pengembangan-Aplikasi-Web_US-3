@@ -1,0 +1,174 @@
+const crypto = require('crypto');
+const midtransClient = require('midtrans-client');
+const PENDING_TTL_MS = Number(process.env.PAYMENT_PENDING_TTL_MS || 24*60*60*1000); // default 24 jam
+
+
+const Payment = require('../models/Payment');
+const Student = require('../models/Student');
+const User = require('../models/User');
+
+const AMOUNT = Number(process.env.REGISTRATION_FEE || 25000);
+const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
+
+function createSnap() {
+  return new midtransClient.Snap({
+    isProduction: process.env.MIDTRANS_IS_PROD === 'true',
+    serverKey: MIDTRANS_SERVER_KEY
+  });
+}
+
+// Buat/ulang payment pending utk 1 siswa (doc Student)
+async function createOrReusePayment({ student, user, forceNew = false }) {
+  let payment = await Payment.findOne({ studentNik: student.nik, status: 'pending' });
+
+  // Jika ada pending & diminta paksa baru -> expire dulu yang lama
+  if (payment && forceNew) {
+    payment.status = 'expire';
+    await payment.save();
+    payment = null;
+  }
+
+  // Jika masih ada pending
+  if (payment) {
+    const ageMs = Date.now() - new Date(payment.createdAt).getTime();
+    const notExpired = ageMs < PENDING_TTL_MS;
+
+    // Reuse jika masih valid dan punya redirectUrl
+    if (payment.redirectUrl && notExpired) {
+      return { order_id: payment.orderId, payment_url: payment.redirectUrl, reused: true };
+    }
+
+    // Kalau sudah melewati TTL / tidak ada redirectUrl, expire dulu
+    payment.status = 'expire';
+    await payment.save();
+    payment = null;
+  }
+
+  // Buat transaksi baru
+  const snap = createSnap();
+  const orderId = `PAUD-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const parameter = {
+    transaction_details: { order_id: orderId, gross_amount: AMOUNT },
+    // bebas: boleh biarkan semua channel aktif atau batasi:
+    enabled_payments: ['qris','gopay','shopeepay','bank_transfer','bca_va','bni_va','bri_va','echannel','permata_va','other_va','credit_card'],
+    item_details: [{ id: 'pendaftaran', price: AMOUNT, quantity: 1, name: `Pendaftaran ${student.nama}` }],
+    customer_details: { first_name: user.username }
+  };
+
+  const tx = await snap.createTransaction(parameter);
+
+  await Payment.create({
+    userId: user._id,
+    studentNik: student.nik,
+    orderId,
+    amount: AMOUNT,
+    status: 'pending',
+    redirectUrl: tx.redirect_url
+  });
+
+  return { order_id: orderId, payment_url: tx.redirect_url, reused: false };
+}
+
+// ====== CHECKOUT by NIK (daftar siswa) ======
+exports.checkoutByNik = async (req, res) => {
+  try {
+    const { nik } = req.body;
+    if (!nik) return res.status(400).json({ message: 'NIK wajib diisi' });
+
+    const isAdmin = req.user.role === 'admin';
+    const student = await Student.findOne(
+      isAdmin ? { nik } : { nik, parentUserId: req.user._id }
+    );
+    if (!student) return res.status(404).json({ message: 'Siswa tidak ditemukan / bukan milik Anda' });
+
+    if (student.status === 'active') {
+      return res.json({ message: 'Siswa sudah aktif. Tidak perlu membayar.' });
+    }
+
+    const forceNew = req.query.forceNew === '1' || req.query.forceNew === 'true';
+
+    const result = await createOrReusePayment({ student, user: req.user, forceNew });
+    res.json({
+      message: result.reused ? 'Lanjutkan pembayaran yang tertunda' : 'Silakan lanjutkan pembayaran',
+      ...result
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+// (opsional) verifikasi signature Midtrans
+function verifyMidtransSignature(body) {
+  try {
+    const { signature_key, order_id, status_code, gross_amount } = body || {};
+    if (!signature_key || !order_id || !status_code || !gross_amount || !MIDTRANS_SERVER_KEY) return false;
+    const payload = `${order_id}${status_code}${gross_amount}${MIDTRANS_SERVER_KEY}`;
+    const calc = crypto.createHash('sha512').update(payload).digest('hex');
+    return calc === signature_key;
+  } catch {
+    return false;
+  }
+}
+
+exports.listMyPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find({ userId: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.json(payments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// === CALLBACK Midtrans
+exports.callback = async (req, res) => {
+  try {
+    if (process.env.MIDTRANS_VERIFY_SIG === 'true') {
+      if (!verifyMidtransSignature(req.body)) return res.status(403).send('Invalid signature');
+    }
+
+    const { order_id, transaction_status, gross_amount } = req.body;
+    const payment = await Payment.findOne({ orderId: order_id });
+    if (!payment) return res.status(404).json({ message: 'Pembayaran tidak ditemukan' });
+
+    if (gross_amount && Number(gross_amount) !== Number(payment.amount)) {
+      // optional strict check: return res.status(400).send('Amount mismatch');
+    }
+
+    const mapStatus = (s) => {
+      if (['settlement','pending','expire','cancel','deny','failed'].includes(s)) return s;
+      return payment.status;
+    };
+    const newStatus = mapStatus(transaction_status);
+
+    if (newStatus !== payment.status) {
+      payment.status = newStatus;
+      await payment.save();
+
+      if (newStatus === 'settlement') {
+        await Student.findOneAndUpdate({ nik: payment.studentNik }, { status: 'active' });
+        await User.updateOne({ _id: payment.userId, role: 'user' }, { $set: { role: 'parent' } });
+      }
+    }
+
+    res.status(200).send('OK');
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// == Riwayatr pembayaran milik user yg login==
+exports.listMyPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find({ userId: req.user._id }).sort({
+      createdAt: -1,
+    });
+
+    res.json(payments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
