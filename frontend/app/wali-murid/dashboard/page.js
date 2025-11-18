@@ -33,6 +33,7 @@ export default function WaliMuridDashboard() {
   const [loading, setLoading] = useState(true);
   const [attendancePercentage, setAttendancePercentage] = useState(97);
   const [notifications, setNotifications] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
   const childName = 'Nama Orangtua Murid'; // This should come from auth context
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function WaliMuridDashboard() {
       fetchDocumentation();
       fetchAttendancePercentage();
       fetchNotifications();
+      fetchScheduleData();
     }
   }, []);
 
@@ -146,6 +148,73 @@ export default function WaliMuridDashboard() {
     } catch (err) {
       console.error('Error fetching notifications:', err);
       setNotifications([]);
+    }
+  };
+
+  const fetchScheduleData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const classes = ['Senin', 'Selasa', 'Rabu'];
+      const dayMap = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3 };
+      const allSlots = [];
+
+      for (const day of classes) {
+        const dayNum = dayMap[day];
+        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          signal: AbortSignal.timeout(5000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.slots && data.slots.length > 0) {
+            allSlots.push(...data.slots.map((slot, idx) => ({ 
+              ...slot, 
+              dayIndex: classes.indexOf(day)
+            })));
+          }
+        }
+      }
+
+      // Restructure data for display
+      if (allSlots.length > 0) {
+        const times = new Set();
+        allSlots.forEach(s => times.add(s.start));
+        const sortedTimes = Array.from(times).sort();
+
+        const restructured = sortedTimes.map(time => {
+          const slotsByTime = allSlots.filter(s => s.start === time);
+          return {
+            time: time.replace(':', '.') + ' - ' + (slotsByTime[0]?.end || time).replace(':', '.'),
+            senin: slotsByTime.find(s => s.dayIndex === 0)?.title || '-',
+            selasa: slotsByTime.find(s => s.dayIndex === 1)?.title || '-',
+            rabu: slotsByTime.find(s => s.dayIndex === 2)?.title || '-'
+          };
+        });
+
+        setScheduleData(restructured);
+      } else {
+        // Use default schedule if no data from API
+        setScheduleData([
+          { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
+          { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
+          { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
+          { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
+          { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
+        ]);
+      }
+    } catch (err) {
+      console.error('Error fetching schedule data:', err);
+      // Use default schedule as fallback
+      setScheduleData([
+        { time: '09.00 - 09.30', senin: 'Senam Pagi', selasa: 'Senam Pagi', rabu: 'Senam Pagi' },
+        { time: '09.30 - 10.30', senin: 'Bermain Aktif', selasa: 'Bermain Aktif', rabu: 'Bermain Aktif' },
+        { time: '10.30 - 11.30', senin: 'Waktu Cerita', selasa: 'Waktu Cerita', rabu: 'Waktu Cerita' },
+        { time: '11.30 - 12.00', senin: 'Makan Siang', selasa: 'Makan Siang', rabu: 'Makan Siang' },
+        { time: '12.00', senin: 'Jam Pulang', selasa: 'Jam Pulang', rabu: 'Jam Pulang' }
+      ]);
     }
   };
 

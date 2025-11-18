@@ -107,6 +107,7 @@ export default function AdminDashboardNew() {
   const [scheduleDay, setScheduleDay] = useState('1');
   const [scheduleSlots, setScheduleSlots] = useState([{ start: '', end: '', title: '', note: '' }]);
   const [allSchedules, setAllSchedules] = useState([]);
+  const [schedulesByTime, setSchedulesByTime] = useState([]);
   
   // Attendance states
   const [attendances, setAttendances] = useState([]);
@@ -395,17 +396,70 @@ export default function AdminDashboardNew() {
 
   const fetchAllSchedules = async () => {
     try {
-      const res = await fetch(`${API_URL}/activities`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        signal: AbortSignal.timeout(5000)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAllSchedules(Array.isArray(data) ? data : []);
+      // Fetch schedules for each day (Senin=1, Selasa=2, Rabu=3)
+      const allSlots = [];
+      const days = [1, 2, 3];
+      const dayNames = ['Senin', 'Selasa', 'Rabu'];
+
+      for (let i = 0; i < days.length; i++) {
+        const dayNum = days[i];
+        const res = await fetch(`${API_URL}/activities/jadwal?class=A&day=${dayNum}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          signal: AbortSignal.timeout(5000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.slots && data.slots.length > 0) {
+            data.slots.forEach(slot => {
+              allSlots.push({
+                ...slot,
+                dayIndex: i,
+                dayName: dayNames[i]
+              });
+            });
+          }
+        }
       }
+
+      setAllSchedules(allSlots);
+      // Organize by time slots for display
+      organizeSchedulesByTime(allSlots);
     } catch (err) {
       console.error('Error fetching all schedules:', err);
       setAllSchedules([]);
+      setSchedulesByTime([]);
+    }
+  };
+
+  const organizeSchedulesByTime = (slotsData) => {
+    try {
+      const timeSlots = new Map();
+
+      // Group slots by time
+      slotsData.forEach(slot => {
+        const timeKey = `${slot.start} - ${slot.end}`;
+        if (!timeSlots.has(timeKey)) {
+          timeSlots.set(timeKey, {
+            time: timeKey.replace(/:/g, '.'),
+            slots: {}
+          });
+        }
+        const entry = timeSlots.get(timeKey);
+        entry.slots[slot.dayIndex + 1] = { title: slot.title, note: slot.note };
+      });
+
+      // Convert Map to sorted array
+      const sorted = Array.from(timeSlots.values()).sort((a, b) => {
+        const timeA = a.time.split(' ')[0].replace('.', ':');
+        const timeB = b.time.split(' ')[0].replace('.', ':');
+        return timeA.localeCompare(timeB);
+      });
+
+      setSchedulesByTime(sorted);
+    } catch (err) {
+      console.error('Error organizing schedules:', err);
+      setSchedulesByTime([]);
     }
   };
 
@@ -958,6 +1012,118 @@ export default function AdminDashboardNew() {
                     Tidak ada notifikasi terbaru
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Jadwal Harian Section */}
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              padding: '28px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+              marginTop: '24px'
+            }}>
+              <h2 style={{ 
+                fontSize: '18px', 
+                fontWeight: '700',
+                color: '#123047',
+                marginBottom: '20px'
+              }}>
+                Jadwal Harian
+              </h2>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  minWidth: '600px'
+                }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047',
+                        minWidth: '100px'
+                      }}>
+                        Jam
+                      </th>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047'
+                      }}>
+                        Senin
+                      </th>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047'
+                      }}>
+                        Selasa
+                      </th>
+                      <th style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#123047'
+                      }}>
+                        Rabu
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {schedulesByTime && schedulesByTime.length > 0 ? (
+                      schedulesByTime.map((timeSlot, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <td style={{
+                            padding: '12px',
+                            fontSize: '13px',
+                            color: '#123047',
+                            fontWeight: '500'
+                          }}>
+                            {timeSlot.time}
+                          </td>
+                          {[1, 2, 3].map((day) => {
+                            const slotForDay = timeSlot.slots[day] || {};
+                            return (
+                              <td key={day} style={{
+                                padding: '12px',
+                                fontSize: '13px',
+                                color: '#123047'
+                              }}>
+                                <div>{slotForDay.title || '-'}</div>
+                                {slotForDay.note && (
+                                  <div style={{ fontSize: '11px', color: '#8fa9a9', marginTop: '4px' }}>
+                                    {slotForDay.note}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" style={{
+                          padding: '16px',
+                          textAlign: 'center',
+                          color: '#8fa9a9',
+                          fontSize: '14px'
+                        }}>
+                          Tidak ada jadwal harian
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
