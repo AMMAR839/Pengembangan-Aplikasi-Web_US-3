@@ -95,15 +95,24 @@ exports.createNotification = async (req, res) => {
         createdAt: notif.createdAt
       };
 
+      console.log(`[NOTIFICATION] Emitting notification with audience: ${audience}`, {
+        title: notif.title,
+        audience: notif.audience,
+        connectedClients: io.engine.clientsCount
+      });
+
       if (audience === 'all') {
         // Broadcast to all connected users
+        console.log('[NOTIFICATION] Broadcasting to ALL users');
         io.emit('notification:new', notifData);
       } else if (audience === 'parents') {
         // Emit to all connected clients - they will handle based on their role
         // Frontend should check if user role is 'parent'
+        console.log('[NOTIFICATION] Broadcasting to ALL (will filter on client side for parents)');
         io.emit('notification:new', notifData);
       } else if (audience === 'byUser') {
         // Emit to specific users
+        console.log(`[NOTIFICATION] Emitting to ${resolvedIds.length} specific users`);
         resolvedIds.forEach(userId => {
           io.to(`user_${userId}`).emit('notification:new', notifData);
         });
