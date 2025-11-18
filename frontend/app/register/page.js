@@ -137,7 +137,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 className={styles.link}
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/login")}
               >
                 sign in here
               </button>

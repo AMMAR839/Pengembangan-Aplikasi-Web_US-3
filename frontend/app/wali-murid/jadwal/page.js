@@ -57,7 +57,7 @@ export default function JadwalPage() {
           if (typeof window !== 'undefined') {
             localStorage.setItem('redirectAfterLogin', '/wali-murid/jadwal');
           }
-          router.replace('/');
+          router.replace('/login');
           return;
         }
 
@@ -215,7 +215,7 @@ export default function JadwalPage() {
       localStorage.removeItem('username');
       localStorage.removeItem('role');
     }
-    router.replace('/');
+    router.replace('/login');
   }
 
   function handleSubmitFeedback() {

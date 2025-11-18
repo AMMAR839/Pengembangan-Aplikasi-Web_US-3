@@ -30,7 +30,7 @@ export default function ProfilPage() {
 
     if (!token) {
       // belum login → balik ke halaman login
-      router.replace("/");
+      router.replace("/login");
       return;
     }
 
@@ -77,7 +77,7 @@ export default function ProfilPage() {
     setIsLoggedIn(false);
     setUsername("");
     setOpenProfile(false);
-    router.replace("/");
+    router.replace("/login");
   }
 
   function handleProfil() {
@@ -117,7 +117,7 @@ export default function ProfilPage() {
 
           <nav className={styles.navLinks}>
             <Link
-              href="/umum#beranda"
+              href="/#beranda"
               className={`${styles.navItem} ${
                 activeNav === "beranda" ? styles.navItemActive : ""
               }`}
@@ -127,7 +127,7 @@ export default function ProfilPage() {
             </Link>
 
             <Link
-              href="/umum#tentang-kami"
+              href="/#tentang-kami"
               className={`${styles.navItem} ${
                 activeNav === "tentang" ? styles.navItemActive : ""
               }`}
@@ -137,7 +137,7 @@ export default function ProfilPage() {
             </Link>
 
             <Link
-              href="/umum#kurikulum"
+              href="/#kurikulum"
               className={`${styles.navItem} ${
                 activeNav === "kurikulum" ? styles.navItemActive : ""
               }`}
@@ -213,7 +213,7 @@ export default function ProfilPage() {
                     className={styles.profileItem}
                     onClick={() => {
                       setOpenProfile(false);
-                      router.push("/"); // ke halaman login
+                      router.push("/login"); // ke halaman login
                     }}
                   >
                     <span className={styles.profileItemIcon}></span>

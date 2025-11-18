@@ -14,7 +14,7 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (status === "success") {
       const t = setTimeout(() => {
-        router.push("/");
+        router.push("/login");
       }, 3000);
       return () => clearTimeout(t);
     }
@@ -52,7 +52,7 @@ function VerifyEmailContent() {
         <button
           className={styles.verifyButton}
           type="button"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/login")}
         >
           Kembali ke Login
         </button>

@@ -29,7 +29,7 @@ export default function RiwayatPembayaranPage() {
 
     if (!token) {
       localStorage.setItem("redirectAfterLogin", "/riwayat-pembayaran");
-      router.replace("/");
+      router.replace("/login");
       return;
     }
 
@@ -75,7 +75,7 @@ export default function RiwayatPembayaranPage() {
     setIsLoggedIn(false);
     setUsername("");
     setOpenProfile(false);
-    router.replace("/");
+    router.replace("/login");
   }
 
   function handleProfil() {
@@ -187,7 +187,7 @@ export default function RiwayatPembayaranPage() {
 
           <nav className={styles.navLinks}>
             <Link
-              href="/umum#beranda"
+              href="/#beranda"
               className={`${styles.navItem} ${
                 activeNav === "beranda" ? styles.navItemActive : ""
               }`}
@@ -197,7 +197,7 @@ export default function RiwayatPembayaranPage() {
             </Link>
 
             <Link
-              href="/umum#tentang-kami"
+              href="/#tentang-kami"
               className={`${styles.navItem} ${
                 activeNav === "tentang" ? styles.navItemActive : ""
               }`}
@@ -207,7 +207,7 @@ export default function RiwayatPembayaranPage() {
             </Link>
 
             <Link
-              href="/umum#kurikulum"
+              href="/#kurikulum"
               className={`${styles.navItem} ${
                 activeNav === "kurikulum" ? styles.navItemActive : ""
               }`}
@@ -286,7 +286,7 @@ export default function RiwayatPembayaranPage() {
                     className={styles.profileItem}
                     onClick={() => {
                       setOpenProfile(false);
-                      router.push("/");
+                      router.push("/login");
                     }}
                   >
                     <span className={styles.profileItemIcon}>🔑</span>

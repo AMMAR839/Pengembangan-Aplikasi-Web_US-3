@@ -74,7 +74,7 @@ function GoogleCallbackContent() {
             onClick={() => {
               const err = searchParams.get("error");
               if (err === "not_registered") router.push("/register");
-              else router.push("/");
+              else router.push("/login");
             }}
           >
             Kembali

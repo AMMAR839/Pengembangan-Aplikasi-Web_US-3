@@ -53,7 +53,7 @@ export default function PendaftaranAnakPage() {
     if (!token) {
       // kalau belum login, simpan tujuan lalu ke halaman login
       localStorage.setItem("redirectAfterLogin", "/pendaftaran-anak");
-      router.replace("/");
+      router.replace("/login");
       return;
     }
 
@@ -70,7 +70,7 @@ export default function PendaftaranAnakPage() {
     setIsLoggedIn(false);
     setUsername("");
     setOpenProfile(false);
-    router.replace("/");
+    router.replace("/login");
   }
 
   function handleProfil() {
@@ -247,7 +247,7 @@ export default function PendaftaranAnakPage() {
 
           <nav className={styles.navLinks}>
             <Link
-              href="/umum#beranda"
+              href="/#beranda"
               className={`${styles.navItem} ${
                 activeNav === "beranda" ? styles.navItemActive : ""
               }`}
@@ -257,7 +257,7 @@ export default function PendaftaranAnakPage() {
             </Link>
 
             <Link
-              href="/umum#tentang-kami"
+              href="/#tentang-kami"
               className={`${styles.navItem} ${
                 activeNav === "tentang" ? styles.navItemActive : ""
               }`}
@@ -267,7 +267,7 @@ export default function PendaftaranAnakPage() {
             </Link>
 
             <Link
-              href="/umum#kurikulum"
+              href="/#kurikulum"
               className={`${styles.navItem} ${
                 activeNav === "kurikulum" ? styles.navItemActive : ""
               }`}
@@ -347,7 +347,7 @@ export default function PendaftaranAnakPage() {
                     className={styles.profileItem}
                     onClick={() => {
                       setOpenProfile(false);
-                      router.push("/");
+                      router.push("/login");
                     }}
                   >
                     <span className={styles.profileItemIcon}>🔑</span>

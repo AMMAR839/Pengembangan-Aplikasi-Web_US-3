@@ -48,7 +48,7 @@ export default function DokumentasiKBMPage() {
 
       if (!token) {
         setError("Sesi login berakhir. Silakan login ulang.");
-        router.replace("/");
+        router.replace("/login");
         return;
       }
 
@@ -169,7 +169,7 @@ export default function DokumentasiKBMPage() {
             "redirectAfterLogin",
             "/wali-murid/dokumentasi-kbm"
           );
-          router.replace("/");
+          router.replace("/login");
           return;
         }
 
@@ -232,7 +232,7 @@ export default function DokumentasiKBMPage() {
       localStorage.removeItem("username");
       localStorage.removeItem("role");
     }
-    router.replace("/");
+    router.replace("/login");
   }
 
   // ===== Feedback =====

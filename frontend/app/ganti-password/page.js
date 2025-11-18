@@ -36,7 +36,7 @@ export default function GantiPasswordPage() {
     if (!token) {
       // kalau belum login, simpan tujuan lalu ke halaman login
       localStorage.setItem("redirectAfterLogin", "/ganti-password");
-      router.replace("/");
+      router.replace("/login");
       return;
     }
 
@@ -53,7 +53,7 @@ export default function GantiPasswordPage() {
     setIsLoggedIn(false);
     setUsername("");
     setOpenProfile(false);
-    router.replace("/");
+    router.replace("/login");
   }
 
   function handleProfil() {
@@ -72,7 +72,7 @@ export default function GantiPasswordPage() {
     const token = localStorage.getItem("token");
     if (!token) {
       localStorage.setItem("redirectAfterLogin", "/pendaftaran-anak");
-      router.push("/");
+      router.push("/login");
     } else {
       router.push("/pendaftaran-anak");
     }
@@ -157,7 +157,7 @@ export default function GantiPasswordPage() {
 
           <nav className={styles.navLinks}>
             <a
-              href="/umum#beranda"
+              href="/#beranda"
               className={`${styles.navItem} ${
                 activeNav === "beranda" ? styles.navItemActive : ""
               }`}
@@ -167,7 +167,7 @@ export default function GantiPasswordPage() {
             </a>
 
             <a
-              href="/umum#tentang-kami"
+              href="/#tentang-kami"
               className={`${styles.navItem} ${
                 activeNav === "tentang" ? styles.navItemActive : ""
               }`}
@@ -177,7 +177,7 @@ export default function GantiPasswordPage() {
             </a>
 
             <a
-              href="/umum#kurikulum"
+              href="/#kurikulum"
               className={`${styles.navItem} ${
                 activeNav === "kurikulum" ? styles.navItemActive : ""
               }`}
@@ -254,7 +254,7 @@ export default function GantiPasswordPage() {
                     className={styles.profileItem}
                     onClick={() => {
                       setOpenProfile(false);
-                      router.push("/"); // halaman login
+                      router.push("/login"); // halaman login
                     }}
                   >
                     <span className={styles.profileItemIcon}>🔑</span>

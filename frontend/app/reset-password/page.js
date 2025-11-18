@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
       setMessage(data.message);
       setUsername("");
       setTimeout(() => {
-        router.push("/");
+        router.push("/login");
       }, 3000);
     } catch (err) {
       console.error(err);
@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => {
-        router.push("/");
+        router.push("/login");
       }, 3000);
     } catch (err) {
       console.error(err);
@@ -152,7 +152,7 @@ export default function ResetPasswordPage() {
               <button
                 className="auth-link"
                 type="button"
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/login")}
                 style={{ marginTop: "1rem", display: "block" }}
               >
                 Kembali ke Login
@@ -200,7 +200,7 @@ export default function ResetPasswordPage() {
               <button
                 className="auth-link"
                 type="button"
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/login")}
                 style={{ marginTop: "1rem", display: "block" }}
               >
                 Kembali ke Login

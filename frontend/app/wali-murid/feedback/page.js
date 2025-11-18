@@ -18,7 +18,7 @@ export default function FeedbackPage() {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
       if (!token) {
-        router.replace('/');
+        router.replace('/login'); // halaman login
       }
     }
   }, [router]);
@@ -29,7 +29,7 @@ export default function FeedbackPage() {
       localStorage.removeItem('username');
       localStorage.removeItem('role');
     }
-    router.replace('/');
+    router.replace('/login');
   }
 
   async function handleSubmitFeedback() {

@@ -41,7 +41,7 @@ export default function ProfilAnakPage() {
               "/wali-murid/profil-anak"
             );
           }
-          router.replace("/");
+          router.replace("/login");
           return;
         }
 
@@ -83,7 +83,7 @@ export default function ProfilAnakPage() {
       localStorage.removeItem("username");
       localStorage.removeItem("role");
     }
-    router.replace("/");
+    router.replace("/login");
   }
 
   function handleSubmitFeedback() {
