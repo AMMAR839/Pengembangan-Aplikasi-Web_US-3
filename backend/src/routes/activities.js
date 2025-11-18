@@ -13,7 +13,8 @@ const {
   whatIsMyKidDoingNow,
   addDailySlotPhotos,
   deleteDailySlotPhoto,
-  updateDailyPhotoCaption
+  updateDailyPhotoCaption,
+  getAllSchedules
 } = require("../controllers/activityController");
 
 // ==== Multer storage (seperti sebelumnya) ====
@@ -35,6 +36,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter, limits: { fileSize: 5*1024*1024, files: 10 } });
 
 // ===== Jadwal =====
+router.get("/", auth, getAllSchedules); // Get all schedules for admin
 router.post("/jadwal", auth, requireRole("admin", "teacher"), setDaySchedule);
 router.get("/jadwal", getScheduleTemplate);
 

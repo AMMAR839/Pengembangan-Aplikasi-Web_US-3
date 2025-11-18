@@ -216,3 +216,13 @@ exports.updateDailyPhotoCaption = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+// Get all schedules (for admin dashboard)
+exports.getAllSchedules = async (req, res) => {
+  try {
+    const schedules = await Activity.find().lean();
+    res.json(schedules || []);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

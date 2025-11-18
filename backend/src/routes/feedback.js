@@ -9,8 +9,8 @@ const {
   listMyFeedback
 } = require('../controllers/feedbackController');
 
-// Parent: submit feedback
-router.post('/', auth, requireRole("parent"), submitFeedback);
+// Parent/Admin: submit feedback
+router.post('/', auth, requireRole("parent", "admin"), submitFeedback);
 
 // Admin/Teacher: lihat semua feedback 
 router.get('/', auth, requireRole("admin", "teacher"), listFeedback);

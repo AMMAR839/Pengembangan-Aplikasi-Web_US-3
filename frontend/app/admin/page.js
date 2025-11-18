@@ -339,14 +339,19 @@ export default function AdminDashboardNew() {
         signal: AbortSignal.timeout(10000)
       });
 
+      const responseData = await res.json();
+      console.log('Notification response:', { status: res.status, ok: res.ok, data: responseData });
+
       if (res.ok) {
         alert('Notifikasi berhasil dikirim!');
         setNotifTitle('');
         setNotifBody('');
         setNotifAudience('all');
-        fetchNotifications();
+        setTimeout(() => {
+          fetchNotifications();
+        }, 300);
       } else {
-        alert('Gagal membuat notifikasi');
+        alert('Gagal membuat notifikasi: ' + (responseData.message || res.statusText));
       }
     } catch (err) {
       console.error('Error creating notification:', err);
@@ -394,26 +399,34 @@ export default function AdminDashboardNew() {
 
     setLoadingSchedule(true);
     try {
+      const payload = {
+        className: 'A', // Default class A
+        dayOfWeek: parseInt(scheduleDay),
+        slots: scheduleSlots
+      };
+      console.log('Saving schedule:', payload);
+
       const res = await fetch(`${API_URL}/activities/jadwal`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          dayOfWeek: parseInt(scheduleDay),
-          slots: scheduleSlots
-        }),
+        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000)
       });
 
+      const responseData = await res.json();
+      console.log('Schedule response:', { status: res.status, ok: res.ok, data: responseData });
+
       if (res.ok) {
-        alert('Jadwal berhasil disimpan! Wali-murid akan melihat perubahan secara real-time.');
+        alert('Jadwal berhasil disimpan! Wali-murid akan melihat perubahan segera.');
         setScheduleSlots([{ start: '', end: '', title: '', note: '' }]);
-        fetchAllSchedules();
+        setTimeout(() => {
+          fetchAllSchedules();
+        }, 300);
       } else {
-        const error = await res.json();
-        alert('Gagal menyimpan jadwal: ' + error.message);
+        alert('Gagal menyimpan jadwal: ' + (responseData.message || res.statusText));
       }
     } catch (err) {
       console.error('Error saving schedule:', err);
@@ -437,8 +450,8 @@ export default function AdminDashboardNew() {
 
     setLoadingDoc(true);
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('date', docDate);
+    formData.append('photo', file);
+    formData.append('caption', docDate);
 
     try {
       const res = await fetch(`${API_URL}/gallery/upload`, {
@@ -448,13 +461,23 @@ export default function AdminDashboardNew() {
         signal: AbortSignal.timeout(15000)
       });
 
+      const responseData = await res.json();
+      console.log('Upload response:', { status: res.status, ok: res.ok, data: responseData });
+
       if (res.ok) {
         alert('Dokumentasi berhasil diunggah!');
         setDocDate('');
         setDocFile(null);
-        fetchDocumentation();
+        // Reset file input
+        const fileInput = document.querySelector('input[type="file"][accept*="image"]');
+        if (fileInput) fileInput.value = '';
+        
+        // Refresh dokumentasi setelah 500ms untuk ensure data tersimpan
+        setTimeout(() => {
+          fetchDocumentation();
+        }, 500);
       } else {
-        alert('Gagal mengunggah dokumentasi');
+        alert('Gagal mengunggah dokumentasi: ' + (responseData.message || res.statusText));
       }
     } catch (err) {
       console.error('Error uploading documentation:', err);

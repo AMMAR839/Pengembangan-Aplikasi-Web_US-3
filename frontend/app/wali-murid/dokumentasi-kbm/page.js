@@ -2,11 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-
+import { io } from 'socket.io-client';
 import Image from 'next/image';
 import { NotificationList } from '@/app/components/NotificationList';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
 
 export default function DokumentasiKBMPage() {
   const router = useRouter();
@@ -20,6 +21,32 @@ export default function DokumentasiKBMPage() {
 
   useEffect(() => {
     fetchDocumentation();
+
+    // Setup Socket.IO untuk real-time update
+    const socket = io(SOCKET_URL, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to socket server');
+    });
+
+    // Listen untuk photo upload event
+    socket.on('photo_uploaded', (data) => {
+      console.log('New photo uploaded:', data);
+      fetchDocumentation(); // Refresh dokumentasi ketika ada upload baru
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from socket server');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   async function fetchDocumentation() {
@@ -36,17 +63,32 @@ export default function DokumentasiKBMPage() {
       if (res.ok) {
         const data = await res.json();
         // Map gallery data to documentation format
-        const formatted = data.map((doc) => ({
-          id: doc._id,
-          date: new Date(doc.postedAt || doc.createdAt).toLocaleDateString('id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }),
-          photo: doc.imageUrl || 'images/dokumentasidummy1.png',
-          notes: doc.caption || ''
-        }));
+        const formatted = data.map((doc) => {
+          try {
+            const dateObj = new Date(doc.postedAt || doc.createdAt);
+            const isValidDate = !isNaN(dateObj.getTime());
+            
+            return {
+              id: doc._id,
+              date: isValidDate ? dateObj.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }) : 'Tanggal tidak valid',
+              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png',
+              notes: doc.caption || ''
+            };
+          } catch (e) {
+            console.error('Error parsing date for doc:', doc, e);
+            return {
+              id: doc._id,
+              date: 'Tanggal tidak valid',
+              photo: doc.imageUrl ? `http://localhost:5000${doc.imageUrl}` : 'images/dokumentasidummy1.png',
+              notes: doc.caption || ''
+            };
+          }
+        });
         setDocumentationData(formatted);
       } else {
         throw new Error('Failed to fetch documentation');
