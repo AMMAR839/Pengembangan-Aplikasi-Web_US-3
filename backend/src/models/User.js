@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
     default: 'user',
   },
   googleId: { type: String, unique: true, sparse: true },
+  resetToken: { type: String, default: null },
+  resetTokenExpiry: { type: Date, default: null },
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model('User', userSchema);

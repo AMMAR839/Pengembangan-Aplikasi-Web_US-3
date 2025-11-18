@@ -97,3 +97,46 @@ exports.updateStudentById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Search students (admin only)
+exports.searchStudents = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Hanya admin yang bisa search siswa' });
+    }
+
+    const { query, status, kelas } = req.query;
+    const filter = {};
+
+    // Search by nama or nik
+    if (query) {
+      filter.$or = [
+        { nama: { $regex: query, $options: 'i' } },
+        { nik: { $regex: query, $options: 'i' } }
+      ];
+    }
+
+    // Filter by status
+    if (status && ['pending', 'active', 'rejected'].includes(status)) {
+      filter.status = status;
+    }
+
+    // Filter by kelas
+    if (kelas && ['A', 'B'].includes(kelas)) {
+      filter.kelas = kelas;
+    }
+
+    const results = await Student.find(filter)
+      .select('nik nama status kelas tanggalLahir NamaOrangtua NoHPOrangtua')
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+
+    res.json({
+      total: results.length,
+      results
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

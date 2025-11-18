@@ -5,7 +5,8 @@ const { requireRole } = require('../middleware/roles');
 const {
   registerStudent,
   listMyStudents,
-  updateStudentById
+  updateStudentById,
+  searchStudents
 } = require('../controllers/studentController');
 
 // daftar anak: user/parent/admin boleh
@@ -13,6 +14,9 @@ router.post('/register', auth, requireRole('user','parent','admin'), registerStu
 
 // lihat anak saya: khusus parent/admin (setelah bayar jadi parent)
 router.get('/my', auth, requireRole('parent','admin'), listMyStudents);
+
+// search students: admin only
+router.get('/search', auth, requireRole('admin'), searchStudents);
 
 // update biodata anak by _id: khusus parent/admin
 router.patch('/:id', auth, requireRole('parent','admin'), updateStudentById);

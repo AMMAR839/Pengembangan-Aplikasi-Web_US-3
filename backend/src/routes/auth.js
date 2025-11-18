@@ -6,11 +6,16 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
-const { register, login } = require('../controllers/authController');
+const { register, login, logout, forgotPassword, resetPassword, getMe } = require('../controllers/authController');
+const { authenticateToken } = require('../middleware/auth');
 
 // Register & login biasa
 router.post('/register', register);
 router.post('/login', login);
+router.post('/logout', logout);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
+router.get('/me', authenticateToken, getMe);
 
 // Login pakai Google (user yang SUDAH terdaftar)
 router.get(

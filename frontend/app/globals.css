@@ -136,6 +136,13 @@ html {
   color: #ff6b6b;
 }
 
+/* Success message */
+.auth-success {
+  font-size: 13px;
+  color: #51cf66;
+  margin-bottom: 1rem;
+}
+
 /* ===== BUTTON AUTH ===== */
 .auth-button {
   margin-top: 4px;

@@ -120,7 +120,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="auth-link"
-                onClick={() => alert("Lupa password belum dibuat")}
+                onClick={() => window.location.href = "/reset-password"}
               >
                 Lupa Password
               </button>
