@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./Login.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL ;
 
 export default function LoginPage() {
   const router = useRouter();

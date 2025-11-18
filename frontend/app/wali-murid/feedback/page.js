@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { NotificationList } from '@/app/components/NotificationList';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ;
 
 export default function FeedbackPage() {
   const router = useRouter();
@@ -50,7 +50,7 @@ export default function FeedbackPage() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/feedback`, {
+      const res = await fetch(`${API_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

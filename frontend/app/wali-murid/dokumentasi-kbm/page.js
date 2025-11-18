@@ -9,7 +9,7 @@ import { io } from "socket.io-client";
 import { NotificationList } from "@/app/components/NotificationList";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL ;
 
 export default function DokumentasiKBMPage() {
   const router = useRouter();

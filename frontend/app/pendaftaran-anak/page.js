@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./PendaftaranAnak.module.css";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL;
 
 export default function PendaftaranAnakPage() {
   const router = useRouter();
@@ -131,7 +131,7 @@ export default function PendaftaranAnakPage() {
         formData.append("foto", foto);
       }
 
-      const res = await fetch(`${API_URL}/student/register`, {
+      const res = await fetch(`${API_URL}/api/student/register`, {
         method: "POST",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -199,7 +199,7 @@ export default function PendaftaranAnakPage() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/payment/checkout-by-nik`, {
+      const res = await fetch(`${API_URL}/api/payment/checkout-by-nik`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
