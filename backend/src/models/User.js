@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
     // Fields untuk reset password
     resetToken: { type: String, default: null },
     resetTokenExpiry: { type: Date, default: null },
+
+    // Telegram integration fields
+    telegramChatId: { type: String, default: null },
+    telegramUsername: { type: String, default: null },
   },
   { timestamps: true }
 );

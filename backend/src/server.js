@@ -59,6 +59,7 @@ app.use('/api/weather',      require('./routes/weather'));
 app.use('/api/feedback',     require('./routes/feedback'));
 app.use('/api/gallery',      require('./routes/gallery'));
 app.use('/api/admin',        require('./routes/admin'));
+app.use('/api/telegram',     require('./routes/telegram'));
 
 // Healthcheck sederhana
 app.get('/healthz', (req, res) => res.send('OK'));

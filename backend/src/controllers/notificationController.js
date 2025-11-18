@@ -2,6 +2,7 @@ const Notification = require('../models/Notification');
 const emitter = require('../events/notifications'); 
 const User = require('../models/User');
 const Student = require('../models/Student');
+const telegramService = require('../services/telegramService');
 
 
 exports.createNotification = async (req, res) => {
@@ -124,6 +125,51 @@ exports.createNotification = async (req, res) => {
           io.to(`user_${userId}`).emit('notification:new', notifData);
         });
       }
+    }
+
+    // Send Telegram notifications to users with connected accounts
+    try {
+      let telegramQuery;
+      
+      if (audience === 'all') {
+        // Send to all users with Telegram connected
+        telegramQuery = { 
+          telegramChatId: { $exists: true, $ne: null } 
+        };
+      } else if (audience === 'parents') {
+        // Send to parents with Telegram connected
+        telegramQuery = { 
+          role: 'parent', 
+          telegramChatId: { $exists: true, $ne: null } 
+        };
+      } else if (audience === 'byUser') {
+        // Send to specific users with Telegram connected
+        telegramQuery = { 
+          _id: { $in: resolvedIds }, 
+          telegramChatId: { $exists: true, $ne: null } 
+        };
+      }
+
+      if (telegramQuery) {
+        const telegramUsers = await User.find(telegramQuery)
+          .select('telegramChatId telegramUsername fullName')
+          .lean();
+
+        if (telegramUsers.length > 0) {
+          console.log(`[TELEGRAM] Sending notifications to ${telegramUsers.length} users`);
+          const telegramResult = await telegramService.sendBulkNotification(
+            telegramUsers,
+            title,
+            body
+          );
+          console.log(`[TELEGRAM] Sent: ${telegramResult.sent}, Failed: ${telegramResult.failed}`);
+        } else {
+          console.log('[TELEGRAM] No users with Telegram connected for this audience');
+        }
+      }
+    } catch (telegramError) {
+      // Don't fail the whole request if Telegram fails
+      console.error('[TELEGRAM] Error sending notifications:', telegramError.message);
     }
 
     res.status(201).json({ message: 'Notifikasi dibuat', data: notif });
