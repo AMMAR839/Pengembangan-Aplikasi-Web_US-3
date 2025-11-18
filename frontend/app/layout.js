@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Little Garden Pre-school - Pendidikan Islam Berkualitas untuk Anak Usia Dini",
-  description: "Little Garden Pre-school menyediakan pendidikan Islam terbaik untuk anak usia dini dengan kurikulum berkualitas, guru berpengalaman, dan fasilitas lengkap. Daftar sekarang untuk masa depan anak yang lebih baik.",
+  title: "Little Garden Pre-school - Sekolah Berkualitas untuk Anak Usia Dini",
+  description: "Little Garden Pre-school menyediakan Sekolah terbaik untuk anak usia dini dengan kurikulum berkualitas, guru berpengalaman, dan fasilitas lengkap. Daftar sekarang untuk masa depan anak yang lebih baik.",
   keywords: "sekolah islam, PAUD islam, TK islam, pendidikan anak usia dini, sekolah islam terbaik, kurikulum islam, tahfidz anak, pendidikan karakter islami",
   authors: [{ name: "Little Garden Pre-school" }],
   openGraph: {
-    title: "Little Garden Pre-school - Pendidikan Islam Berkualitas",
+    title: "Little Garden Pre-school - Sekolah Berkualitas",
     description: "Sekolah Islam terbaik untuk anak usia dini dengan pendidikan berkualitas, guru profesional, dan lingkungan Islami yang nyaman.",
     type: "website",
     locale: "id_ID",
@@ -27,7 +27,7 @@ export const metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Little Garden Pre-school",
-    description: "Pendidikan Islam Berkualitas untuk Anak Usia Dini",
+    description: "Sekolah Berkualitas untuk Anak Usia Dini",
   },
   robots: {
     index: true,

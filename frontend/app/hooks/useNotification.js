@@ -23,7 +23,7 @@ export function useNotification() {
     console.log('Initializing notifications. User role:', userRole);
 
     // Connect to Socket.IO server
-    const socketURL = process.env.NEXT_PUBLIC_API_URL ;
+    const socketURL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
     
     socketRef.current = io(socketURL, {
       auth: {

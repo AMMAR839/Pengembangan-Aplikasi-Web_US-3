@@ -43,20 +43,20 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 // (versi rapi, TANPA "api" di depan, biar URL-nya nanti /api/auth, /api/student, dst)
-app.use('/auth',         require('./routes/auth'));
-app.use('/student',      require('./routes/student'));
-app.use('/teacher',      require('./routes/teacher'));
-app.use('/payment',      require('./routes/payment'));
-app.use('/activities',   require('./routes/activities'));   
-app.use('/attendance',   require('./routes/attendance'));
-app.use('/message',      require('./routes/messages'));
-app.use('/notification', require('./routes/notification'));
-app.use('/weather',      require('./routes/weather'));
-app.use('/feedback',     require('./routes/feedback'));
-app.use('/gallery',      require('./routes/gallery'));
-app.use('/admin',        require('./routes/admin'));
-app.use('/telegram',     require('./routes/telegram'));
-app.use('/telegram',     require('./routes/telegram-polling'));
+app.use('/api/auth',         require('./routes/auth'));
+app.use('/api/student',      require('./routes/student'));
+app.use('/api/teacher',      require('./routes/teacher'));
+app.use('/api/payment',      require('./routes/payment'));
+app.use('/api/activities',   require('./routes/activities'));   
+app.use('/api/attendance',   require('./routes/attendance'));
+app.use('/api/message',      require('./routes/messages'));
+app.use('/api/notification', require('./routes/notification'));
+app.use('/api/weather',      require('./routes/weather'));
+app.use('/api/feedback',     require('./routes/feedback'));
+app.use('/api/gallery',      require('./routes/gallery'));
+app.use('/api/admin',        require('./routes/admin'));
+app.use('/api/telegram',     require('./routes/telegram'));
+app.use('/api/telegram',     require('./routes/telegram-polling'));
 
 
 
