@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
-const API_URL =process.env.NEXT_PUBLIC_API_URL + '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
 const DAY_NAMES = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
 export default function AdminDashboardNew() {
@@ -14,15 +14,8 @@ export default function AdminDashboardNew() {
   const [notifTitle, setNotifTitle] = useState('');
   const [notifBody, setNotifBody] = useState('');
   const [notifAudience, setNotifAudience] = useState('all'); // all | parents | byUser
-  const [notifUsernames, setNotifUsernames] = useState(''); // untuk audience=byUser
+  const [notifUsernames, setNotifUsernames] = useState('');
   const [loadingNotif, setLoadingNotif] = useState(false);
-
-  // Documentation states
-  const [docs, setDocs] = useState([]);
-  const [docDate, setDocDate] = useState('');
-  const [docCaption, setDocCaption] = useState('');
-  const [docFile, setDocFile] = useState(null);
-  const [loadingDoc, setLoadingDoc] = useState(false);
 
   // Student management states (tabel manajemen siswa)
   const [allStudents, setAllStudents] = useState([]);
@@ -55,10 +48,19 @@ export default function AdminDashboardNew() {
   const [attendanceRecords, setAttendanceRecords] = useState([]); // array of studentId yg hadir
   const [loadingAttendance, setLoadingAttendance] = useState(false);
 
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+  // 📸 Activity photo upload states (Dokumentasi KBM per slot)
+  const [actClass, setActClass] = useState('A'); // A | B
+  const [actDate, setActDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
+  const [dailyLog, setDailyLog] = useState(null);
+  const [loadingDailyLog, setLoadingDailyLog] = useState(false);
+  const [dailyLogError, setDailyLogError] = useState('');
+  const [selectedSlotId, setSelectedSlotId] = useState('');
+  const [activityFiles, setActivityFiles] = useState([]);
+  const [activityCaption, setActivityCaption] = useState('');
+  const [uploadingActivityPhotos, setUploadingActivityPhotos] = useState(false);
 
-  // ================== FETCH FUNCTIONS ==================
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
   const authHeader = token
     ? {
@@ -66,10 +68,11 @@ export default function AdminDashboardNew() {
       }
     : {};
 
+  // ================== FETCH FUNCTIONS ==================
+
   const fetchNotifications = async () => {
     if (!token) return;
     try {
-      // admin: GET /api/notification → listAllNotifications
       const res = await fetch(`${API_URL}/notification`, {
         headers: {
           ...authHeader
@@ -86,25 +89,6 @@ export default function AdminDashboardNew() {
     } catch (err) {
       console.error('Error fetching notifications:', err);
       setNotifications([]);
-    }
-  };
-
-  const fetchDocumentation = async () => {
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_URL}/gallery`, {
-        headers: {
-          ...authHeader
-        },
-        signal: AbortSignal.timeout(5000)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDocs(Array.isArray(data) ? data : []);
-      }
-    } catch (err) {
-      console.error('Error fetching documentation:', err);
-      setDocs([]);
     }
   };
 
@@ -183,7 +167,6 @@ export default function AdminDashboardNew() {
     if (!token) return;
     setLoadingFeedback(true);
     try {
-      // Admin/teacher: GET /api/feedback
       const res = await fetch(`${API_URL}/feedback`, {
         headers: {
           ...authHeader
@@ -207,7 +190,6 @@ export default function AdminDashboardNew() {
   const fetchAllSchedules = async () => {
     if (!token) return;
     try {
-      // GET /api/activities → getAllSchedules
       const res = await fetch(`${API_URL}/activities`, {
         headers: {
           ...authHeader
@@ -235,7 +217,6 @@ export default function AdminDashboardNew() {
         class: cls,
         day: String(day)
       });
-      // GET /api/activities/jadwal?class=A&day=1
       const res = await fetch(
         `${API_URL}/activities/jadwal?${params.toString()}`,
         {
@@ -272,6 +253,63 @@ export default function AdminDashboardNew() {
     }
   };
 
+  // 🔹 Ambil log harian per kelas & tanggal (untuk upload foto kegiatan)
+  const fetchDailyLog = async (cls = actClass, date = actDate) => {
+    if (!token) return;
+
+    if (!cls || !date) {
+      setDailyLog(null);
+      setSelectedSlotId('');
+      setDailyLogError('');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (date > todayStr) {
+      // tidak boleh pilih tanggal ke depan
+      setDailyLog(null);
+      setSelectedSlotId('');
+      setDailyLogError('Tidak bisa upload ke tanggal di masa depan.');
+      return;
+    }
+
+    setLoadingDailyLog(true);
+    setDailyLogError('');
+    try {
+      const params = new URLSearchParams({ class: cls, date });
+      const res = await fetch(
+        `${API_URL}/activities/daily?${params.toString()}`,
+        {
+          headers: { ...authHeader },
+          signal: AbortSignal.timeout(5000)
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setDailyLog(null);
+        setSelectedSlotId('');
+        setDailyLogError(data.message || 'Gagal mengambil jadwal harian.');
+        return;
+      }
+
+      setDailyLog(data);
+      if (Array.isArray(data.slots) && data.slots.length > 0) {
+        setSelectedSlotId(String(data.slots[0]._id));
+      } else {
+        setSelectedSlotId('');
+      }
+    } catch (err) {
+      console.error('Error fetching daily log:', err);
+      setDailyLog(null);
+      setSelectedSlotId('');
+      setDailyLogError('Terjadi kesalahan ketika mengambil log harian.');
+    } finally {
+      setLoadingDailyLog(false);
+    }
+  };
+
   // ================== EFFECTS ==================
 
   // pertama kali load data global
@@ -280,7 +318,6 @@ export default function AdminDashboardNew() {
 
     fetchNotifications();
     fetchAllSchedules();
-    fetchDocumentation();
     fetchAttendance();
     fetchAllFeedback();
     fetchStudentsForStats();
@@ -297,6 +334,12 @@ export default function AdminDashboardNew() {
     if (typeof window === 'undefined' || !token) return;
     fetchScheduleTemplate(scheduleClass, scheduleDay);
   }, [token, scheduleClass, scheduleDay]);
+
+  // ambil log harian untuk upload foto ketika kelas / tanggal berubah
+  useEffect(() => {
+    if (typeof window === 'undefined' || !token) return;
+    fetchDailyLog(actClass, actDate);
+  }, [token, actClass, actDate]);
 
   // ================== HANDLERS ==================
 
@@ -316,7 +359,7 @@ export default function AdminDashboardNew() {
       if (res.ok) {
         alert('Status siswa berhasil diupdate');
         fetchAllStudents();
-        fetchStudentsForStats(); // statistik ikut update
+        fetchStudentsForStats();
       } else {
         alert('Gagal mengupdate status: ' + (data.message || res.statusText));
       }
@@ -326,9 +369,7 @@ export default function AdminDashboardNew() {
     }
   };
 
-  // Simpan absensi:
-  // backend AttendanceSchema: { name, date, status }
-  // Kita kirim 1 dokumen per siswa yg ditandai hadir.
+  // Simpan absensi
   const handleMarkAttendance = async () => {
     if (typeof window === 'undefined' || !token) {
       alert('Harap login terlebih dahulu');
@@ -499,7 +540,6 @@ export default function AdminDashboardNew() {
       };
       console.log('Saving schedule:', payload);
 
-      // POST /api/activities/jadwal → setDaySchedule
       const res = await fetch(`${API_URL}/activities/jadwal`, {
         method: 'POST',
         headers: {
@@ -537,63 +577,83 @@ export default function AdminDashboardNew() {
     }
   };
 
-  const handleDocumentUpload = async (e) => {
+  // 🔹 Upload foto kegiatan ke Supabase via backend /activities/daily/:logId/slots/:slotId/photos
+  const handleActivityPhotosUpload = async () => {
     if (typeof window === 'undefined' || !token) {
       alert('Harap login terlebih dahulu');
       return;
     }
 
-    const file = e.target.files?.[0];
-    if (!file || !docDate) {
-      alert('Pilih file dan tanggal');
+    if (!dailyLog || !dailyLog._id) {
+      alert(
+        'Log harian belum tersedia. Pastikan kelas & tanggal sudah dipilih dan jadwal sudah dibuat.'
+      );
       return;
     }
 
-    setLoadingDoc(true);
-    const formData = new FormData();
-    formData.append('photo', file);
-    formData.append('caption', docCaption || docDate);
+    if (!selectedSlotId) {
+      alert('Pilih slot kegiatan terlebih dahulu.');
+      return;
+    }
 
+    if (!activityFiles || activityFiles.length === 0) {
+      alert('Pilih minimal satu foto kegiatan.');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (actDate > todayStr) {
+      alert('Tidak bisa upload ke tanggal di masa depan.');
+      return;
+    }
+
+    setUploadingActivityPhotos(true);
     try {
-      const res = await fetch(`${API_URL}/gallery/upload`, {
-        method: 'POST',
-        headers: {
-          ...authHeader
-        },
-        body: formData,
-        signal: AbortSignal.timeout(15000)
+      const formData = new FormData();
+      activityFiles.forEach((file) => {
+        formData.append('photos', file);
       });
 
-      const responseData = await res.json().catch(() => ({}));
-      console.log('Upload response:', {
-        status: res.status,
-        ok: res.ok,
-        data: responseData
-      });
-
-      if (res.ok) {
-        alert('Dokumentasi berhasil diunggah!');
-        setDocDate('');
-        setDocCaption('');
-        setDocFile(null);
-        const fileInput = document.querySelector(
-          'input[type="file"][accept*="image"]'
-        );
-        if (fileInput) fileInput.value = '';
-        setTimeout(() => {
-          fetchDocumentation();
-        }, 500);
-      } else {
-        alert(
-          'Gagal mengunggah dokumentasi: ' +
-            (responseData.message || res.statusText)
-        );
+      if (activityCaption.trim()) {
+        const capsArr = activityFiles.map(() => activityCaption.trim());
+        formData.append('captions', JSON.stringify(capsArr));
       }
+
+      const res = await fetch(
+        `${API_URL}/activities/daily/${dailyLog._id}/slots/${selectedSlotId}/photos`,
+        {
+          method: 'POST',
+          headers: {
+            ...authHeader
+            // jangan set Content-Type, biar FormData yang atur
+          },
+          body: formData,
+          signal: AbortSignal.timeout(20000)
+        }
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        alert('Gagal mengupload foto: ' + (data.message || res.statusText));
+        return;
+      }
+
+      alert('Foto kegiatan berhasil diupload!');
+      setActivityFiles([]);
+      setActivityCaption('');
+      const inputEl = document.getElementById('activityPhotosInput');
+      if (inputEl && inputEl.value !== undefined) {
+        inputEl.value = '';
+      }
+
+      // refresh log supaya foto yang baru langsung tampil
+      await fetchDailyLog(actClass, actDate);
     } catch (err) {
-      console.error('Error uploading documentation:', err);
+      console.error('Error uploading activity photos:', err);
       alert('Terjadi kesalahan: ' + err.message);
     } finally {
-      setLoadingDoc(false);
+      setUploadingActivityPhotos(false);
     }
   };
 
@@ -643,7 +703,6 @@ export default function AdminDashboardNew() {
     }
   ];
 
-  // gabungkan notifikasi, feedback, dan pendaftaran siswa sebagai "aktivitas terbaru"
   const latestActivities = [
     ...notifications.map((n) => ({
       id: `notif-${n._id}`,
@@ -655,9 +714,7 @@ export default function AdminDashboardNew() {
     ...allFeedback.map((f) => ({
       id: `feedback-${f._id}`,
       icon: '💬',
-      title: `Feedback dari ${
-        f.parentUserId?.username || 'Orang Tua'
-      }`,
+      title: `Feedback dari ${f.parentUserId?.username || 'Orang Tua'}`,
       description: f.feedback,
       createdAt: f.createdAt
     })),
@@ -675,12 +732,10 @@ export default function AdminDashboardNew() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 4);
 
-  // data siswa aktif untuk absensi
   const activeStudentsForAttendance = studentsForStats.filter(
     (s) => s.status === 'active'
   );
 
-  // group absensi by tanggal
   const attendanceByDate = attendances.reduce((acc, rec) => {
     if (!rec.date) return acc;
     const dateStr = new Date(rec.date).toISOString().split('T')[0];
@@ -691,6 +746,13 @@ export default function AdminDashboardNew() {
   const attendanceDatesSorted = Object.keys(attendanceByDate).sort(
     (a, b) => new Date(b) - new Date(a)
   );
+
+  const selectedSlot =
+    dailyLog && Array.isArray(dailyLog.slots)
+      ? dailyLog.slots.find((s) => String(s._id) === String(selectedSlotId))
+      : null;
+
+  const todayISO = new Date().toISOString().split('T')[0];
 
   // ================== RENDER ==================
 
@@ -734,6 +796,7 @@ export default function AdminDashboardNew() {
               </div>
               <span className="nav-label">Dashboard</span>
             </a>
+
             <a
               href="#"
               onClick={(e) => {
@@ -800,7 +863,7 @@ export default function AdminDashboardNew() {
                   style={{ height: 'auto' }}
                 />
               </div>
-              <span className="nav-label">Dokumentasi</span>
+              <span className="nav-label">Dokumentasi KBM</span>
             </a>
 
             <a
@@ -1659,13 +1722,13 @@ export default function AdminDashboardNew() {
           </div>
         )}
 
-        {/* TAB: Documentation */}
+        {/* TAB: Documentation (Foto Activity per Slot) */}
         {activeTab === 'documentation' && (
           <div>
             <h2
               style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}
             >
-              Kelola Dokumentasi KBM
+              Kelola Dokumentasi KBM 
             </h2>
             <div
               style={{
@@ -1677,10 +1740,246 @@ export default function AdminDashboardNew() {
               }}
             >
               <h3
-                style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}
+                style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}
               >
-                Upload Dokumentasi Baru
+                Upload Foto Kegiatan Harian
               </h3>
+              
+
+              {/* Kelas & Tanggal */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                  marginBottom: '16px'
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '4px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Kelas
+                  </label>
+                  <select
+                    value={actClass}
+                    onChange={(e) => setActClass(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="A">Kelas A</option>
+                    <option value="B">Kelas B</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '4px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Tanggal KBM
+                  </label>
+                  <input
+                    type="date"
+                    value={actDate}
+                    onChange={(e) => setActDate(e.target.value)}
+                    max={todayISO}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <span style={{ fontSize: '11px', color: '#9ca3af' }}>
+                    Tidak bisa memilih tanggal setelah hari ini.
+                  </span>
+                </div>
+              </div>
+
+              {/* Info Log / Slot */}
+              {loadingDailyLog && (
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: '#6b7280',
+                    marginBottom: '8px'
+                  }}
+                >
+                  Memuat jadwal & slot kegiatan...
+                </p>
+              )}
+
+              {dailyLogError && (
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: '#b91c1c',
+                    marginBottom: '8px'
+                  }}
+                >
+                  {dailyLogError}
+                </p>
+              )}
+
+              {dailyLog && !dailyLogError && (
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: '#374151',
+                    marginBottom: '12px'
+                  }}
+                >
+                  Jadwal untuk kelas <b>{dailyLog.className}</b> pada tanggal{' '}
+                  <b>{new Date(dailyLog.date).toLocaleDateString('id-ID')}</b>.
+                </p>
+              )}
+
+              {/* Pilih Slot Kegiatan */}
+              <div style={{ marginBottom: '16px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Pilih Jam / Slot Kegiatan
+                </label>
+                {dailyLog && Array.isArray(dailyLog.slots) && dailyLog.slots.length > 0 ? (
+                  <select
+                    value={selectedSlotId}
+                    onChange={(e) => setSelectedSlotId(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="">Pilih slot kegiatan...</option>
+                    {dailyLog.slots.map((slot) => (
+                      <option key={slot._id} value={slot._id}>
+                        {slot.start} - {slot.end} • {slot.title}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p style={{ fontSize: '13px', color: '#6b7280' }}>
+                    Belum ada slot kegiatan untuk kelas & tanggal ini. Silakan
+                    atur jadwal di menu <b>Edit Jadwal</b> terlebih dahulu.
+                  </p>
+                )}
+              </div>
+
+              {/* Detail slot + foto yang sudah ada */}
+              {selectedSlot && (
+                <div
+                  style={{
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    background: '#f9fafb'
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#111827',
+                      marginBottom: '4px'
+                    }}
+                  >
+                    {selectedSlot.start} - {selectedSlot.end} •{' '}
+                    {selectedSlot.title}
+                  </div>
+                  {selectedSlot.note && (
+                    <div
+                      style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}
+                    >
+                      Catatan: {selectedSlot.note}
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: '#374151',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    Foto yang sudah diupload untuk slot ini:{' '}
+                    <b>{selectedSlot.photos?.length || 0}</b>
+                  </div>
+
+                  {selectedSlot.photos && selectedSlot.photos.length > 0 && (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fill, minmax(90px, 1fr))',
+                        gap: '8px',
+                        marginTop: '8px'
+                      }}
+                    >
+                      {selectedSlot.photos.map((p) => (
+                        <div
+                          key={p._id}
+                          style={{
+                            background: '#ffffff',
+                            borderRadius: '8px',
+                            padding: '4px',
+                            border: '1px solid #e5e7eb'
+                          }}
+                        >
+                          <img
+                            src={p.url}
+                            alt={p.caption || 'Foto kegiatan'}
+                            style={{
+                              width: '100%',
+                              height: '70px',
+                              objectFit: 'cover',
+                              borderRadius: '6px'
+                            }}
+                          />
+                          {p.caption && (
+                            <div
+                              style={{
+                                fontSize: '10px',
+                                color: '#6b7280',
+                                marginTop: '4px'
+                              }}
+                            >
+                              {p.caption}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Input File & Caption */}
               <div style={{ marginBottom: '12px' }}>
                 <label
                   style={{
@@ -1690,23 +1989,59 @@ export default function AdminDashboardNew() {
                     fontWeight: '500'
                   }}
                 >
-                  Tanggal Dokumentasi
+                  Pilih Foto Kegiatan
                 </label>
                 <input
-                  type="date"
-                  value={docDate}
-                  onChange={(e) => setDocDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid ',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
+                  id="activityPhotosInput"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setActivityFiles(files);
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('activityPhotosInput');
+                    if (el) el.click();
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px dashed #8fa9a9',
+                    borderRadius: '8px',
+                    background: '#f8fafa',
+                    color: '#123047',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  📸 Pilih Satu atau Lebih Foto
+                </button>
+                {activityFiles.length > 0 && (
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      color: '#04291e',
+                      marginTop: '8px'
+                    }}
+                  >
+                    ✓ {activityFiles.length} file dipilih:{' '}
+                    {activityFiles
+                      .map((f) => f.name)
+                      .slice(0, 2)
+                      .join(', ')}
+                    {activityFiles.length > 2 ? ', dll' : ''}
+                  </p>
+                )}
               </div>
-              <div style={{ marginBottom: '12px' }}>
+
+              <div style={{ marginBottom: '16px' }}>
                 <label
                   style={{
                     display: 'block',
@@ -1715,12 +2050,12 @@ export default function AdminDashboardNew() {
                     fontWeight: '500'
                   }}
                 >
-                  Catatan / Deskripsi Kegiatan
+                  Catatan untuk Foto (opsional)
                 </label>
                 <textarea
-                  value={docCaption}
-                  onChange={(e) => setDocCaption(e.target.value)}
-                  placeholder="Masukkan catatan tentang kegiatan KBM (opsional)"
+                  value={activityCaption}
+                  onChange={(e) => setActivityCaption(e.target.value)}
+                  placeholder="Contoh: Anak-anak sedang bermain peran, latihan motorik halus, dll. Catatan ini akan diterapkan ke semua foto yang diupload."
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -1734,156 +2069,35 @@ export default function AdminDashboardNew() {
                   }}
                 />
               </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label
-                  style={{
-                    display: 'block',
-                    marginBottom: '4px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  File Gambar
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="file"
-                    id="docFileInput"
-                    onChange={(e) => {
-                      setDocFile(e.target.files?.[0] || null);
-                    }}
-                    accept="image/*"
-                    style={{
-                      display: 'none'
-                    }}
-                  />
-                  <button
-                    onClick={() =>
-                      document.getElementById('docFileInput').click()
-                    }
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px dashed #8fa9a9',
-                      borderRadius: '8px',
-                      background: '#f8fafa',
-                      color: '#123047',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    📸 Pilih Foto Kegiatan KBM
-                  </button>
-                  {docFile && (
-                    <p
-                      style={{
-                        fontSize: '13px',
-                        color: '#04291e',
-                        marginTop: '8px'
-                      }}
-                    >
-                      ✓ File dipilih: {docFile.name}
-                    </p>
-                  )}
-                </div>
-              </div>
+
               <button
-                onClick={() => {
-                  if (!docDate || !docFile) {
-                    alert('Pilih tanggal dan file terlebih dahulu');
-                    return;
-                  }
-                  const event = { target: { files: [docFile] } };
-                  handleDocumentUpload(event);
-                }}
-                disabled={loadingDoc || !docDate || !docFile}
+                type="button"
+                onClick={handleActivityPhotosUpload}
+                disabled={
+                  uploadingActivityPhotos ||
+                  !dailyLog ||
+                  !selectedSlotId ||
+                  !activityFiles.length ||
+                  !!dailyLogError
+                }
                 style={{
                   width: '100%',
                   padding: '12px 16px',
-                  background: loadingDoc ? '#ccc' : '#04291e',
+                  background: uploadingActivityPhotos ? '#ccc' : '#04291e',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '15px',
                   fontWeight: '600',
-                  cursor: loadingDoc ? 'not-allowed' : 'pointer',
+                  cursor: uploadingActivityPhotos ? 'not-allowed' : 'pointer',
                   transition: 'all 0.3s ease',
-                  opacity: loadingDoc ? 0.6 : 1
+                  opacity: uploadingActivityPhotos ? 0.6 : 1
                 }}
               >
-                {loadingDoc ? '⏳ Mengirim...' : '✓ Kirim Dokumentasi'}
+                {uploadingActivityPhotos
+                  ? '⏳ Mengupload...'
+                  : '✓ Upload Foto ke Slot Ini'}
               </button>
-            </div>
-
-            <div
-              style={{
-                background: '#ffffff',
-                padding: '24px',
-                borderRadius: '12px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}
-            >
-              <h3
-                style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}
-              >
-                Dokumentasi Terbaru
-              </h3>
-              {docs.length === 0 ? (
-                <p style={{ color: '#666', fontSize: '14px' }}>
-                  Belum ada dokumentasi
-                </p>
-              ) : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(150px, 1fr))',
-                    gap: '16px'
-                  }}
-                >
-                  {docs.slice(0, 12).map((doc) => (
-                    <div
-                      key={doc._id}
-                      style={{
-                        background: '#f5f5f5',
-                        borderRadius: '8px',
-                        padding: '12px',
-                        textAlign: 'center'
-                      }}
-                    >
-                      {doc.imageUrl && (
-                        // kalau gallery controller kamu pakai field berbeda,
-                        // bisa disesuaikan di sini
-                        <img
-                          src={doc.imageUrl}
-                          alt="doc"
-                          style={{
-                            width: '100%',
-                            height: '120px',
-                            objectFit: 'cover',
-                            borderRadius: '6px',
-                            marginBottom: '8px'
-                          }}
-                        />
-                      )}
-                      <div style={{ fontSize: '12px', color: '#666' }}>
-                        {(() => {
-                          try {
-                            const dateObj = new Date(doc.createdAt);
-                            return !isNaN(dateObj.getTime())
-                              ? dateObj.toLocaleDateString('id-ID')
-                              : 'Tanggal tidak valid';
-                          } catch (e) {
-                            return 'Tanggal tidak valid';
-                          }
-                        })()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         )}

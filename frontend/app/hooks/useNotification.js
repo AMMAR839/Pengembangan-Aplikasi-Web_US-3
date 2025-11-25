@@ -10,10 +10,12 @@ export function useNotification() {
   const isConnectedRef = useRef(false);
 
   useEffect(() => {
-    // Get auth token from localStorage
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
-    const userRole = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const userId =
+      typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+    const userRole =
+      typeof window !== 'undefined' ? localStorage.getItem('role') : null;
 
     if (!token) {
       console.warn('No auth token found, notification system will not connect');
@@ -22,9 +24,9 @@ export function useNotification() {
 
     console.log('Initializing notifications. User role:', userRole);
 
-    // Connect to Socket.IO server
-    const socketURL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
-    
+    const socketURL =
+      process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+
     socketRef.current = io(socketURL, {
       auth: {
         token: token
@@ -35,13 +37,12 @@ export function useNotification() {
       reconnectionAttempts: 5
     });
 
-    // Connection events
     socketRef.current.on('connect', () => {
       console.log('Connected to notification server');
       isConnectedRef.current = true;
-      
-      // Join user-specific room if userId exists
+
       if (userId) {
+        // server side: socket.on('join_room', (userId) => socket.join(`user_${userId}`))
         socketRef.current.emit('join_room', userId);
       }
     });
@@ -55,60 +56,51 @@ export function useNotification() {
       console.error('Connection error:', error);
     });
 
-    // Listen for new notifications
+    // NOTIFIKASI BARU
     socketRef.current.on('notification:new', (data) => {
-      console.log('%c[NOTIFICATION RECEIVED]', 'background: #4CAF50; color: white; padding: 2px 5px; border-radius: 3px', { 
-        audience: data.audience, 
-        userRole, 
-        title: data.title 
+      console.log('[NOTIFICATION RECEIVED]', {
+        audience: data.audience,
+        userRole,
+        title: data.title
       });
-      
-      // Filter notifications based on audience
+
+      const commonPayload = {
+        type: 'info',
+        title: data.title || 'New Notification',
+        body: data.body || '',
+        notificationId: data._id,
+        createdByName: data.createdByName || null,
+        timestamp: data.createdAt,
+        isRead: false
+      };
+
       if (data.audience === 'all') {
-        // All users get this
-        console.log('  ✓ Showing to all users');
-        addNotification({
-          type: 'info',
-          title: data.title || 'New Notification',
-          body: data.body || '',
-          notificationId: data._id
-        });
+        addNotification(commonPayload);
       } else if (data.audience === 'parents') {
-        // Parents get this - showing to all for debugging purposes
-        console.log('  ✓ Parent notification - now showing to all users (temporary for debugging)');
-        addNotification({
-          type: 'info',
-          title: data.title || 'New Notification',
-          body: data.body || '',
-          notificationId: data._id
-        });
+        if (userRole === 'parent') {
+          addNotification(commonPayload);
+        }
       } else if (data.audience === 'byUser') {
-        // Specific users only
-        console.log('  ✓ User-specific notification');
-        addNotification({
-          type: 'info',
-          title: data.title || 'New Notification',
-          body: data.body || '',
-          notificationId: data._id
-        });
+        // server sudah mengirim hanya ke user yang berhak, jadi langsung tampilkan
+        addNotification(commonPayload);
       }
     });
 
-    // Listen for parent-specific notifications (deprecated but kept for compatibility)
+    // Event lama optional
     socketRef.current.on('notification:parents', (data) => {
-      console.log('Parent notification received:', data);
-      
       if (userRole === 'parent') {
         addNotification({
           type: 'info',
           title: data.title || 'New Notification',
           body: data.body || '',
-          notificationId: data._id
+          notificationId: data._id,
+          createdByName: data.createdByName || null,
+          timestamp: data.createdAt,
+          isRead: false
         });
       }
     });
 
-    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();

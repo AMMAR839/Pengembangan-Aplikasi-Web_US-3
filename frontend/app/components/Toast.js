@@ -12,7 +12,9 @@ export function Toast() {
       {notifications.map((notification) => (
         <div
           key={notification.id}
-          className={`${styles.toast} ${styles[`toast-${notification.type || 'info'}`]}`}
+          className={`${styles.toast} ${
+            styles[`toast-${notification.type || 'info'}`]
+          }`}
         >
           <div className={styles.toastContent}>
             <div className={styles.toastIcon}>

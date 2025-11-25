@@ -1,281 +1,289 @@
 'use client';
 
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { NotificationContext } from '@/app/contexts/NotificationContext';
 import styles from './NotificationList.module.css';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'YOUR_BOT_USERNAME';
+const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
 
 export function NotificationList() {
   const {
     storedNotifications,
     removeStoredNotification,
-    clearAllStoredNotifications
+    clearAllStoredNotifications,
+    markStoredNotificationAsRead
   } = useContext(NotificationContext);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [telegramStatus, setTelegramStatus] = useState({ connected: false, loading: true });
-  const [showTelegramInput, setShowTelegramInput] = useState(false);
-  const [telegramUsername, setTelegramUsername] = useState('');
-  const [userId, setUserId] = useState(null);
-  const [showTelegramSection, setShowTelegramSection] = useState(false);
-  const unreadCount = storedNotifications.length;
+  const [selectedNotification, setSelectedNotification] = useState(null);
 
-  useEffect(() => {
-    checkTelegramStatus();
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserId(payload.id);
-      } catch (e) {
-        console.error('Error parsing token:', e);
-      }
+  // Badge jumlah notifikasi (utama: unread)
+  const badgeCount = useMemo(() => {
+    if (!storedNotifications || !storedNotifications.length) return 0;
+
+    const unread = storedNotifications.filter((n) => !n.isRead).length;
+    return unread || storedNotifications.length;
+  }, [storedNotifications]);
+
+  function handleToggleOpen() {
+    setIsOpen((prev) => !prev);
+
+    if (!isOpen && storedNotifications && storedNotifications.length > 0) {
+      setSelectedNotification(storedNotifications[0]);
+    }
+  }
+
+  function handleClose() {
+    setIsOpen(false);
+  }
+
+  function handleDeleteItem(id) {
+    removeStoredNotification(id);
+  }
+
+  function handleClearAll() {
+    clearAllStoredNotifications();
+    setSelectedNotification(null);
+  }
+
+  function getIconForType(type) {
+    if (type === 'success') return '✓';
+    if (type === 'error') return '✕';
+    if (type === 'warning') return '⚠';
+    return 'ℹ';
+  }
+
+  // Klik item → tampilkan detail + tandai sudah dibaca
+  async function handleSelectItem(n) {
+    setSelectedNotification(n);
+
+    if (!n.notificationId || n.isRead) {
+      return;
     }
 
-    // Poll for status every 5 seconds
-    const interval = setInterval(checkTelegramStatus, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    // update di frontend
+    markStoredNotificationAsRead(n.notificationId);
 
-  const checkTelegramStatus = async () => {
+    // update di backend
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setTelegramStatus({ connected: false, loading: false });
-        return;
-      }
+      const token =
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) return;
 
-      const res = await fetch(`${API_URL}/telegram/status`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setTelegramStatus({ connected: data.connected, loading: false });
-      } else {
-        setTelegramStatus({ connected: false, loading: false });
-      }
-    } catch (err) {
-      setTelegramStatus({ connected: false, loading: false });
-    }
-  };
-
-  const handleTelegramConnect = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/telegram/connect`, {
-        method: 'POST',
+      await fetch(`${API_URL}/notification/${n.notificationId}/read`, {
+        method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ telegramUsername })
+        }
       });
-
-      if (res.ok) {
-        alert('✅ Telegram terhubung!');
-        await checkTelegramStatus();
-        setShowTelegramInput(false);
-        setTelegramUsername('');
-      } else {
-        const data = await res.json();
-        alert(`❌ ${data.message}`);
-      }
     } catch (err) {
-      alert('❌ Gagal menghubungkan Telegram');
+      console.error('Gagal menandai notifikasi sebagai dibaca:', err);
     }
-  };
-
-  const deepLink = userId ? `https://t.me/${BOT_USERNAME}?start=${userId}` : null;
-
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
-  const getIcon = (type) => {
-    switch (type) {
-      case 'success':
-        return '✓';
-      case 'error':
-        return '✕';
-      case 'warning':
-        return '⚠';
-      default:
-        return 'ℹ';
-    }
-  };
+  }
 
   return (
     <>
-      {/* Notification Bell Button */}
+      {/* Tombol bell */}
       <button
+        type="button"
         className={styles.bellButton}
-        onClick={() => setIsOpen(!isOpen)}
-        title="Notifications"
+        onClick={handleToggleOpen}
+        aria-label="Buka notifikasi"
       >
         <span className={styles.bellIcon}>🔔</span>
-        {unreadCount > 0 && (
-          <span className={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+        {badgeCount > 0 && (
+          <div className={styles.badge}>
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </div>
         )}
       </button>
 
-      {/* Notification List Popup */}
       {isOpen && (
         <>
-          <div
-            className={styles.backdrop}
-            onClick={() => setIsOpen(false)}
-          />
+          {/* backdrop */}
+          <div className={styles.backdrop} onClick={handleClose} />
+
+          {/* popup utama */}
           <div className={styles.popup}>
+            {/* header */}
             <div className={styles.popupHeader}>
               <div className={styles.titleRow}>
-                <h3 className={styles.popupTitle}>Notifications</h3>
-                <button
-                  className={styles.telegramHeaderBtn}
-                  onClick={() => setShowTelegramSection(!showTelegramSection)}
-                  title="Toggle Telegram connection"
-                  type="button"
-                >
-                  📱
-                </button>
+                <span className={styles.popupTitle}>Notifikasi</span>
               </div>
               <button
-                className={styles.closeButton}
-                onClick={() => setIsOpen(false)}
                 type="button"
+                className={styles.closeButton}
+                onClick={handleClose}
+                aria-label="Tutup notifikasi"
               >
                 ×
               </button>
             </div>
 
+            {/* isi */}
             <div className={styles.popupContent}>
-              {/* Telegram Section */}
-              {showTelegramSection && (
-              <div className={styles.telegramSection}>
-                {!telegramStatus.loading && !telegramStatus.connected && (
-                  <div className={styles.telegramPrompt}>
-                    <div className={styles.telegramIcon}>📱</div>
-                    <div className={styles.telegramText}>
-                      <strong>Terima notifikasi di Telegram</strong>
-                      {!showTelegramInput ? (
-                        <div className={styles.telegramButtons}>
-                          {deepLink && BOT_USERNAME !== 'YOUR_BOT_USERNAME' && (
-                            <a
-                              href={deepLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.telegramConnectBtn}
-                            >
-                              Hubungkan
-                            </a>
-                          )}
-                          <button
-                            onClick={() => setShowTelegramInput(true)}
-                            className={styles.telegramInputBtn}
-                          >
-                            Input Username
-                          </button>
-                        </div>
-                      ) : (
-                        <form onSubmit={handleTelegramConnect} className={styles.telegramForm}>
-                          <input
-                            type="text"
-                            value={telegramUsername}
-                            onChange={(e) => setTelegramUsername(e.target.value)}
-                            placeholder="@username"
-                            className={styles.telegramInput}
-                            required
-                          />
-                          <button type="submit" className={styles.telegramSubmitBtn}>✓</button>
-                          <button
-                            type="button"
-                            onClick={() => setShowTelegramInput(false)}
-                            className={styles.telegramCancelBtn}
-                          >
-                            ×
-                          </button>
-                        </form>
-                      )}
+              {/* DETAIL */}
+              {selectedNotification && (
+                <div
+                  style={{
+                    padding: '12px 16px',
+                    borderBottom: '1px solid #e5e7eb',
+                    background: '#ffffff',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#111827',
+                      marginBottom: 6
+                    }}
+                  >
+                    {selectedNotification.title}
+                  </div>
+
+                  {selectedNotification.body && (
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: '#4b5563',
+                        lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap',
+                        marginBottom: 6
+                      }}
+                    >
+                      {selectedNotification.body}
                     </div>
+                  )}
+
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: '#9ca3af',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2
+                    }}
+                  >
+                    <span>
+                      {selectedNotification.timestamp &&
+                      selectedNotification.timestamp.toLocaleString
+                        ? selectedNotification.timestamp.toLocaleString('id-ID')
+                        : new Date(
+                            selectedNotification.timestamp
+                          ).toLocaleString('id-ID')}
+                    </span>
+
+                    {selectedNotification.createdByName && (
+                      <span>
+                        Dibuat oleh{' '}
+                        <strong>{selectedNotification.createdByName}</strong>
+                      </span>
+                    )}
+
+                    <span>
+                      {selectedNotification.isRead
+                        ? 'Sudah dibaca'
+                        : 'Belum dibaca'}
+                    </span>
                   </div>
-                )}
-                {telegramStatus.connected && (
-                  <div className={styles.telegramConnected}>
-                    <span className={styles.telegramIcon}>✅</span>
-                    <span>Telegram terhubung</span>
-                  </div>
-                )}
-              </div>
+                </div>
               )}
 
-              {storedNotifications.length === 0 ? (
+              {/* LIST */}
+              {(!storedNotifications || storedNotifications.length === 0) ? (
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>📭</div>
-                  <p className={styles.emptyText}>No notifications yet</p>
+                  <div className={styles.emptyIcon}>🔔</div>
+                  <p className={styles.emptyText}>Belum ada notifikasi.</p>
                 </div>
               ) : (
                 <div className={styles.notificationList}>
-                  {storedNotifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`${styles.notificationItem} ${styles[`item-${notification.type || 'info'}`]}`}
-                    >
-                      <div className={styles.itemIcon}>
-                        {getIcon(notification.type)}
-                      </div>
-                      <div className={styles.itemContent}>
-                        <div className={styles.itemTitle}>
-                          {notification.title}
-                        </div>
-                        {notification.body && (
-                          <div className={styles.itemBody}>
-                            {notification.body}
-                          </div>
-                        )}
-                        <div className={styles.itemTime}>
-                          {formatTime(notification.timestamp)}
-                        </div>
-                      </div>
-                      <button
-                        className={styles.itemDelete}
-                        onClick={() => removeStoredNotification(notification.id)}
-                        type="button"
-                        title="Delete notification"
+                  {storedNotifications.map((n) => {
+                    const type = n.type || 'info';
+                    const itemClassName = [
+                      styles.notificationItem,
+                      styles['item-' + type]
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+
+                    const isRead = !!n.isRead;
+
+                    return (
+                      <div
+                        key={n.id}
+                        className={itemClassName}
+                        onClick={() => handleSelectItem(n)}
+                        style={{ cursor: 'pointer' }}
                       >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                        <div className={styles.itemIcon}>
+                          {getIconForType(type)}
+                        </div>
+
+                        <div className={styles.itemContent}>
+                          <div
+                            className={styles.itemTitle}
+                            style={
+                              isRead
+                                ? {
+                                    color: '#9ca3af',
+                                    fontWeight: 500
+                                  }
+                                : undefined
+                            }
+                          >
+                            {n.title}
+                          </div>
+
+                          {n.body && (
+                            <div className={styles.itemBody}>{n.body}</div>
+                          )}
+
+                          <div className={styles.itemTime}>
+                            {n.timestamp && n.timestamp.toLocaleString
+                              ? n.timestamp.toLocaleString('id-ID')
+                              : new Date(n.timestamp).toLocaleString('id-ID')}
+                            {n.createdByName && (
+                              <> • oleh {n.createdByName}</>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={styles.itemDelete}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteItem(n.id);
+                          }}
+                          aria-label="Hapus notifikasi"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {storedNotifications.length > 0 && (
-              <div className={styles.popupFooter}>
-                <button
-                  className={styles.clearAllButton}
-                  onClick={clearAllStoredNotifications}
-                  type="button"
-                >
-                  Clear All
-                </button>
-              </div>
-            )}
+            {/* footer */}
+            <div className={styles.popupFooter}>
+              <button
+                type="button"
+                className={styles.clearAllButton}
+                onClick={handleClearAll}
+                disabled={
+                  !storedNotifications || storedNotifications.length === 0
+                }
+              >
+                Bersihkan semua notifikasi
+              </button>
+            </div>
           </div>
         </>
       )}

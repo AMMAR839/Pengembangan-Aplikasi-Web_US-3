@@ -9,14 +9,29 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendMail({ to, subject, html }) {
-  const info = await transporter.sendMail({
-    from: `"Little Garden" <${process.env.MAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    console.log('=== SENDMAIL MULAI ===');
+    console.log('KE:', to);
 
-  console.log('Email verifikasi terkirim:', info.messageId);
+    const info = await transporter.sendMail({
+      from: `"Little Garden" <${process.env.MAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+
+    console.log('EMAIL TERKIRIM:', info.messageId);
+  } catch (err) {
+    console.error('=== SENDMAIL ERROR ===');
+    console.error('NAME   :', err.name);
+    console.error('MESSAGE:', err.message);
+    console.error('CODE   :', err.code);
+    console.error('ERRNO  :', err.errno);
+    console.error('ADDRESS:', err.address);
+    console.error('PORT   :', err.port);
+    throw err;
+  }
 }
+
 
 module.exports = sendMail;

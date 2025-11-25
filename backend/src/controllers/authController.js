@@ -8,9 +8,13 @@ const sendMail = require('../utils/sendMail');
 // REGISTER + kirim email verifikasi
 exports.register = async (req, res) => {
   try {
+    console.log('=== REGISTER DIPANGGIL ===');
+
     const { email, username, password } = req.body;
+    console.log('DATA MASUK:', { email, username });
 
     if (!email || !username || !password) {
+      console.log('VALIDASI GAGAL: ada field kosong');
       return res
         .status(400)
         .json({ message: 'Email, username, dan password wajib diisi' });
@@ -18,15 +22,18 @@ exports.register = async (req, res) => {
 
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
+      console.log('EMAIL SUDAH DIGUNAKAN:', email);
       return res.status(400).json({ message: 'Email sudah digunakan' });
     }
 
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
+      console.log('USERNAME SUDAH ADA:', username);
       return res.status(400).json({ message: 'Username sudah ada' });
     }
 
     const hash = await bcrypt.hash(password, 10);
+    console.log('PASSWORD TERENKRIPSI');
 
     const token = crypto.randomBytes(32).toString('hex');
 
@@ -40,10 +47,12 @@ exports.register = async (req, res) => {
       verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 jam
     });
 
-    const verifyLink = `${
-      process.env.BACKEND_URL || 'http://localhost:5000'
-    }/api/auth/verify-email?token=${token}`;
+    console.log('USER TERSIMPAN DI DB, ID:', user._id.toString());
 
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const verifyLink = `${backendUrl}/api/auth/verify-email?token=${token}`;
+
+    console.log('KIRIM EMAIL KE:', email);
     await sendMail({
       to: email,
       subject: 'Verifikasi Email Little Garden',
@@ -61,16 +70,18 @@ exports.register = async (req, res) => {
         <p>${verifyLink}</p>
       `,
     });
+    console.log('SELESAI KIRIM EMAIL');
 
     res.json({
       message: 'Register berhasil. Silakan cek email untuk verifikasi.',
     });
+    console.log('RESPON REGISTER DIKIRIM KE CLIENT');
   } catch (err) {
-    console.error(err);
+    console.error('=== REGISTER ERROR ===');
+    console.error(err);          // 🔴 error detail di sini
     res.status(500).json({ message: err.message });
   }
 };
-
 
 // LOGIN (boleh pakai username ATAU email, dan hanya yang sudah verifikasi)
 exports.login = async (req, res) => {
@@ -123,7 +134,7 @@ exports.login = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;
-    const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontend = process.env.FRONTEND_URL ;
 
     const user = await User.findOne({
       verificationToken: token,
@@ -142,7 +153,7 @@ exports.verifyEmail = async (req, res) => {
     return res.redirect(`${frontend}/verify-email?status=success`);
   } catch (err) {
     console.error(err);
-    const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontend = process.env.FRONTEND_URL ;
     return res.redirect(`${frontend}/verify-email?status=error`);
   }
 };
@@ -239,7 +250,7 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&id=${user._id}`;
 
     await sendMail({
-      to: username,
+      to: user.email,
       subject: 'Reset Password - PAUD App',
       html: `
         <h2>Permintaan Reset Password</h2>

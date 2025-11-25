@@ -4,6 +4,9 @@ const ActivityLog = require("../models/ActivityLog");
 const Student = require("../models/Student");
 const supabase = require("../config/supabase");
 
+const ACTIVITY_BUCKET = "Foto_kegiatan"
+
+
 // ===== Helper kecil =====
 const toMin = (hhmm) => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -17,7 +20,6 @@ function normalizeDateOnly(d) {
   return dt;
 }
 
-// ================== TEMPLATE JADWAL ==================
 
 // Buat/ubah template jadwal per hari (admin/teacher)
 exports.setDaySchedule = async (req, res) => {
@@ -147,6 +149,7 @@ async function ensureDailyLog(className, rawDate) {
     date: start,
     dayOfWeek: w,
     templateId: tpl._id,
+
     slots: copiedSlots,
   });
 
@@ -310,17 +313,18 @@ exports.whatIsMyKidDoingNow = async (req, res) => {
   }
 };
 
-// ================== FOTO KEGIATAN (SUPABASE) ==================
 
 exports.addDailySlotPhotos = async (req, res) => {
   try {
     const { logId, slotId } = req.params;
 
+    // cari log harian
     const log = await ActivityLog.findById(logId);
     if (!log) {
       return res.status(404).json({ message: "Log harian tidak ditemukan" });
     }
 
+    // cari slot di dalam log
     const slot = log.slots.id(slotId);
     if (!slot) {
       return res
@@ -328,10 +332,12 @@ exports.addDailySlotPhotos = async (req, res) => {
         .json({ message: "Slot pada log tidak ditemukan" });
     }
 
+    // cek file dari multer
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "Tidak ada file foto" });
     }
 
+    // optional: caption per foto, dikirim sebagai JSON array string
     let captions = [];
     if (req.body.captions) {
       try {
@@ -352,10 +358,12 @@ exports.addDailySlotPhotos = async (req, res) => {
         ? log.date.toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10);
       const random = Math.random().toString(36).slice(2);
+
       const fileName = `activities/${safeClass}/${datePart}-${Date.now()}-${random}${ext}`;
 
+      // ⬇⬇⬇ upload buffer langsung ke Supabase Storage (tanpa file lokal)
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("Foto_Activity") // pastikan BUCKET ini ada di Supabase
+        .from(ACTIVITY_BUCKET)
         .upload(fileName, file.buffer, {
           contentType: file.mimetype,
           upsert: false,
@@ -368,8 +376,9 @@ exports.addDailySlotPhotos = async (req, res) => {
           .json({ message: "Gagal upload foto ke Supabase Storage" });
       }
 
+      // ambil public URL dari bucket yang sama
       const { data: publicData } = supabase.storage
-        .from("Foto_kegiatan")
+        .from(ACTIVITY_BUCKET)
         .getPublicUrl(uploadData.path || fileName);
 
       const publicUrl = publicData.publicUrl;
@@ -381,10 +390,13 @@ exports.addDailySlotPhotos = async (req, res) => {
       });
     }
 
+    // simpan ke Mongo
     slot.photos.push(...uploadedPhotos);
     await log.save();
 
-    res.status(201).json({ message: "Foto ditambahkan", photos: slot.photos });
+    res
+      .status(201)
+      .json({ message: "Foto ditambahkan", photos: slot.photos });
   } catch (err) {
     console.error("addDailySlotPhotos error:", err);
     res.status(400).json({ message: err.message });
