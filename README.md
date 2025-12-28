@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-
 # Little Garden
 
 ## Link Website : https://little-garden-5mlu.vercel.app/
