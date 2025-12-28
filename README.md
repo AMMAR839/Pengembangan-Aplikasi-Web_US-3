@@ -2,7 +2,22 @@
 
 # Little Garden
 
-## Link Website : https://ini-bisa-91zz.vercel.app/
+## Link Website : https://little-garden-5mlu.vercel.app/
+## Link Video   : https://youtu.be/s0ScbBzwlkE?si=YGVmpE8K7MBbIves
+
+## Username/Email dan Password Pengguna
+
+'parent'
+- ammar123
+- enter123
+
+'admin'
+- dokumentasiworkshopkmteti@gmail.com
+- dokumentasiworkshopkmteti@gmail.com
+
+'user'
+- graceanre903@gmail.com
+- graceanre903@gmail.com 
 
 ## Nama Kelompok & Anggota
 - **Kelompok 9** 
